@@ -18,7 +18,7 @@
 	</dependencySets>
 	<fileSets>
 		<fileSet>
-			<directory>${basedir}/target/classes</directory>
+			<directory>${basedir}/target/test-classes</directory>
 			<outputDirectory>/</outputDirectory>
 			<includes>
 				<include>org/springframework/**/*</include>

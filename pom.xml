@@ -41,6 +41,12 @@
 			<artifactId>spring-boot-cli</artifactId>
 			<version>${spring-boot.version}</version>
 			<optional>true</optional>
+			<exclusions>
+				<exclusion>
+					<groupId>org.codehaus.groovy</groupId>
+					<artifactId>groovy</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>commons-logging</groupId>

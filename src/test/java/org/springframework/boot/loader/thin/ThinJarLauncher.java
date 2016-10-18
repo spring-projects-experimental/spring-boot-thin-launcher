@@ -21,8 +21,8 @@ import org.eclipse.aether.graph.Dependency;
 import org.springframework.boot.cli.compiler.GroovyCompilerConfiguration;
 import org.springframework.boot.cli.compiler.GroovyCompilerScope;
 import org.springframework.boot.cli.compiler.RepositoryConfigurationFactory;
-import org.springframework.boot.cli.compiler.grape.AetherGrapeEngine;
-import org.springframework.boot.cli.compiler.grape.AetherGrapeEngineFactory;
+import org.springframework.boot.cli.compiler.grape.AetherEngine;
+import org.springframework.boot.cli.compiler.grape.AetherEngineFactory;
 import org.springframework.boot.cli.compiler.grape.DependencyResolutionContext;
 import org.springframework.boot.cli.compiler.grape.RepositoryConfiguration;
 import org.springframework.boot.loader.ExecutableArchiveLauncher;
@@ -80,11 +80,11 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 
 	private List<File> resolve(List<Dependency> dependencies) throws Exception {
 		GroovyCompilerConfiguration configuration = new LauncherConfiguration();
-		AetherGrapeEngine engine = AetherGrapeEngineFactory.create(null,
+		AetherEngine engine = AetherEngineFactory.create(
 				configuration.getRepositoryConfiguration(),
 				new DependencyResolutionContext());
-		Method method = ReflectionUtils.findMethod(AetherGrapeEngine.class,
-				"resolve", List.class);
+		Method method = ReflectionUtils.findMethod(AetherEngine.class, "resolve",
+				List.class);
 		ReflectionUtils.makeAccessible(method);
 		@SuppressWarnings("unchecked")
 		List<File> files = (List<File>) ReflectionUtils.invokeMethod(method, engine,
