@@ -16,15 +16,25 @@
 
 package org.springframework.boot.cli.compiler.grape;
 
+import org.apache.maven.repository.internal.MavenRepositorySystemUtils;
 import org.eclipse.aether.DefaultRepositorySystemSession;
 import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.collection.CollectRequest;
+import org.eclipse.aether.connector.basic.BasicRepositoryConnectorFactory;
 import org.eclipse.aether.graph.Dependency;
+import org.eclipse.aether.impl.DefaultServiceLocator;
+import org.eclipse.aether.internal.impl.DefaultRepositorySystem;
 import org.eclipse.aether.repository.RemoteRepository;
+import org.eclipse.aether.repository.RepositoryPolicy;
 import org.eclipse.aether.resolution.ArtifactResolutionException;
 import org.eclipse.aether.resolution.ArtifactResult;
 import org.eclipse.aether.resolution.DependencyRequest;
 import org.eclipse.aether.resolution.DependencyResult;
+import org.eclipse.aether.spi.connector.RepositoryConnectorFactory;
+import org.eclipse.aether.spi.connector.transport.TransporterFactory;
+import org.eclipse.aether.spi.locator.ServiceLocator;
+import org.eclipse.aether.transport.file.FileTransporterFactory;
+import org.eclipse.aether.transport.http.HttpTransporterFactory;
 import org.eclipse.aether.util.artifact.JavaScopes;
 import org.eclipse.aether.util.filter.DependencyFilterUtils;
 
@@ -32,6 +42,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.ServiceLoader;
 
 /**
  * A {@link GrapeEngine} implementation that uses
@@ -169,4 +180,58 @@ public class AetherEngine {
 		this.resolutionContext.addManagedDependencies(getDependencies(result));
 	}
 
+	public static AetherEngine create(
+			List<RepositoryConfiguration> repositoryConfigurations,
+			DependencyResolutionContext dependencyResolutionContext) {
+
+		RepositorySystem repositorySystem = createServiceLocator()
+				.getService(RepositorySystem.class);
+
+		DefaultRepositorySystemSession repositorySystemSession = MavenRepositorySystemUtils
+				.newSession();
+
+		ServiceLoader<RepositorySystemSessionAutoConfiguration> autoConfigurations = ServiceLoader
+				.load(RepositorySystemSessionAutoConfiguration.class);
+
+		for (RepositorySystemSessionAutoConfiguration autoConfiguration : autoConfigurations) {
+			autoConfiguration.apply(repositorySystemSession, repositorySystem);
+		}
+
+		new DefaultRepositorySystemSessionAutoConfiguration()
+				.apply(repositorySystemSession, repositorySystem);
+
+		return new AetherEngine(repositorySystem, repositorySystemSession,
+				createRepositories(repositoryConfigurations),
+				dependencyResolutionContext);
+	}
+
+	private static ServiceLocator createServiceLocator() {
+		DefaultServiceLocator locator = MavenRepositorySystemUtils.newServiceLocator();
+		locator.addService(RepositorySystem.class, DefaultRepositorySystem.class);
+		locator.addService(RepositoryConnectorFactory.class,
+				BasicRepositoryConnectorFactory.class);
+		locator.addService(TransporterFactory.class, HttpTransporterFactory.class);
+		locator.addService(TransporterFactory.class, FileTransporterFactory.class);
+		return locator;
+	}
+
+	private static List<RemoteRepository> createRepositories(
+			List<RepositoryConfiguration> repositoryConfigurations) {
+		List<RemoteRepository> repositories = new ArrayList<RemoteRepository>(
+				repositoryConfigurations.size());
+		for (RepositoryConfiguration repositoryConfiguration : repositoryConfigurations) {
+			RemoteRepository.Builder builder = new RemoteRepository.Builder(
+					repositoryConfiguration.getName(), "default",
+					repositoryConfiguration.getUri().toASCIIString());
+
+			if (!repositoryConfiguration.getSnapshotsEnabled()) {
+				builder.setSnapshotPolicy(
+						new RepositoryPolicy(false, RepositoryPolicy.UPDATE_POLICY_NEVER,
+								RepositoryPolicy.CHECKSUM_POLICY_IGNORE));
+			}
+			repositories.add(builder.build());
+		}
+		return repositories;
+	}
+	
 }

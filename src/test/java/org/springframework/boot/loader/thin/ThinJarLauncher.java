@@ -22,7 +22,6 @@ import org.springframework.boot.cli.compiler.GroovyCompilerConfiguration;
 import org.springframework.boot.cli.compiler.GroovyCompilerScope;
 import org.springframework.boot.cli.compiler.RepositoryConfigurationFactory;
 import org.springframework.boot.cli.compiler.grape.AetherEngine;
-import org.springframework.boot.cli.compiler.grape.AetherEngineFactory;
 import org.springframework.boot.cli.compiler.grape.DependencyResolutionContext;
 import org.springframework.boot.cli.compiler.grape.RepositoryConfiguration;
 import org.springframework.boot.loader.ExecutableArchiveLauncher;
@@ -80,7 +79,7 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 
 	private List<File> resolve(List<Dependency> dependencies) throws Exception {
 		GroovyCompilerConfiguration configuration = new LauncherConfiguration();
-		AetherEngine engine = AetherEngineFactory.create(
+		AetherEngine engine = AetherEngine.create(
 				configuration.getRepositoryConfiguration(),
 				new DependencyResolutionContext());
 		Method method = ReflectionUtils.findMethod(AetherEngine.class, "resolve",
