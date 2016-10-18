@@ -5,14 +5,14 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>1.3.5.RELEASE</version>
+		<version>1.4.1.RELEASE</version>
 	</parent>
 
-	<groupId>com.example</groupId>
-	<artifactId>parent-demo</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<groupId>org.springframework.boot</groupId>
+	<artifactId>spring-boot-thin-launcher-parent</artifactId>
+	<version>0.0.1.BUILD-SNAPSHOT</version>
 	<packaging>pom</packaging>
-	<name>Parent Demo</name>
+	<name>Thin Launcher Parent</name>
 
 	<modules>
 		<module>wrapper</module>
