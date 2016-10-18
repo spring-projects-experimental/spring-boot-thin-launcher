@@ -41,8 +41,6 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
-import groovy.lang.GroovyClassLoader;
-
 /**
  *
  * @author Dave Syer
@@ -82,8 +80,7 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 
 	private List<File> resolve(List<Dependency> dependencies) throws Exception {
 		GroovyCompilerConfiguration configuration = new LauncherConfiguration();
-		GroovyClassLoader classLoader = new GroovyClassLoader();
-		AetherGrapeEngine engine = AetherGrapeEngineFactory.create(classLoader,
+		AetherGrapeEngine engine = AetherGrapeEngineFactory.create(null,
 				configuration.getRepositoryConfiguration(),
 				new DependencyResolutionContext());
 		Method method = ReflectionUtils.findMethod(AetherGrapeEngine.class,
