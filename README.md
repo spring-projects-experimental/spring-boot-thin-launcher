@@ -1,4 +1,4 @@
-Prototype "thin" jar launcher for java apps.
+Prototype "thin" jar launcher for java apps. See https://github.com/spring-projects/spring-boot/issues/1813 for more discussion and ideas.
 
 TODO:
 
@@ -8,6 +8,7 @@ TODO:
 * [ ] Add a "dry run" or "download only" feature so grab the dependencies and warm up the local cache, but not run the app
 * [ ] Extract `AetherEngine` and re-use it in Spring Boot CLI
 * [ ] Hone the dependencies in the launcher a bit (some optional stuff probably still there)
+* [ ] Either autogenerate the `lib.properties` or find a way to model the pom without a lot of extra machinery
 
 ## Getting Started
 
