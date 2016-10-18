@@ -5,6 +5,7 @@ TODO:
 * [ ] Support the wrapper as a layout in Spring Boot build plugins
 * [ ] Deploy jars to snapshot repo at repo.spring.io
 * [ ] Make it easy to override the dependencies at runtime (e.g. rolling upgrades of library jars for security patches)
+* [ ] Add a "dry run" or "download only" feature so grab the dependencies and warm up the local cache, but not run the app
 
 ## Getting Started
 
