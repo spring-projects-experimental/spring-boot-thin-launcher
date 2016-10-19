@@ -58,6 +58,10 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 
 	@Override
 	protected void launch(String[] args) throws Exception {
+		if (System.getProperty("main.root") != null) {
+			// There is a grape root that is used by the aether engine internally
+			System.setProperty("grape.root", System.getProperty("main.root"));
+		}
 		if (System.getProperty("main.dryrun") != null) {
 			getClassPathArchives();
 			return;

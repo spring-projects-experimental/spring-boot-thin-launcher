@@ -5,7 +5,7 @@ TODO:
 * [ ] Support the wrapper as a layout in Spring Boot build plugins
 * [X] Deploy jars to snapshot repo at repo.spring.io
 * [ ] Make it easy to override the dependencies at runtime (e.g. rolling upgrades of library jars for security patches)
-* [ ] Add a "dry run" or "download only" feature so grab the dependencies and warm up the local cache, but not run the app
+* [X] Add a "dry run" or "download only" feature so grab the dependencies and warm up the local cache, but not run the app
 * [ ] Extract `AetherEngine` and re-use it in Spring Boot CLI
 * [X] Hone the dependencies in the launcher a bit (some optional stuff probably still there)
 * [ ] Either autogenerate the `lib.properties` or find a way to model the pom without a lot of extra machinery
@@ -59,6 +59,23 @@ as a build plugin option.
 All jar files are cached in the local Maven repository, so if you are
 building and running the same app repeatedly, it should be faster
 after the first time, or if the local repo is already warm.
+
+The local repository can be re-located by setting a System property "main.root". For example to use the current directory:
+
+```
+$ java -Dmain.root=. -jar app/target/*.jar
+```
+
+This will download all the dependencies to `${main.root}/repository`,
+and look for Maven settings in `${main.root}/settings.xml`.
+
+You can also do a "dry run", just to warm up the cache and not run the
+app, by setting a System property "main.dryrun" (to any value). In
+fact, since you don't need the application code for this (except the
+`META-INF/lib.properties`), you could run only the launcher, or the
+wrapper, which might be a useful trick for laying down a file system
+layer in a container image, for example.
+
 
 ## Upgrades
 
