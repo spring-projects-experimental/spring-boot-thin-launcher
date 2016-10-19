@@ -10,6 +10,7 @@
 			<includes>
 				<include>org.springframework.boot:spring-boot-thin-wrapper:*</include>
 			</includes>
+			<scope>provided</scope>
 			<unpack>true</unpack>
 			<useTransitiveFiltering>true</useTransitiveFiltering>
 		</dependencySet>
