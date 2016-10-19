@@ -18,16 +18,15 @@ package org.springframework.boot.loader.thin;
 
 import org.eclipse.aether.artifact.DefaultArtifact;
 import org.eclipse.aether.graph.Dependency;
-import org.springframework.boot.cli.compiler.GroovyCompilerConfiguration;
-import org.springframework.boot.cli.compiler.GroovyCompilerScope;
 import org.springframework.boot.cli.compiler.RepositoryConfigurationFactory;
 import org.springframework.boot.cli.compiler.grape.AetherEngine;
 import org.springframework.boot.cli.compiler.grape.DependencyResolutionContext;
-import org.springframework.boot.cli.compiler.grape.RepositoryConfiguration;
 import org.springframework.boot.loader.ExecutableArchiveLauncher;
 import org.springframework.boot.loader.archive.Archive;
 import org.springframework.boot.loader.archive.Archive.Entry;
+import org.springframework.boot.loader.archive.ExplodedArchive;
 import org.springframework.boot.loader.archive.JarFileArchive;
+import org.springframework.boot.loader.tools.MainClassFinder;
 import org.springframework.core.io.UrlResource;
 import org.springframework.core.io.support.PropertiesLoaderUtils;
 import org.springframework.util.ReflectionUtils;
@@ -41,6 +40,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.jar.JarFile;
 
 /**
  *
@@ -56,8 +56,57 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 		super(computeArchive());
 	}
 
+	@Override
+	protected void launch(String[] args) throws Exception {
+		if (System.getProperty("main.dryrun") != null) {
+			getClassPathArchives();
+			return;
+		}
+		super.launch(args);
+	}
+
+	@Override
+	protected String getMainClass() throws Exception {
+		if (System.getProperty("main.class") != null) {
+			return System.getProperty("main.class");
+		}
+		try {
+			return super.getMainClass();
+		}
+		catch (IllegalStateException e) {
+			File root = new File(getArchive().getUrl().toURI());
+			if (getArchive() instanceof ExplodedArchive) {
+				return MainClassFinder.findSingleMainClass(root);
+			}
+			else {
+				return MainClassFinder.findSingleMainClass(new JarFile(root), "/");
+			}
+		}
+	}
+
 	private static Archive computeArchive() throws Exception {
-		return new JarFileArchive(new File(new URI(System.getProperty("main.archive"))));
+		File file = new File(new URI(findArchive()));
+		if (file.isDirectory()) {
+			return new ExplodedArchive(file);
+		}
+		return new JarFileArchive(file);
+	}
+
+	private static String findArchive() {
+		String archive = System.getProperty("main.archive");
+		File dir = new File("target/classes");
+		if (archive == null && dir.exists()) {
+			archive = dir.toURI().toString();
+		}
+		dir = new File("build/classes");
+		if (archive == null && dir.exists()) {
+			archive = dir.toURI().toString();
+		}
+		dir = new File(".");
+		if (archive == null) {
+			archive = dir.toURI().toString();
+		}
+		return archive;
 	}
 
 	@Override
@@ -89,9 +138,8 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 	}
 
 	private List<File> resolve(List<Dependency> dependencies) throws Exception {
-		GroovyCompilerConfiguration configuration = new LauncherConfiguration();
 		AetherEngine engine = AetherEngine.create(
-				configuration.getRepositoryConfiguration(),
+				RepositoryConfigurationFactory.createDefaultRepositoryConfiguration(),
 				new DependencyResolutionContext());
 		Method method = ReflectionUtils.findMethod(AetherEngine.class, "resolve",
 				List.class);
@@ -107,37 +155,4 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 		return false;
 	}
 
-	class LauncherConfiguration implements GroovyCompilerConfiguration {
-
-		@Override
-		public GroovyCompilerScope getScope() {
-			return GroovyCompilerScope.DEFAULT;
-		}
-
-		@Override
-		public boolean isGuessImports() {
-			return true;
-		}
-
-		@Override
-		public boolean isGuessDependencies() {
-			return true;
-		}
-
-		@Override
-		public boolean isAutoconfigure() {
-			return true;
-		}
-
-		@Override
-		public String[] getClasspath() {
-			return DEFAULT_CLASSPATH;
-		}
-
-		@Override
-		public List<RepositoryConfiguration> getRepositoryConfiguration() {
-			return RepositoryConfigurationFactory.createDefaultRepositoryConfiguration();
-		}
-
-	}
 }

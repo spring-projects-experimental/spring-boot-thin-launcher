@@ -8,7 +8,7 @@
 	<dependencySets>
 		<dependencySet>
 			<includes>
-				<include>com.example:wrapper:*</include>
+				<include>org.springframework.boot:spring-boot-thin-wrapper:*</include>
 			</includes>
 			<unpack>true</unpack>
 			<useTransitiveFiltering>true</useTransitiveFiltering>

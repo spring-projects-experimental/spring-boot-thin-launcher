@@ -146,7 +146,7 @@ public class ThinJarWrapper {
 				OutputStream output = null;
 				try {
 					input = new URL(repo + getPath()).openStream();
-					if (target.mkdirs()) {
+					if (target.getParentFile().mkdirs()) {
 						output = new FileOutputStream(target);
 						byte[] bytes = new byte[4096];
 						int count = input.read(bytes);

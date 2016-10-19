@@ -27,6 +27,11 @@
 	<dependencies>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-loader-tools</artifactId>
+			<optional>true</optional>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-loader</artifactId>
 			<optional>true</optional>
 		</dependency>
@@ -91,6 +96,11 @@
 							<attach>true</attach>
 							<appendAssemblyId>false</appendAssemblyId>
 							<descriptor>${basedir}/src/assembly/launcher.xml</descriptor>
+							<archive>
+								<manifest>
+									<mainClass>org.springframework.boot.loader.thin.ThinJarLauncher</mainClass>
+								</manifest>
+							</archive>
 						</configuration>
 					</execution>
 				</executions>
