@@ -27,13 +27,13 @@ import org.springframework.boot.loader.archive.Archive.Entry;
 import org.springframework.boot.loader.archive.ExplodedArchive;
 import org.springframework.boot.loader.archive.JarFileArchive;
 import org.springframework.boot.loader.tools.MainClassFinder;
+import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.core.io.support.PropertiesLoaderUtils;
-import org.springframework.util.ReflectionUtils;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Method;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -58,12 +58,18 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 
 	@Override
 	protected void launch(String[] args) throws Exception {
-		if (System.getProperty("main.root") != null) {
+		String root = System.getProperty("main.root");
+		String debug = System.getProperty("debug");
+		if (root != null) {
 			// There is a grape root that is used by the aether engine internally
-			System.setProperty("grape.root", System.getProperty("main.root"));
+			System.setProperty("grape.root", root);
 		}
 		if (System.getProperty("main.dryrun") != null) {
 			getClassPathArchives();
+			if (debug != null) {
+				System.out.println(
+						"Downloaded dependencies" + (root == null ? "" : " to " + root));
+			}
 			return;
 		}
 		super.launch(args);
@@ -89,26 +95,29 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 	}
 
 	private static Archive computeArchive() throws Exception {
-		File file = new File(new URI(findArchive()));
+		File file = new File(findArchive());
 		if (file.isDirectory()) {
 			return new ExplodedArchive(file);
 		}
 		return new JarFileArchive(file);
 	}
 
-	private static String findArchive() {
-		String archive = System.getProperty("main.archive");
+	private static URI findArchive() throws Exception {
+		String path = System.getProperty("main.archive");
+		URI archive = path == null ? null : new URI(path);
 		File dir = new File("target/classes");
 		if (archive == null && dir.exists()) {
-			archive = dir.toURI().toString();
+			archive = dir.toURI();
 		}
-		dir = new File("build/classes");
-		if (archive == null && dir.exists()) {
-			archive = dir.toURI().toString();
-		}
-		dir = new File(".");
 		if (archive == null) {
-			archive = dir.toURI().toString();
+			dir = new File("build/classes");
+			if (dir.exists()) {
+				archive = dir.toURI();
+			}
+		}
+		if (archive == null) {
+			dir = new File(".");
+			archive = dir.toURI();
 		}
 		return archive;
 	}
@@ -117,16 +126,30 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 	protected List<Archive> getClassPathArchives() throws Exception {
 		Map<String, Dependency> dependencies = new LinkedHashMap<>();
 		// TODO: Maybe use something that conserves order?
-		Properties libs = PropertiesLoaderUtils.loadProperties(
-				new UrlResource(getArchive().getUrl() + "META-INF/lib.properties"));
+		Properties libs = loadLibraryProperties();
 		for (String key : libs.stringPropertyNames()) {
 			String lib = libs.getProperty(key);
 			dependencies.put(key, dependency(lib));
 		}
 		List<Archive> archives = archives(
 				resolve(new ArrayList<>(dependencies.values())));
-		archives.set(0, getArchive());
+		if (!archives.isEmpty()) {
+			archives.set(0, getArchive());
+		}
+		else {
+			archives.add(getArchive());
+		}
 		return archives;
+	}
+
+	private Properties loadLibraryProperties() throws IOException, MalformedURLException {
+		Properties props = PropertiesLoaderUtils.loadProperties(
+				new UrlResource(getArchive().getUrl() + "META-INF/lib.properties"));
+		FileSystemResource local = new FileSystemResource("lib.properties");
+		if (local.exists()) {
+			PropertiesLoaderUtils.fillProperties(props, local);
+		}
+		return props;
 	}
 
 	private List<Archive> archives(List<File> files) throws IOException {
@@ -137,20 +160,15 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 		return archives;
 	}
 
-	private Dependency dependency(String lib) {
-		return new Dependency(new DefaultArtifact(lib), "compile");
+	private Dependency dependency(String coordinates) {
+		return new Dependency(new DefaultArtifact(coordinates), "compile");
 	}
 
 	private List<File> resolve(List<Dependency> dependencies) throws Exception {
 		AetherEngine engine = AetherEngine.create(
 				RepositoryConfigurationFactory.createDefaultRepositoryConfiguration(),
 				new DependencyResolutionContext());
-		Method method = ReflectionUtils.findMethod(AetherEngine.class, "resolve",
-				List.class);
-		ReflectionUtils.makeAccessible(method);
-		@SuppressWarnings("unchecked")
-		List<File> files = (List<File>) ReflectionUtils.invokeMethod(method, engine,
-				dependencies);
+		List<File> files = engine.resolve(dependencies);
 		return files;
 	}
 
