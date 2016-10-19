@@ -22,6 +22,7 @@ import org.springframework.boot.cli.compiler.RepositoryConfigurationFactory;
 import org.springframework.boot.cli.compiler.grape.AetherEngine;
 import org.springframework.boot.cli.compiler.grape.DependencyResolutionContext;
 import org.springframework.boot.loader.ExecutableArchiveLauncher;
+import org.springframework.boot.loader.LaunchedURLClassLoader;
 import org.springframework.boot.loader.archive.Archive;
 import org.springframework.boot.loader.archive.Archive.Entry;
 import org.springframework.boot.loader.archive.ExplodedArchive;
@@ -35,6 +36,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -47,6 +49,8 @@ import java.util.jar.JarFile;
  * @author Dave Syer
  */
 public class ThinJarLauncher extends ExecutableArchiveLauncher {
+
+	private static final String DEFAULT_BOM = "org.springframework.boot:spring-boot-dependencies:1.4.1.RELEASE";
 
 	public static void main(String[] args) throws Exception {
 		new ThinJarLauncher().launch(args);
@@ -73,6 +77,10 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 			return;
 		}
 		super.launch(args);
+	}
+
+	protected ClassLoader createClassLoader(URL[] urls) throws Exception {
+		return new LaunchedURLClassLoader(urls, getClass().getClassLoader().getParent());
 	}
 
 	@Override
@@ -136,6 +144,10 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 			if (key.startsWith("boms")) {
 				boms.put(key, dependency(lib));
 			}
+		}
+
+		if (boms.isEmpty()) {
+			boms.put("boms.spring-boot-dependencies", dependency(DEFAULT_BOM));
 		}
 
 		List<Archive> archives = archives(resolve(new ArrayList<>(boms.values()),
