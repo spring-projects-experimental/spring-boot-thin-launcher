@@ -4,12 +4,12 @@ TODO:
 
 * [ ] Support the wrapper as a layout in Spring Boot build plugins
 * [X] Deploy jars to snapshot repo at repo.spring.io
-* [ ] Make it easy to override the dependencies at runtime (e.g. rolling upgrades of library jars for security patches)
+* [X] Make it easy to override the dependencies at runtime (e.g. rolling upgrades of library jars for security patches)
 * [X] Add a "dry run" or "download only" feature so grab the dependencies and warm up the local cache, but not run the app
 * [ ] Extract `AetherEngine` and re-use it in Spring Boot CLI
 * [X] Hone the dependencies in the launcher a bit (some optional stuff probably still there)
 * [ ] Either autogenerate the `lib.properties` or find a way to model the pom without a lot of extra machinery
-* [ ] Worry about the other stuff on the classpath of the launcher (e.g. spring-core)
+* [X] Worry about the other stuff on the classpath of the launcher (e.g. spring-core)
 * [X] Make it work in Cloud Foundry
 * [ ] Work with Ben to make it a nice experience in Cloud Foundry
 * [X] Support for boms
