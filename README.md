@@ -10,6 +10,9 @@ TODO:
 * [X] Hone the dependencies in the launcher a bit (some optional stuff probably still there)
 * [ ] Either autogenerate the `lib.properties` or find a way to model the pom without a lot of extra machinery
 * [ ] Worry about the other stuff on the classpath of the launcher (e.g. spring-core)
+* [ ] Make it work in Cloud Foundry
+* [ ] Work with Ben to make it a nice experience in Cloud Foundry
+* [ ] Support for exclusions and boms
 
 ## Getting Started
 
