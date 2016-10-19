@@ -180,7 +180,48 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 	}
 
 	private Dependency dependency(String coordinates) {
-		return new Dependency(new DefaultArtifact(coordinates), "compile");
+		String[] parts = coordinates.split(":");
+		if (parts.length < 2) {
+			throw new IllegalArgumentException(
+					"Co-ordinates should contain group:artifact[:extension][:classifier][:version]");
+		}
+		String extension = "jar", classifier, version, artifactId, groupId;
+		if (parts.length > 4) {
+			extension = parts[2];
+			classifier = parts[3];
+			version = parts[4];
+		}
+		else if (parts.length > 3) {
+			if (parts[3].contains(".")) {
+				version = parts[3];
+				classifier = parts[2];
+			}
+			else {
+				extension = parts[2];
+				classifier = parts[3];
+				version = null;
+			}
+
+		}
+		else if (parts.length > 2) {
+			if (parts[2].contains(".")) {
+				version = parts[2];
+				classifier = null;
+			}
+			else {
+				classifier = parts[2];
+				version = null;
+			}
+		}
+		else {
+			classifier = null;
+			version = null;
+		}
+		groupId = parts[0];
+		artifactId = parts[1];
+		return new Dependency(
+				new DefaultArtifact(groupId, artifactId, classifier, extension, version),
+				"compile");
 	}
 
 	private List<File> resolve(List<Dependency> boms, List<Dependency> dependencies)

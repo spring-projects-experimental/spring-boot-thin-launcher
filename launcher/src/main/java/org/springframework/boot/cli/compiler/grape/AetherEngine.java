@@ -40,6 +40,7 @@ import org.eclipse.aether.transport.file.FileTransporterFactory;
 import org.eclipse.aether.transport.http.HttpTransporterFactory;
 import org.eclipse.aether.util.artifact.JavaScopes;
 import org.eclipse.aether.util.filter.DependencyFilterUtils;
+import org.springframework.util.StringUtils;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -187,8 +188,26 @@ public class AetherEngine {
 	}
 
 	private CollectRequest getCollectRequest(List<Dependency> dependencies) {
-		CollectRequest collectRequest = new CollectRequest((Dependency) null,
-				dependencies, new ArrayList<RemoteRepository>(this.repositories));
+		List<Dependency> resolve = new ArrayList<>();
+		for (Dependency dependency : dependencies) {
+			String version = dependency.getArtifact().getVersion();
+			String group = dependency.getArtifact().getGroupId();
+			String module = dependency.getArtifact().getArtifactId();
+			if (!StringUtils.hasText(version)) {
+				version = this.resolutionContext.getManagedVersion(group, module);
+				if (version == null) {
+					throw new IllegalStateException(
+							"Cannot resolve version for " + dependency);
+				}
+				resolve.add(dependency
+						.setArtifact(dependency.getArtifact().setVersion(version)));
+			}
+			else {
+				resolve.add(dependency);
+			}
+		}
+		CollectRequest collectRequest = new CollectRequest((Dependency) null, resolve,
+				new ArrayList<RemoteRepository>(this.repositories));
 		collectRequest
 				.setManagedDependencies(this.resolutionContext.getManagedDependencies());
 		return collectRequest;
