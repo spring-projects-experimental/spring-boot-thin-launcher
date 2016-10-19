@@ -125,14 +125,21 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 	@Override
 	protected List<Archive> getClassPathArchives() throws Exception {
 		Map<String, Dependency> dependencies = new LinkedHashMap<>();
+		Map<String, Dependency> boms = new LinkedHashMap<>();
 		// TODO: Maybe use something that conserves order?
 		Properties libs = loadLibraryProperties();
 		for (String key : libs.stringPropertyNames()) {
 			String lib = libs.getProperty(key);
-			dependencies.put(key, dependency(lib));
+			if (key.startsWith("dependencies")) {
+				dependencies.put(key, dependency(lib));
+			}
+			if (key.startsWith("boms")) {
+				boms.put(key, dependency(lib));
+			}
 		}
-		List<Archive> archives = archives(
-				resolve(new ArrayList<>(dependencies.values())));
+
+		List<Archive> archives = archives(resolve(new ArrayList<>(boms.values()),
+				new ArrayList<>(dependencies.values())));
 		if (!archives.isEmpty()) {
 			archives.set(0, getArchive());
 		}
@@ -164,10 +171,12 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 		return new Dependency(new DefaultArtifact(coordinates), "compile");
 	}
 
-	private List<File> resolve(List<Dependency> dependencies) throws Exception {
+	private List<File> resolve(List<Dependency> boms, List<Dependency> dependencies)
+			throws Exception {
 		AetherEngine engine = AetherEngine.create(
 				RepositoryConfigurationFactory.createDefaultRepositoryConfiguration(),
 				new DependencyResolutionContext());
+		engine.addDependencyManagementBoms(boms);
 		List<File> files = engine.resolve(dependencies);
 		return files;
 	}

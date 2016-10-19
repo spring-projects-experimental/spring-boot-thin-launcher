@@ -22,10 +22,13 @@ import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.collection.CollectRequest;
 import org.eclipse.aether.connector.basic.BasicRepositoryConnectorFactory;
 import org.eclipse.aether.graph.Dependency;
+import org.eclipse.aether.impl.ArtifactDescriptorReader;
 import org.eclipse.aether.impl.DefaultServiceLocator;
 import org.eclipse.aether.internal.impl.DefaultRepositorySystem;
 import org.eclipse.aether.repository.RemoteRepository;
 import org.eclipse.aether.repository.RepositoryPolicy;
+import org.eclipse.aether.resolution.ArtifactDescriptorRequest;
+import org.eclipse.aether.resolution.ArtifactDescriptorResult;
 import org.eclipse.aether.resolution.ArtifactResolutionException;
 import org.eclipse.aether.resolution.ArtifactResult;
 import org.eclipse.aether.resolution.DependencyRequest;
@@ -53,6 +56,8 @@ import java.util.ServiceLoader;
  * @author Phillip Webb
  */
 public class AetherEngine {
+
+	private static ServiceLocator serviceLocator;
 
 	private final DependencyResolutionContext resolutionContext;
 
@@ -161,6 +166,26 @@ public class AetherEngine {
 		}
 	}
 
+	public void addDependencyManagementBoms(List<Dependency> boms) {
+		for (Dependency bom : boms) {
+			try {
+				ArtifactDescriptorReader resolver = AetherEngine.getServiceLocator()
+						.getService(ArtifactDescriptorReader.class);
+				ArtifactDescriptorRequest request = new ArtifactDescriptorRequest(
+						bom.getArtifact(), repositories, null);
+				ArtifactDescriptorResult descriptor = resolver
+						.readArtifactDescriptor(session, request);
+				List<Dependency> managedDependencies = descriptor
+						.getManagedDependencies();
+				resolutionContext.addManagedDependencies(managedDependencies);
+			}
+			catch (Exception ex) {
+				throw new IllegalStateException("Failed to build model for '" + bom
+						+ "'. Is it a valid Maven bom?", ex);
+			}
+		}
+	}
+
 	private CollectRequest getCollectRequest(List<Dependency> dependencies) {
 		CollectRequest collectRequest = new CollectRequest((Dependency) null,
 				dependencies, new ArrayList<RemoteRepository>(this.repositories));
@@ -184,7 +209,7 @@ public class AetherEngine {
 			List<RepositoryConfiguration> repositoryConfigurations,
 			DependencyResolutionContext dependencyResolutionContext) {
 
-		RepositorySystem repositorySystem = createServiceLocator()
+		RepositorySystem repositorySystem = getServiceLocator()
 				.getService(RepositorySystem.class);
 
 		DefaultRepositorySystemSession repositorySystemSession = MavenRepositorySystemUtils
@@ -205,14 +230,18 @@ public class AetherEngine {
 				dependencyResolutionContext);
 	}
 
-	private static ServiceLocator createServiceLocator() {
-		DefaultServiceLocator locator = MavenRepositorySystemUtils.newServiceLocator();
-		locator.addService(RepositorySystem.class, DefaultRepositorySystem.class);
-		locator.addService(RepositoryConnectorFactory.class,
-				BasicRepositoryConnectorFactory.class);
-		locator.addService(TransporterFactory.class, HttpTransporterFactory.class);
-		locator.addService(TransporterFactory.class, FileTransporterFactory.class);
-		return locator;
+	public static ServiceLocator getServiceLocator() {
+		if (AetherEngine.serviceLocator == null) {
+			DefaultServiceLocator locator = MavenRepositorySystemUtils
+					.newServiceLocator();
+			locator.addService(RepositorySystem.class, DefaultRepositorySystem.class);
+			locator.addService(RepositoryConnectorFactory.class,
+					BasicRepositoryConnectorFactory.class);
+			locator.addService(TransporterFactory.class, HttpTransporterFactory.class);
+			locator.addService(TransporterFactory.class, FileTransporterFactory.class);
+			AetherEngine.serviceLocator = locator;
+		}
+		return AetherEngine.serviceLocator;
 	}
 
 	private static List<RemoteRepository> createRepositories(
@@ -233,5 +262,5 @@ public class AetherEngine {
 		}
 		return repositories;
 	}
-	
+
 }

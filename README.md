@@ -12,7 +12,8 @@ TODO:
 * [ ] Worry about the other stuff on the classpath of the launcher (e.g. spring-core)
 * [X] Make it work in Cloud Foundry
 * [ ] Work with Ben to make it a nice experience in Cloud Foundry
-* [ ] Support for exclusions and boms
+* [X] Support for boms
+* [ ] Support for exclusions
 
 ## Getting Started
 
