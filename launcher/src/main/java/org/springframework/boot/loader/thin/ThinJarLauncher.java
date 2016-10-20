@@ -16,6 +16,11 @@
 
 package org.springframework.boot.loader.thin;
 
+import org.apache.maven.model.Model;
+import org.apache.maven.model.building.DefaultModelProcessor;
+import org.apache.maven.model.io.DefaultModelReader;
+import org.apache.maven.model.locator.DefaultModelLocator;
+import org.eclipse.aether.artifact.Artifact;
 import org.eclipse.aether.artifact.DefaultArtifact;
 import org.eclipse.aether.graph.Dependency;
 import org.springframework.boot.cli.compiler.RepositoryConfigurationFactory;
@@ -29,6 +34,7 @@ import org.springframework.boot.loader.archive.ExplodedArchive;
 import org.springframework.boot.loader.archive.JarFileArchive;
 import org.springframework.boot.loader.tools.MainClassFinder;
 import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.core.io.support.PropertiesLoaderUtils;
 
@@ -38,6 +44,7 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -162,8 +169,10 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 	}
 
 	private Properties loadLibraryProperties() throws IOException, MalformedURLException {
-		Properties props = PropertiesLoaderUtils.loadProperties(
-				new UrlResource(getArchive().getUrl() + "META-INF/lib.properties"));
+		UrlResource resource = new UrlResource(
+				getArchive().getUrl() + "META-INF/lib.properties");
+		Properties props = resource.exists()
+				? PropertiesLoaderUtils.loadProperties(resource) : new Properties();
 		FileSystemResource local = new FileSystemResource("lib.properties");
 		if (local.exists()) {
 			PropertiesLoaderUtils.fillProperties(props, local);
@@ -230,8 +239,50 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 				RepositoryConfigurationFactory.createDefaultRepositoryConfiguration(),
 				new DependencyResolutionContext());
 		engine.addDependencyManagementBoms(boms);
+		dependencies.addAll(getPomDependencies());
 		List<File> files = engine.resolve(dependencies);
 		return files;
+	}
+
+	private List<Dependency> getPomDependencies() throws Exception {
+		Resource pom = new UrlResource(getArchive().getUrl() + "pom.xml");
+		if (pom.exists()) {
+			return convert(readModel(pom).getDependencies());
+		}
+		pom = new FileSystemResource("./pom.xml");
+		if (pom.exists()) {
+			return convert(readModel(pom).getDependencies());
+		}
+		return Collections.emptyList();
+	}
+
+	private List<Dependency> convert(
+			List<org.apache.maven.model.Dependency> dependencies) {
+		List<Dependency> result = new ArrayList<>();
+		for (org.apache.maven.model.Dependency dependency : dependencies) {
+			result.add(new Dependency(artifact(dependency), dependency.getScope()));
+		}
+		return result;
+	}
+
+	private Artifact artifact(org.apache.maven.model.Dependency dependency) {
+		return new DefaultArtifact(dependency.getGroupId(), dependency.getArtifactId(),
+				dependency.getClassifier(), dependency.getType(),
+				dependency.getVersion());
+	}
+
+	private static Model readModel(Resource resource) {
+		DefaultModelProcessor modelProcessor = new DefaultModelProcessor();
+		modelProcessor.setModelLocator(new DefaultModelLocator());
+		modelProcessor.setModelReader(new DefaultModelReader());
+
+		try {
+			return modelProcessor.read(resource.getInputStream(), null);
+		}
+		catch (IOException ex) {
+			throw new IllegalStateException("Failed to build model from effective pom",
+					ex);
+		}
 	}
 
 	@Override

@@ -16,8 +16,9 @@
 
 	<modules>
 		<module>wrapper</module>
-		<module>app</module>
 		<module>launcher</module>
+		<module>app</module>
+		<module>simple</module>
 	</modules>
 
 	<properties>
