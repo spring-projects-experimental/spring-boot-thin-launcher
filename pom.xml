@@ -17,6 +17,7 @@
 	<modules>
 		<module>wrapper</module>
 		<module>launcher</module>
+		<module>capsule-app</module>
 		<module>app</module>
 		<module>simple</module>
 	</modules>
