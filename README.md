@@ -8,7 +8,7 @@ TODO:
 * [X] Add a "dry run" or "download only" feature so grab the dependencies and warm up the local cache, but not run the app
 * [ ] Extract `AetherEngine` and re-use it in Spring Boot CLI
 * [X] Hone the dependencies in the launcher a bit (some optional stuff probably still there)
-* [ ] Either autogenerate the `lib.properties` or find a way to model the pom without a lot of extra machinery
+* [X] Either autogenerate the `lib.properties` or find a way to model the pom without a lot of extra machinery
 * [X] Worry about the other stuff on the classpath of the launcher (e.g. spring-core)
 * [X] Make it work in Cloud Foundry
 * [ ] Work with Ben to make it a nice experience in Cloud Foundry
