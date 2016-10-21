@@ -13,7 +13,7 @@ TODO:
 * [X] Make it work in Cloud Foundry
 * [ ] Work with Ben to make it a nice experience in Cloud Foundry
 * [X] Support for boms
-* [ ] Support for exclusions
+* [X] Support for exclusions
 
 ## Getting Started
 
