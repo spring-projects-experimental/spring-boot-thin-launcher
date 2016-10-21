@@ -16,9 +16,16 @@
 
 package org.springframework.boot.cli.compiler.grape;
 
+import org.apache.maven.model.Model;
+import org.apache.maven.model.Parent;
+import org.apache.maven.model.building.DefaultModelProcessor;
+import org.apache.maven.model.io.DefaultModelReader;
+import org.apache.maven.model.locator.DefaultModelLocator;
 import org.apache.maven.repository.internal.MavenRepositorySystemUtils;
 import org.eclipse.aether.DefaultRepositorySystemSession;
 import org.eclipse.aether.RepositorySystem;
+import org.eclipse.aether.artifact.Artifact;
+import org.eclipse.aether.artifact.DefaultArtifact;
 import org.eclipse.aether.collection.CollectRequest;
 import org.eclipse.aether.connector.basic.BasicRepositoryConnectorFactory;
 import org.eclipse.aether.graph.Dependency;
@@ -40,9 +47,11 @@ import org.eclipse.aether.transport.file.FileTransporterFactory;
 import org.eclipse.aether.transport.http.HttpTransporterFactory;
 import org.eclipse.aether.util.artifact.JavaScopes;
 import org.eclipse.aether.util.filter.DependencyFilterUtils;
+import org.springframework.core.io.Resource;
 import org.springframework.util.StringUtils;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -147,6 +156,29 @@ public class AetherEngine {
 			repository = builder.build();
 		}
 		return repository;
+	}
+
+	public List<Dependency> getDependencies(Resource pom) {
+		if (!pom.exists()) {
+			return Collections.emptyList();
+		}
+		Model model = readModel(pom);
+		return convert(model.getDependencies());
+	}
+
+	public List<Dependency> getDependencyManagement(Resource pom) {
+		if (!pom.exists()) {
+			return Collections.emptyList();
+		}
+		List<Dependency> list = new ArrayList<>();
+		Model model = readModel(pom);
+		if (model.getParent() != null) {
+			list.add(new Dependency(getParentArtifact(model), "import"));
+		}
+		if (model.getDependencyManagement() != null) {
+			list.addAll(convert(model.getDependencyManagement().getDependencies()));
+		}
+		return list;
 	}
 
 	public List<File> resolve(List<Dependency> dependencies)
@@ -280,6 +312,44 @@ public class AetherEngine {
 			repositories.add(builder.build());
 		}
 		return repositories;
+	}
+
+	private Artifact getParentArtifact(Model model) {
+		Parent parent = model.getParent();
+		return new DefaultArtifact(parent.getGroupId(), parent.getArtifactId(), "pom",
+				parent.getVersion());
+	}
+
+	private List<Dependency> convert(
+			List<org.apache.maven.model.Dependency> dependencies) {
+		List<Dependency> result = new ArrayList<>();
+		for (org.apache.maven.model.Dependency dependency : dependencies) {
+			String scope = dependency.getScope();
+			if (!"test".equals(scope) && !"provided".equals(scope)) {
+				result.add(new Dependency(artifact(dependency), dependency.getScope()));
+			}
+		}
+		return result;
+	}
+
+	private Artifact artifact(org.apache.maven.model.Dependency dependency) {
+		return new DefaultArtifact(dependency.getGroupId(), dependency.getArtifactId(),
+				dependency.getClassifier(), dependency.getType(),
+				dependency.getVersion());
+	}
+
+	private static Model readModel(Resource resource) {
+		DefaultModelProcessor modelProcessor = new DefaultModelProcessor();
+		modelProcessor.setModelLocator(new DefaultModelLocator());
+		modelProcessor.setModelReader(new DefaultModelReader());
+
+		try {
+			return modelProcessor.read(resource.getInputStream(), null);
+		}
+		catch (IOException ex) {
+			throw new IllegalStateException("Failed to build model from effective pom",
+					ex);
+		}
 	}
 
 }

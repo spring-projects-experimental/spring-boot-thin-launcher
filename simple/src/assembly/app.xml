@@ -10,6 +10,12 @@
 			<includes>
 				<include>org.springframework.boot.experimental:spring-boot-thin-wrapper:*</include>
 			</includes>
+			<unpackOptions>
+				<excludes>
+					<exclude>META-INF/MANIFEST.MF</exclude>
+					<exclude>META-INF/manifest.mf</exclude>
+				</excludes>
+			</unpackOptions>
 			<scope>provided</scope>
 			<unpack>true</unpack>
 			<useTransitiveFiltering>true</useTransitiveFiltering>
@@ -21,6 +27,17 @@
 			<outputDirectory>/</outputDirectory>
 			<includes>
 				<include>**/*</include>
+			</includes>
+			<excludes>
+				<exclude>META-INF/MANIFEST.MF</exclude>
+				<exclude>META-INF/manifest.mf</exclude>
+			</excludes>
+		</fileSet>
+		<fileSet>
+			<directory>${basedir}</directory>
+			<outputDirectory>/</outputDirectory>
+			<includes>
+				<include>pom.xml</include>
 			</includes>
 		</fileSet>
 	</fileSets>

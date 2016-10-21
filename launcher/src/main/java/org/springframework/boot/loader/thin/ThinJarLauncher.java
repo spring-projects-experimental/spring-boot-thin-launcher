@@ -16,11 +16,6 @@
 
 package org.springframework.boot.loader.thin;
 
-import org.apache.maven.model.Model;
-import org.apache.maven.model.building.DefaultModelProcessor;
-import org.apache.maven.model.io.DefaultModelReader;
-import org.apache.maven.model.locator.DefaultModelLocator;
-import org.eclipse.aether.artifact.Artifact;
 import org.eclipse.aether.artifact.DefaultArtifact;
 import org.eclipse.aether.graph.Dependency;
 import org.springframework.boot.cli.compiler.RepositoryConfigurationFactory;
@@ -44,10 +39,10 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
-import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 import java.util.jar.JarFile;
 
@@ -58,6 +53,7 @@ import java.util.jar.JarFile;
 public class ThinJarLauncher extends ExecutableArchiveLauncher {
 
 	private static final String DEFAULT_BOM = "org.springframework.boot:spring-boot-dependencies:1.4.1.RELEASE";
+	private AetherEngine engine;
 
 	public static void main(String[] args) throws Exception {
 		new ThinJarLauncher().launch(args);
@@ -65,6 +61,9 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 
 	public ThinJarLauncher() throws Exception {
 		super(computeArchive());
+		this.engine = AetherEngine.create(
+				RepositoryConfigurationFactory.createDefaultRepositoryConfiguration(),
+				new DependencyResolutionContext());
 	}
 
 	@Override
@@ -139,26 +138,29 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 
 	@Override
 	protected List<Archive> getClassPathArchives() throws Exception {
-		Map<String, Dependency> dependencies = new LinkedHashMap<>();
-		Map<String, Dependency> boms = new LinkedHashMap<>();
+		Collection<Dependency> dependencies = new LinkedHashSet<>();
+		Collection<Dependency> boms = new LinkedHashSet<>();
 		// TODO: Maybe use something that conserves order?
 		Properties libs = loadLibraryProperties();
 		for (String key : libs.stringPropertyNames()) {
 			String lib = libs.getProperty(key);
 			if (key.startsWith("dependencies")) {
-				dependencies.put(key, dependency(lib));
+				dependencies.add(dependency(lib));
 			}
 			if (key.startsWith("boms")) {
-				boms.put(key, dependency(lib));
+				boms.add(dependency(lib));
 			}
 		}
 
+		boms.addAll(getPomDependencyManagement());
+		dependencies.addAll(getPomDependencies());
+
 		if (boms.isEmpty()) {
-			boms.put("boms.spring-boot-dependencies", dependency(DEFAULT_BOM));
+			boms.add(dependency(DEFAULT_BOM));
 		}
 
-		List<Archive> archives = archives(resolve(new ArrayList<>(boms.values()),
-				new ArrayList<>(dependencies.values())));
+		List<Archive> archives = archives(
+				resolve(new ArrayList<>(boms), new ArrayList<>(dependencies)));
 		if (!archives.isEmpty()) {
 			archives.set(0, getArchive());
 		}
@@ -235,54 +237,33 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 
 	private List<File> resolve(List<Dependency> boms, List<Dependency> dependencies)
 			throws Exception {
-		AetherEngine engine = AetherEngine.create(
-				RepositoryConfigurationFactory.createDefaultRepositoryConfiguration(),
-				new DependencyResolutionContext());
-		engine.addDependencyManagementBoms(boms);
-		dependencies.addAll(getPomDependencies());
-		List<File> files = engine.resolve(dependencies);
+		this.engine.addDependencyManagementBoms(boms);
+		List<File> files = this.engine.resolve(dependencies);
 		return files;
 	}
 
 	private List<Dependency> getPomDependencies() throws Exception {
-		Resource pom = new UrlResource(getArchive().getUrl() + "pom.xml");
+		Resource pom = getPom();
 		if (pom.exists()) {
-			return convert(readModel(pom).getDependencies());
-		}
-		pom = new FileSystemResource("./pom.xml");
-		if (pom.exists()) {
-			return convert(readModel(pom).getDependencies());
+			return this.engine.getDependencies(pom);
 		}
 		return Collections.emptyList();
 	}
 
-	private List<Dependency> convert(
-			List<org.apache.maven.model.Dependency> dependencies) {
-		List<Dependency> result = new ArrayList<>();
-		for (org.apache.maven.model.Dependency dependency : dependencies) {
-			result.add(new Dependency(artifact(dependency), dependency.getScope()));
+	private List<Dependency> getPomDependencyManagement() throws Exception {
+		Resource pom = getPom();
+		if (pom.exists()) {
+			return this.engine.getDependencyManagement(pom);
 		}
-		return result;
+		return Collections.emptyList();
 	}
 
-	private Artifact artifact(org.apache.maven.model.Dependency dependency) {
-		return new DefaultArtifact(dependency.getGroupId(), dependency.getArtifactId(),
-				dependency.getClassifier(), dependency.getType(),
-				dependency.getVersion());
-	}
-
-	private static Model readModel(Resource resource) {
-		DefaultModelProcessor modelProcessor = new DefaultModelProcessor();
-		modelProcessor.setModelLocator(new DefaultModelLocator());
-		modelProcessor.setModelReader(new DefaultModelReader());
-
-		try {
-			return modelProcessor.read(resource.getInputStream(), null);
+	private Resource getPom() throws Exception {
+		Resource pom = new UrlResource(getArchive().getUrl() + "pom.xml");
+		if (!pom.exists()) {
+			pom = new FileSystemResource("./pom.xml");
 		}
-		catch (IOException ex) {
-			throw new IllegalStateException("Failed to build model from effective pom",
-					ex);
-		}
+		return pom;
 	}
 
 	@Override
