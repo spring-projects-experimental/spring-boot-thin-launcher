@@ -40,7 +40,6 @@ import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Properties;
@@ -53,7 +52,7 @@ import java.util.jar.JarFile;
 public class ThinJarLauncher extends ExecutableArchiveLauncher {
 
 	private static final String DEFAULT_BOM = "org.springframework.boot:spring-boot-dependencies:1.4.1.RELEASE";
-	private AetherEngine engine;
+	private PomLoader pomLoader = new PomLoader();
 
 	public static void main(String[] args) throws Exception {
 		new ThinJarLauncher().launch(args);
@@ -61,9 +60,6 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 
 	public ThinJarLauncher() throws Exception {
 		super(computeArchive());
-		this.engine = AetherEngine.create(
-				RepositoryConfigurationFactory.createDefaultRepositoryConfiguration(),
-				new DependencyResolutionContext());
 	}
 
 	@Override
@@ -237,25 +233,20 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 
 	private List<File> resolve(List<Dependency> boms, List<Dependency> dependencies)
 			throws Exception {
-		this.engine.addDependencyManagementBoms(boms);
-		List<File> files = this.engine.resolve(dependencies);
+		AetherEngine engine = AetherEngine.create(
+				RepositoryConfigurationFactory.createDefaultRepositoryConfiguration(),
+				new DependencyResolutionContext());
+		engine.addDependencyManagementBoms(boms);
+		List<File> files = engine.resolve(dependencies);
 		return files;
 	}
 
 	private List<Dependency> getPomDependencies() throws Exception {
-		Resource pom = getPom();
-		if (pom.exists()) {
-			return this.engine.getDependencies(pom);
-		}
-		return Collections.emptyList();
+		return this.pomLoader.getDependencies(getPom());
 	}
 
 	private List<Dependency> getPomDependencyManagement() throws Exception {
-		Resource pom = getPom();
-		if (pom.exists()) {
-			return this.engine.getDependencyManagement(pom);
-		}
-		return Collections.emptyList();
+		return this.pomLoader.getDependencyManagement(getPom());
 	}
 
 	private Resource getPom() throws Exception {
