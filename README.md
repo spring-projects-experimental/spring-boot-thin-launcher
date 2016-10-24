@@ -2,11 +2,11 @@ Prototype "thin" jar launcher for java apps. See https://github.com/spring-proje
 
 TODO:
 
-* [ ] Support the wrapper as a layout in Spring Boot build plugins
+* [X] Support the wrapper as a layout in Spring Boot build plugins(*)
+* [X] Extract `AetherEngine` and re-use it in Spring Boot CLI(*)
 * [X] Deploy jars to snapshot repo at repo.spring.io
 * [X] Make it easy to override the dependencies at runtime (e.g. rolling upgrades of library jars for security patches)
 * [X] Add a "dry run" or "download only" feature so grab the dependencies and warm up the local cache, but not run the app
-* [ ] Extract `AetherEngine` and re-use it in Spring Boot CLI
 * [X] Hone the dependencies in the launcher a bit (some optional stuff probably still there)
 * [X] Either autogenerate the `lib.properties` or find a way to model the pom without a lot of extra machinery
 * [X] Worry about the other stuff on the classpath of the launcher (e.g. spring-core)
@@ -14,6 +14,9 @@ TODO:
 * [ ] Work with Ben to make it a nice experience in Cloud Foundry
 * [X] Support for boms
 * [X] Support for exclusions
+
+(*) Implemented in a pull request to Spring Boot, not in this
+project: https://github.com/spring-projects/spring-boot/issues/1813.
 
 ## Getting Started
 
