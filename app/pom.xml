@@ -78,7 +78,7 @@
 						<inherited>false</inherited>
 						<configuration>
 							<includeArtifactIds>spring-boot-thin-wrapper</includeArtifactIds>
-							<excludes>META-INF/maven/**</excludes>
+							<excludes>META-INF/maven/**,META-INF/MANIFEST.MF</excludes>
 							<artifactItems>
 								<artifactItem>
 									<groupId>org.springframework.boot.experimental</groupId>
