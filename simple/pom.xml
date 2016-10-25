@@ -24,6 +24,7 @@
 		<java.version>1.8</java.version>
 		<spring-boot.version>1.4.1.RELEASE</spring-boot.version>
 		<wrapper.version>0.0.1.BUILD-SNAPSHOT</wrapper.version>
+		<start-class>org.springframework.boot.loader.wrapper.ThinJarWrapper</start-class>
 	</properties>
 
 	<dependencies>
@@ -46,10 +47,7 @@
 			<artifactId>spring-boot-starter-actuator</artifactId>
 		</dependency>
 		<!-- This actually breaks the assembly plugin but only in a reactor build (!) -->
-		<!-- dependency>
-			<groupId>org.springframework.cloud</groupId>
-			<artifactId>spring-cloud-starter-config</artifactId>
-		</dependency-->
+		<!-- dependency> <groupId>org.springframework.cloud</groupId> <artifactId>spring-cloud-starter-config</artifactId> </dependency -->
 		<dependency>
 			<groupId>org.springframework.boot.experimental</groupId>
 			<artifactId>spring-boot-thin-wrapper</artifactId>
@@ -74,28 +72,37 @@
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-assembly-plugin</artifactId>
-				<version>2.5.5</version>
+				<artifactId>maven-jar-plugin</artifactId>
+				<configuration>
+					<archive>
+						<manifestEntries>
+							<Start-Class>com.example.LauncherApplication</Start-Class>
+						</manifestEntries>
+					</archive>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-dependency-plugin</artifactId>
 				<executions>
 					<execution>
-						<id>stub</id>
+						<id>unpack</id>
 						<phase>prepare-package</phase>
 						<goals>
-							<goal>single</goal>
+							<goal>unpack-dependencies</goal>
 						</goals>
 						<inherited>false</inherited>
 						<configuration>
-							<attach>true</attach>
-							<appendAssemblyId>false</appendAssemblyId>
-							<descriptor>${basedir}/src/assembly/app.xml</descriptor>
-							<archive>
-								<manifest>
-									<mainClass>org.springframework.boot.loader.wrapper.ThinJarWrapper</mainClass>
-								</manifest>
-								<manifestEntries>
-									<Start-Class>com.example.LauncherApplication</Start-Class>
-								</manifestEntries>
-							</archive>
+							<includeArtifactIds>spring-boot-thin-wrapper</includeArtifactIds>
+							<excludes>META-INF/maven/**</excludes>
+							<artifactItems>
+								<artifactItem>
+									<groupId>org.springframework.boot.experimental</groupId>
+									<artifactId>spring-boot-thin-wrapper</artifactId>
+									<version>${wrapper.version}</version>
+								</artifactItem>
+							</artifactItems>
+							<outputDirectory>${project.build.outputDirectory}</outputDirectory>
 						</configuration>
 					</execution>
 				</executions>

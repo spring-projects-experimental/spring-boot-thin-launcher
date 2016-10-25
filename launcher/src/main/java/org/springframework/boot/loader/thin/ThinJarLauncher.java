@@ -16,23 +16,6 @@
 
 package org.springframework.boot.loader.thin;
 
-import org.eclipse.aether.artifact.DefaultArtifact;
-import org.eclipse.aether.graph.Dependency;
-import org.springframework.boot.cli.compiler.RepositoryConfigurationFactory;
-import org.springframework.boot.cli.compiler.grape.AetherEngine;
-import org.springframework.boot.cli.compiler.grape.DependencyResolutionContext;
-import org.springframework.boot.loader.ExecutableArchiveLauncher;
-import org.springframework.boot.loader.LaunchedURLClassLoader;
-import org.springframework.boot.loader.archive.Archive;
-import org.springframework.boot.loader.archive.Archive.Entry;
-import org.springframework.boot.loader.archive.ExplodedArchive;
-import org.springframework.boot.loader.archive.JarFileArchive;
-import org.springframework.boot.loader.tools.MainClassFinder;
-import org.springframework.core.io.FileSystemResource;
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.UrlResource;
-import org.springframework.core.io.support.PropertiesLoaderUtils;
-
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -44,6 +27,26 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Properties;
 import java.util.jar.JarFile;
+
+import org.eclipse.aether.artifact.DefaultArtifact;
+import org.eclipse.aether.graph.Dependency;
+
+import org.springframework.boot.cli.compiler.RepositoryConfigurationFactory;
+import org.springframework.boot.cli.compiler.grape.AetherEngine;
+import org.springframework.boot.cli.compiler.grape.DependencyResolutionContext;
+import org.springframework.boot.loader.ExecutableArchiveLauncher;
+import org.springframework.boot.loader.LaunchedURLClassLoader;
+import org.springframework.boot.loader.archive.Archive;
+import org.springframework.boot.loader.archive.Archive.Entry;
+import org.springframework.boot.loader.archive.ExplodedArchive;
+import org.springframework.boot.loader.archive.JarFileArchive;
+import org.springframework.boot.loader.tools.MainClassFinder;
+import org.springframework.core.io.DefaultResourceLoader;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
+import org.springframework.core.io.support.PropertiesLoaderUtils;
+import org.springframework.core.io.support.ResourcePatternUtils;
 
 /**
  *
@@ -251,6 +254,15 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 
 	private Resource getPom() throws Exception {
 		Resource pom = new UrlResource(getArchive().getUrl() + "pom.xml");
+		if (!pom.exists()) {
+			for (Resource resource : ResourcePatternUtils
+					.getResourcePatternResolver(new DefaultResourceLoader())
+					.getResources(getArchive().getUrl() + "META-INF/maven/**/pom.xml")) {
+				if (resource.exists()) {
+					return resource;
+				}
+			}
+		}
 		if (!pom.exists()) {
 			pom = new FileSystemResource("./pom.xml");
 		}

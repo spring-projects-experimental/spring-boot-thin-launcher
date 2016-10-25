@@ -11,13 +11,6 @@
 	<name>launcher</name>
 	<description>Demo project for Spring Boot</description>
 
-	<parent>
-		<groupId>org.springframework.boot</groupId>
-		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>1.4.1.RELEASE</version>
-		<relativePath /> <!-- lookup parent from repository -->
-	</parent>
-
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
@@ -80,29 +73,63 @@
 		</dependency>
 	</dependencies>
 
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-dependencies</artifactId>
+				<version>${spring-boot.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+
 	<build>
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-assembly-plugin</artifactId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>3.5.1</version>
+				<configuration>
+					<source>1.7</source>
+					<target>1.7</target>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-shade-plugin</artifactId>
+				<configuration>
+					<minimizeJar>true</minimizeJar>
+					<shadedArtifactAttached>false</shadedArtifactAttached>
+					<keepDependenciesWithProvidedScope>true</keepDependenciesWithProvidedScope>
+					<transformers>
+						<transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+							<mainClass>org.springframework.boot.loader.thin.ThinJarLauncher</mainClass>
+						</transformer>
+					</transformers>
+					<filters>
+						<filter>
+							<artifact>org.springframework.boot:spring-boot-cli:*</artifact>
+							<includes>
+								<include>org/springframework/boot/cli/compiler/**</include>
+							</includes>
+						</filter>
+						<filter>
+							<artifact>commons-logging:commons-logging:*</artifact>
+							<includes>
+								<include>org/apache/**</include>
+							</includes>
+						</filter>
+					</filters>
+				</configuration>
 				<executions>
 					<execution>
-						<id>stub</id>
-						<phase>prepare-package</phase>
+						<id>shade-runtime-dependencies</id>
+						<phase>package</phase>
 						<goals>
-							<goal>single</goal>
+							<goal>shade</goal>
 						</goals>
-						<inherited>false</inherited>
-						<configuration>
-							<attach>true</attach>
-							<appendAssemblyId>false</appendAssemblyId>
-							<descriptor>${basedir}/src/assembly/launcher.xml</descriptor>
-							<archive>
-								<manifest>
-									<mainClass>org.springframework.boot.loader.thin.ThinJarLauncher</mainClass>
-								</manifest>
-							</archive>
-						</configuration>
 					</execution>
 				</executions>
 			</plugin>

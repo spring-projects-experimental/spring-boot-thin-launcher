@@ -23,7 +23,7 @@
 	</modules>
 
 	<properties>
-        <java.version>1.8</java.version>
+		<java.version>1.8</java.version>
 	</properties>
 
 	<build>
@@ -42,25 +42,25 @@
 		<repository>
 			<id>spring-libs-snapshot</id>
 			<url>http://repo.spring.io/libs-snapshot</url>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
 		</repository>
 	</repositories>
-	
+
 	<pluginRepositories>
 		<pluginRepository>
 			<id>spring-libs-snapshot</id>
 			<url>http://repo.spring.io/libs-snapshot</url>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
 		</pluginRepository>
 	</pluginRepositories>
 
