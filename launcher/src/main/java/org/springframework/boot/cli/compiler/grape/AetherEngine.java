@@ -235,7 +235,7 @@ public class AetherEngine {
 				.newSession();
 
 		ServiceLoader<RepositorySystemSessionAutoConfiguration> autoConfigurations = ServiceLoader
-				.load(RepositorySystemSessionAutoConfiguration.class);
+				.load(RepositorySystemSessionAutoConfiguration.class, AetherEngine.class.getClassLoader());
 
 		for (RepositorySystemSessionAutoConfiguration autoConfiguration : autoConfigurations) {
 			autoConfiguration.apply(repositorySystemSession, repositorySystem);

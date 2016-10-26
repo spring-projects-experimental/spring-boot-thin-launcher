@@ -41,6 +41,7 @@
               <artifact>org.springframework.boot:spring-boot-cli:*</artifact>
               <includes>
                 <include>org/springframework/boot/cli/compiler/**</include>
+                <include>META-INF/services/**</include>
               </includes>
             </filter>
             <filter>

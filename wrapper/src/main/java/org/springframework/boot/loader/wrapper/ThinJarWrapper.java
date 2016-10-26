@@ -31,6 +31,12 @@ import java.net.URLClassLoader;
 public class ThinJarWrapper {
 
 	/**
+	 * System property for the root where the launcher jar is downloaded and cached (level
+	 * above /repository). Defaults to <code>${user.home}/.m2</code>.
+	 */
+	public static final String MAIN_ROOT = "main.root";
+
+	/**
 	 * System property key for the main library where the launcher class is located.
 	 */
 	public static final String MAIN_LIBRARY = "main.library";
@@ -104,7 +110,15 @@ public class ThinJarWrapper {
 	}
 
 	private String mavenLocal() {
-		return home() + "/.m2/repository";
+		return mvnHome() + "/repository";
+	}
+
+	private String mvnHome() {
+		String home = System.getProperty(MAIN_ROOT);
+		if (home != null) {
+			return home;
+		}
+		return home() + "/.m2";
 	}
 
 	private String home() {
@@ -207,7 +221,7 @@ public class ThinJarWrapper {
 		public String getPath() {
 			return "/" + groupId.replace(".", "/") + "/" + artifactId + "/" + version
 					+ "/" + artifactId + "-" + version
-					+ (classifier != null ? classifier : "") + ".jar";
+					+ (classifier != null ? "-" + classifier : "") + ".jar";
 		}
 
 	}

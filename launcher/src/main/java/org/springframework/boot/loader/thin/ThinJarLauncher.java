@@ -23,6 +23,7 @@ import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Properties;
@@ -56,6 +57,7 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 
 	private static final String DEFAULT_BOM = "org.springframework.boot:spring-boot-dependencies:1.4.1.RELEASE";
 	private PomLoader pomLoader = new PomLoader();
+	private String debug;
 
 	public static void main(String[] args) throws Exception {
 		new ThinJarLauncher().launch(args);
@@ -68,14 +70,14 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 	@Override
 	protected void launch(String[] args) throws Exception {
 		String root = System.getProperty("main.root");
-		String debug = System.getProperty("debug");
+		this.debug = System.getProperty("debug");
 		if (root != null) {
 			// There is a grape root that is used by the aether engine internally
 			System.setProperty("grape.root", root);
 		}
 		if (System.getProperty("main.dryrun") != null) {
 			getClassPathArchives();
-			if (debug != null) {
+			if (this.debug != null) {
 				System.out.println(
 						"Downloaded dependencies" + (root == null ? "" : " to " + root));
 			}
@@ -158,6 +160,17 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 			boms.add(dependency(DEFAULT_BOM));
 		}
 
+		if (this.debug != null) {
+			System.out.println("BOMs:");
+			for (Dependency dependency : boms) {
+				System.out.println(" " + dependency);
+			}
+			System.out.println("Dependencies:");
+			for (Dependency dependency : dependencies) {
+				System.out.println(" " + dependency);
+			}
+		}
+
 		List<Archive> archives = archives(
 				resolve(new ArrayList<>(boms), new ArrayList<>(dependencies)));
 		if (!archives.isEmpty()) {
@@ -179,7 +192,7 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 			PropertiesLoaderUtils.fillProperties(props, local);
 		}
 		return props;
-	}
+ 	}
 
 	private List<Archive> archives(List<File> files) throws IOException {
 		List<Archive> archives = new ArrayList<>();

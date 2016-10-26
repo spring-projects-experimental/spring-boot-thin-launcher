@@ -14,6 +14,7 @@ TODO:
 * [ ] Work with Ben to make it a nice experience in Cloud Foundry
 * [X] Support for boms
 * [X] Support for exclusions
+* [ ] Fix dry run in Spring Boot PR
 
 (*) Implemented in a pull request to Spring Boot, not in this
 project: https://github.com/spring-projects/spring-boot/issues/1813.
