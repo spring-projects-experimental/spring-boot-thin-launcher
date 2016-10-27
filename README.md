@@ -4,6 +4,7 @@ TODO:
 
 * [X] Support the wrapper as a layout in Spring Boot build plugins(*)
 * [X] Extract `AetherEngine` and re-use it in Spring Boot CLI(*)
+* [ ] Close old PR and send a new one for custom layouts in build plugin
 * [X] Deploy jars to snapshot repo at repo.spring.io
 * [X] Make it easy to override the dependencies at runtime (e.g. rolling upgrades of library jars for security patches)
 * [X] Add a "dry run" or "download only" feature so grab the dependencies and warm up the local cache, but not run the app
@@ -14,7 +15,8 @@ TODO:
 * [ ] Work with Ben to make it a nice experience in Cloud Foundry
 * [X] Support for boms
 * [X] Support for exclusions
-* [ ] Fix dry run in Spring Boot PR
+* [ ] Support for configuring launcher via manifest and/or properties file
+* [ ] Support for configuring wrapper via env vars  and/or properties file
 
 (*) Implemented in a pull request to Spring Boot, not in this
 project: https://github.com/spring-projects/spring-boot/issues/1813.
