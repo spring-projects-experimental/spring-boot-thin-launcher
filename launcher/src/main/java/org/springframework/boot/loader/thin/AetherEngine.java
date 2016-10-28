@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.springframework.boot.cli.compiler.grape;
+package org.springframework.boot.loader.thin;
 
 import org.apache.maven.repository.internal.MavenRepositorySystemUtils;
 import org.eclipse.aether.DefaultRepositorySystemSession;
@@ -40,6 +40,12 @@ import org.eclipse.aether.transport.file.FileTransporterFactory;
 import org.eclipse.aether.transport.http.HttpTransporterFactory;
 import org.eclipse.aether.util.artifact.JavaScopes;
 import org.eclipse.aether.util.filter.DependencyFilterUtils;
+
+import org.springframework.boot.cli.compiler.grape.DefaultRepositorySystemSessionAutoConfiguration;
+import org.springframework.boot.cli.compiler.grape.DependencyResolutionContext;
+import org.springframework.boot.cli.compiler.grape.DependencyResolutionFailedException;
+import org.springframework.boot.cli.compiler.grape.RepositoryConfiguration;
+import org.springframework.boot.cli.compiler.grape.RepositorySystemSessionAutoConfiguration;
 import org.springframework.util.StringUtils;
 
 import java.io.File;

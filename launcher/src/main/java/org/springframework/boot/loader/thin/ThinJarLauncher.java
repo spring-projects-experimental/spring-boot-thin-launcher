@@ -32,7 +32,6 @@ import org.eclipse.aether.artifact.DefaultArtifact;
 import org.eclipse.aether.graph.Dependency;
 
 import org.springframework.boot.cli.compiler.RepositoryConfigurationFactory;
-import org.springframework.boot.cli.compiler.grape.AetherEngine;
 import org.springframework.boot.cli.compiler.grape.DependencyResolutionContext;
 import org.springframework.boot.loader.ExecutableArchiveLauncher;
 import org.springframework.boot.loader.LaunchedURLClassLoader;
