@@ -22,21 +22,14 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<java.version>1.8</java.version>
-		<spring-boot.version>1.4.1.RELEASE</spring-boot.version>
+		<spring-boot.version>1.5.0.BUILD-SNAPSHOT</spring-boot.version>
 		<wrapper.version>0.0.1.BUILD-SNAPSHOT</wrapper.version>
-		<start-class>org.springframework.boot.loader.wrapper.ThinJarWrapper</start-class>
 	</properties>
 
 	<dependencies>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.boot.experimental</groupId>
-			<artifactId>spring-boot-thin-wrapper</artifactId>
-			<version>${wrapper.version}</version>
-			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -55,41 +48,19 @@
 				</configuration>
 			</plugin>
 			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-jar-plugin</artifactId>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+				<version>${spring-boot.version}</version>
 				<configuration>
-					<archive>
-						<manifestEntries>
-							<Start-Class>com.example.LauncherApplication</Start-Class>
-						</manifestEntries>
-					</archive>
+					<layout>THIN</layout>
 				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-dependency-plugin</artifactId>
-				<executions>
-					<execution>
-						<id>unpack</id>
-						<phase>prepare-package</phase>
-						<goals>
-							<goal>unpack-dependencies</goal>
-						</goals>
-						<inherited>false</inherited>
-						<configuration>
-							<includeArtifactIds>spring-boot-thin-wrapper</includeArtifactIds>
-							<excludes>META-INF/maven/**,META-INF/MANIFEST.MF</excludes>
-							<artifactItems>
-								<artifactItem>
-									<groupId>org.springframework.boot.experimental</groupId>
-									<artifactId>spring-boot-thin-wrapper</artifactId>
-									<version>${wrapper.version}</version>
-								</artifactItem>
-							</artifactItems>
-							<outputDirectory>${project.build.outputDirectory}</outputDirectory>
-						</configuration>
-					</execution>
-				</executions>
+				<dependencies>
+					<dependency>
+						<groupId>org.springframework.boot.experimental</groupId>
+						<artifactId>spring-boot-thin-launcher</artifactId>
+						<version>${wrapper.version}</version>
+					</dependency>
+				</dependencies>
 			</plugin>
 		</plugins>
 	</build>
