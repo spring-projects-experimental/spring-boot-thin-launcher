@@ -190,7 +190,7 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 			PropertiesLoaderUtils.fillProperties(props, local);
 		}
 		return props;
- 	}
+	}
 
 	private List<Archive> archives(List<File> files) throws IOException {
 		List<Archive> archives = new ArrayList<>();
@@ -266,12 +266,17 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 	private Resource getPom() throws Exception {
 		Resource pom = new UrlResource(getArchive().getUrl() + "pom.xml");
 		if (!pom.exists()) {
-			for (Resource resource : ResourcePatternUtils
-					.getResourcePatternResolver(new DefaultResourceLoader())
-					.getResources(getArchive().getUrl() + "META-INF/maven/**/pom.xml")) {
-				if (resource.exists()) {
-					return resource;
+			try {
+				for (Resource resource : ResourcePatternUtils
+						.getResourcePatternResolver(new DefaultResourceLoader())
+						.getResources(
+								getArchive().getUrl() + "META-INF/maven/**/pom.xml")) {
+					if (resource.exists()) {
+						return resource;
+					}
 				}
+			}
+			catch (Exception e) {
 			}
 		}
 		if (!pom.exists()) {

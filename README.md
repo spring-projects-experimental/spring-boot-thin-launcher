@@ -17,6 +17,7 @@ TODO:
 * [X] Support for exclusions
 * [ ] Support for configuring launcher via manifest and/or properties file
 * [ ] Support for configuring wrapper via env vars  and/or properties file
+* [ ] Generate lib.properties during build (e.g. to support Gradle)
 
 (*) Implemented in a pull request to Spring Boot, not in this
 project: https://github.com/spring-projects/spring-boot/issues/1813.
