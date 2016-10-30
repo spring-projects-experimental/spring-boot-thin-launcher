@@ -24,10 +24,13 @@ import org.apache.maven.model.locator.DefaultModelLocator;
 import org.eclipse.aether.artifact.Artifact;
 import org.eclipse.aether.artifact.DefaultArtifact;
 import org.eclipse.aether.graph.Dependency;
+import org.eclipse.aether.graph.Exclusion;
+
 import org.springframework.core.io.Resource;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
@@ -44,7 +47,7 @@ public class PomLoader {
 			return Collections.emptyList();
 		}
 		Model model = readModel(pom);
-		return convert(model.getDependencies());
+		return convertDependencies(model.getDependencies());
 	}
 
 	public List<Dependency> getDependencyManagement(Resource pom) {
@@ -57,7 +60,8 @@ public class PomLoader {
 			list.add(new Dependency(getParentArtifact(model), "import"));
 		}
 		if (model.getDependencyManagement() != null) {
-			list.addAll(convert(model.getDependencyManagement().getDependencies()));
+			list.addAll(
+					convertDependencies(model.getDependencyManagement().getDependencies()));
 		}
 		return list;
 	}
@@ -68,14 +72,27 @@ public class PomLoader {
 				parent.getVersion());
 	}
 
-	private List<Dependency> convert(
+	private List<Dependency> convertDependencies(
 			List<org.apache.maven.model.Dependency> dependencies) {
 		List<Dependency> result = new ArrayList<>();
 		for (org.apache.maven.model.Dependency dependency : dependencies) {
 			String scope = dependency.getScope();
 			if (!"test".equals(scope) && !"provided".equals(scope)) {
-				result.add(new Dependency(artifact(dependency), dependency.getScope()));
+				Dependency item = new Dependency(artifact(dependency),
+						dependency.getScope());
+				item = item.setExclusions(convertExclusions(dependency.getExclusions()));
+				result.add(item);
 			}
+		}
+		return result;
+	}
+
+	private Collection<Exclusion> convertExclusions(
+			List<org.apache.maven.model.Exclusion> exclusions) {
+		List<Exclusion> result = new ArrayList<>();
+		for (org.apache.maven.model.Exclusion exclusion : exclusions) {
+			result.add(new Exclusion(exclusion.getGroupId(), exclusion.getArtifactId(),
+					"jar", "jar"));
 		}
 		return result;
 	}

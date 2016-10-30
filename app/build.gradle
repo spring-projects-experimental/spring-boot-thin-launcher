@@ -17,6 +17,13 @@ apply plugin: 'java'
 apply plugin: 'eclipse'
 apply plugin: 'org.springframework.boot'
 
+task libs << {
+	def file = new File('build/resources/main/META-INF/dependencies.properties')
+	file.text=''
+	configurations.runtime.dependencies.each { def version = it.version ? ":${it.version}" : ""; file << "dependencies.${it.name}=${it.group}:${it.name}${version}\n" }
+	configurations.compile.dependencies.each { def version = it.version ? ":${it.version}" : "";file << "dependencies.${it.name}=${it.group}:${it.name}${version}\n" }
+}
+
 jar {
 	baseName = 'app'
 	version = '0.0.1-SNAPSHOT'
@@ -29,11 +36,11 @@ repositories {
 	mavenCentral()
 }
 
-springBoot {
-	layout = 'THIN'
-}
+springBoot { layout = 'THIN' }
 
 dependencies {
 	compile('org.springframework.boot:spring-boot-starter')
 	testCompile('org.springframework.boot:spring-boot-starter-test')
 }
+
+jar.dependsOn = [libs]

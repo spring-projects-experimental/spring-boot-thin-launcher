@@ -30,6 +30,7 @@ import java.util.jar.JarFile;
 
 import org.eclipse.aether.artifact.DefaultArtifact;
 import org.eclipse.aether.graph.Dependency;
+import org.eclipse.aether.graph.Exclusion;
 
 import org.springframework.boot.cli.compiler.RepositoryConfigurationFactory;
 import org.springframework.boot.cli.compiler.grape.DependencyResolutionContext;
@@ -166,11 +167,22 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 			System.out.println("Dependencies:");
 			for (Dependency dependency : dependencies) {
 				System.out.println(" " + dependency);
+				if (dependency.getExclusions()!=null) {
+					for (Exclusion exclude : dependency.getExclusions()) {
+						System.out.println(" - " + exclude);
+					}
+				}
 			}
 		}
 
 		List<Archive> archives = archives(
 				resolve(new ArrayList<>(boms), new ArrayList<>(dependencies)));
+		if (this.debug != null) {
+			System.out.println("Archives:");
+			for (Archive dependency : archives) {
+				System.out.println(" " + dependency);
+			}
+		}
 		if (!archives.isEmpty()) {
 			archives.set(0, getArchive());
 		}

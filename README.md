@@ -88,3 +88,81 @@ layer in a container image, for example.
 ## Upgrades
 
 You can upgrade all the libraries by changing the `lib.properties`.
+
+## Creating the Metadata
+
+### Maven
+
+The `pom.xml` works just fine. To generate a properties file there are
+a few options.
+
+There's an existing maven plugin that can list dependencies into a
+properties file. We could support it's format as well as or instead of
+lib.properties. Example:
+
+```xml
+			<plugin>
+				<groupId>org.apache.servicemix.tooling</groupId>
+				<artifactId>depends-maven-plugin</artifactId>
+				<executions>
+					<execution>
+						<id></id>
+						<phase>prepare-package</phase>
+						<goals>
+							<goal>generate-depends-file</goal>
+						</goals>
+						<inherited>false</inherited>
+						<configuration>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+```
+
+Also there is the `effective-pom`, which is easy to generate.
+
+### Gradle
+
+There doesn't seem to be an equivalent plugin in Gradle land, but you
+can create dependency lists by scripting in the `build.gradle`, e.g.
+
+```groovy
+task libs << {
+	def file = new File('$buildDir/resources/main/META-INF/dependencies.properties')
+	file.text=''
+	configurations.runtime.dependencies.each { def version = it.version ? ":${it.version}" : ""; file << "dependencies.${it.name}=${it.group}:${it.name}${version}\n" }
+	configurations.compile.dependencies.each { def version = it.version ? ":${it.version}" : "";file << "dependencies.${it.name}=${it.group}:${it.name}${version}\n" }
+}
+```
+
+or generate a pom:
+
+```groovy
+apply plugin: 'maven'
+
+task writePom << {
+	pom {}.withXml{ 
+		dependencyManagement.pomConfigurer.configurePom (it.asNode())
+	}.writeTo("$buildDir/resources/main/pom.xml")
+}
+
+jar.dependsOn = [writePom]
+```
+
+There are some problems with the generated poms (e.g. exclusions are
+not generated correctly). Using the dependency management section of
+the build config works a little better, e.g instead of this:
+
+```groovy
+configurations { compile.exclude module: 'spring-boot-starter-tomcat' }
+```
+
+(per the Spring Boot user guide), use this:
+
+```groovy
+dependencyManagement {
+	dependencies {
+		dependency("org.springframework.boot:spring-boot-starter-web:${springBootVersion}") { exclude 'org.springframework.boot:spring-boot-starter-tomcat' }
+	}
+}
+```
