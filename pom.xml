@@ -8,7 +8,7 @@
 		<version>1.4.1.RELEASE</version>
 	</parent>
 
-	<groupId>org.springframework.boot</groupId>
+	<groupId>org.springframework.boot.experimental</groupId>
 	<artifactId>spring-boot-thin-launcher-parent</artifactId>
 	<version>0.0.1.BUILD-SNAPSHOT</version>
 	<packaging>pom</packaging>
@@ -20,6 +20,7 @@
 		<module>capsule-app</module>
 		<module>app</module>
 		<module>simple</module>
+		<module>gradle-plugin</module>
 	</modules>
 
 	<properties>

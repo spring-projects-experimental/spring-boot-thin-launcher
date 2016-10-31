@@ -8,6 +8,7 @@ buildscript {
 		mavenCentral()
 	}
 	dependencies {
+		classpath("org.springframework.boot.experimental:spring-boot-thin-launcher-gradle-plugin:${wrapperVersion}")
 		classpath("org.springframework.boot.experimental:spring-boot-thin-launcher:${wrapperVersion}")
 		classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
 	}
@@ -17,24 +18,7 @@ apply plugin: 'java'
 apply plugin: 'eclipse'
 apply plugin: 'spring-boot'
 apply plugin: 'maven'
-
-def version(def dep) {
-	if (dep.version) return ':' + dep.version
-	def version = dependencyManagement.managedVersions["${dep.group}:${dep.name}"]
-	return version ? ':' + version : ''
-}
-
-task libs << {
-	def file = new File("$buildDir/resources/main/META-INF/lib.properties")
-	file.parentFile.mkdirs()
-	file.text='transitive.enabled: false\n'
-	configurations.runtime.resolvedConfiguration.resolvedArtifacts.each {
-		def dep = it.moduleVersion.id; 
-		file << "dependencies.${dep.name}: ${dep.group}:${dep.name}${version(dep)}\n"
-	}
-}
-
-jar.dependsOn = [libs]
+apply plugin: 'org.springframework.boot.experimental.thin-launcher'
 
 jar {
 	baseName = 'simple'
