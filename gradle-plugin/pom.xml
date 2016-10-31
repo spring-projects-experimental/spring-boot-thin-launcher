@@ -10,7 +10,7 @@
 		<relativePath>..</relativePath>
 	</parent>
 
-	<artifactId>spring-boot-thin-launcher-gradle-plugin</artifactId>
+	<artifactId>spring-boot-thin-gradle-plugin</artifactId>
 	<version>0.0.1.BUILD-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
@@ -25,9 +25,9 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>io.spring.gradle</groupId>
-			<artifactId>dependency-management-plugin</artifactId>
-			<version>0.6.1.RELEASE</version>
+			<groupId>org.springframework.boot.experimental</groupId>
+			<artifactId>spring-boot-thin-launcher</artifactId>
+			<version>${project.version}</version>
 		</dependency>
 		<!-- Provided -->
 		<dependency>
@@ -66,6 +66,28 @@
 					<source>${java.version}</source>
 					<target>${java.version}</target>
 				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-shade-plugin</artifactId>
+				<configuration>
+					<shadedArtifactAttached>false</shadedArtifactAttached>
+					<keepDependenciesWithProvidedScope>true</keepDependenciesWithProvidedScope>
+					<filters>
+						<filter>
+							<artifact>org.springframework.boot.experimental:spring-boot-thin-launcher:*</artifact>
+						</filter>
+					</filters>
+				</configuration>
+				<executions>
+					<execution>
+						<id>shade-runtime-dependencies</id>
+						<phase>package</phase>
+						<goals>
+							<goal>shade</goal>
+						</goals>
+					</execution>
+				</executions>
 			</plugin>
 		</plugins>
 	</build>
