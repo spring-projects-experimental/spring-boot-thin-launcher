@@ -142,10 +142,13 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 		Collection<Dependency> boms = new LinkedHashSet<>();
 		// TODO: Maybe use something that conserves order?
 		Properties libs = loadLibraryProperties();
+		boolean transitive = libs.getProperty("transitive.enabled", "true")
+				.equals("true");
 		for (String key : libs.stringPropertyNames()) {
 			String lib = libs.getProperty(key);
 			if (key.startsWith("dependencies")) {
-				dependencies.add(dependency(lib));
+				Dependency dependency = dependency(lib);
+				dependencies.add(dependency);
 			}
 			if (key.startsWith("boms")) {
 				boms.add(dependency(lib));
@@ -167,7 +170,7 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 			System.out.println("Dependencies:");
 			for (Dependency dependency : dependencies) {
 				System.out.println(" " + dependency);
-				if (dependency.getExclusions()!=null) {
+				if (dependency.getExclusions() != null) {
 					for (Exclusion exclude : dependency.getExclusions()) {
 						System.out.println(" - " + exclude);
 					}
@@ -176,7 +179,7 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 		}
 
 		List<Archive> archives = archives(
-				resolve(new ArrayList<>(boms), new ArrayList<>(dependencies)));
+				resolve(new ArrayList<>(boms), new ArrayList<>(dependencies), transitive));
 		if (this.debug != null) {
 			System.out.println("Archives:");
 			for (Archive dependency : archives) {
@@ -184,7 +187,7 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 			}
 		}
 		if (!archives.isEmpty()) {
-			archives.set(0, getArchive());
+			archives.add(0, getArchive());
 		}
 		else {
 			archives.add(getArchive());
@@ -216,7 +219,7 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 		String[] parts = coordinates.split(":");
 		if (parts.length < 2) {
 			throw new IllegalArgumentException(
-					"Co-ordinates should contain group:artifact[:extension][:classifier][:version]");
+					"Co-ordinates should contain group:artifact[:extension][:classifier][:version]. Found " + coordinates + ".");
 		}
 		String extension = "jar", classifier, version, artifactId, groupId;
 		if (parts.length > 4) {
@@ -257,13 +260,14 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 				"compile");
 	}
 
-	private List<File> resolve(List<Dependency> boms, List<Dependency> dependencies)
+	private List<File> resolve(List<Dependency> boms, List<Dependency> dependencies, boolean transitive)
 			throws Exception {
+		DependencyResolutionContext context = new DependencyResolutionContext();
 		AetherEngine engine = AetherEngine.create(
 				RepositoryConfigurationFactory.createDefaultRepositoryConfiguration(),
-				new DependencyResolutionContext());
+				context);
 		engine.addDependencyManagementBoms(boms);
-		List<File> files = engine.resolve(dependencies);
+		List<File> files = engine.resolve(dependencies, transitive);
 		return files;
 	}
 

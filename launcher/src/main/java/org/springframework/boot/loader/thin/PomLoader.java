@@ -92,7 +92,7 @@ public class PomLoader {
 		List<Exclusion> result = new ArrayList<>();
 		for (org.apache.maven.model.Exclusion exclusion : exclusions) {
 			result.add(new Exclusion(exclusion.getGroupId(), exclusion.getArtifactId(),
-					"jar", "jar"));
+					"*", "*"));
 		}
 		return result;
 	}

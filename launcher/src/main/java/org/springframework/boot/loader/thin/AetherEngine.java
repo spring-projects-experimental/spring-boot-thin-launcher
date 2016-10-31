@@ -16,12 +16,22 @@
 
 package org.springframework.boot.loader.thin;
 
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.ServiceLoader;
+import java.util.Set;
+
 import org.apache.maven.repository.internal.MavenRepositorySystemUtils;
 import org.eclipse.aether.DefaultRepositorySystemSession;
 import org.eclipse.aether.RepositorySystem;
+import org.eclipse.aether.artifact.Artifact;
 import org.eclipse.aether.collection.CollectRequest;
 import org.eclipse.aether.connector.basic.BasicRepositoryConnectorFactory;
 import org.eclipse.aether.graph.Dependency;
+import org.eclipse.aether.graph.Exclusion;
 import org.eclipse.aether.impl.ArtifactDescriptorReader;
 import org.eclipse.aether.impl.DefaultServiceLocator;
 import org.eclipse.aether.internal.impl.DefaultRepositorySystem;
@@ -29,6 +39,7 @@ import org.eclipse.aether.repository.RemoteRepository;
 import org.eclipse.aether.repository.RepositoryPolicy;
 import org.eclipse.aether.resolution.ArtifactDescriptorRequest;
 import org.eclipse.aether.resolution.ArtifactDescriptorResult;
+import org.eclipse.aether.resolution.ArtifactRequest;
 import org.eclipse.aether.resolution.ArtifactResolutionException;
 import org.eclipse.aether.resolution.ArtifactResult;
 import org.eclipse.aether.resolution.DependencyRequest;
@@ -40,6 +51,7 @@ import org.eclipse.aether.transport.file.FileTransporterFactory;
 import org.eclipse.aether.transport.http.HttpTransporterFactory;
 import org.eclipse.aether.util.artifact.JavaScopes;
 import org.eclipse.aether.util.filter.DependencyFilterUtils;
+import org.eclipse.aether.util.filter.ExclusionsDependencyFilter;
 
 import org.springframework.boot.cli.compiler.grape.DefaultRepositorySystemSessionAutoConfiguration;
 import org.springframework.boot.cli.compiler.grape.DependencyResolutionContext;
@@ -47,12 +59,6 @@ import org.springframework.boot.cli.compiler.grape.DependencyResolutionFailedExc
 import org.springframework.boot.cli.compiler.grape.RepositoryConfiguration;
 import org.springframework.boot.cli.compiler.grape.RepositorySystemSessionAutoConfiguration;
 import org.springframework.util.StringUtils;
-
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.ServiceLoader;
 
 /**
  * A {@link GrapeEngine} implementation that uses
@@ -110,11 +116,7 @@ public class AetherEngine {
 	}
 
 	private List<File> getFiles(DependencyResult dependencyResult) {
-		List<File> files = new ArrayList<File>();
-		for (ArtifactResult result : dependencyResult.getArtifactResults()) {
-			files.add(result.getArtifact().getFile());
-		}
-		return files;
+		return getFiles(dependencyResult.getArtifactResults());
 	}
 
 	protected void addRepository(RemoteRepository repository) {
@@ -156,6 +158,54 @@ public class AetherEngine {
 	}
 
 	public List<File> resolve(List<Dependency> dependencies)
+			throws ArtifactResolutionException {
+		return resolve(dependencies);
+	}
+
+	public List<File> resolve(List<Dependency> dependencies, boolean transitive)
+			throws ArtifactResolutionException {
+		if (transitive) {
+			return resolveTransitive(dependencies);
+		}
+		return resolveNonTransitive(dependencies);
+	}
+
+	private List<File> resolveNonTransitive(List<Dependency> dependencies) {
+		try {
+			List<ArtifactRequest> artifactRequests = getArtifactRequests(dependencies);
+			List<ArtifactResult> result = this.repositorySystem
+					.resolveArtifacts(this.session, artifactRequests);
+			this.resolutionContext.addManagedDependencies(dependencies);
+			return getFiles(result);
+		}
+		catch (Exception ex) {
+			throw new DependencyResolutionFailedException(ex);
+		}
+		finally {
+			this.progressReporter.finished();
+		}
+	}
+
+	private List<File> getFiles(List<ArtifactResult> result) {
+		List<File> list = new ArrayList<>();
+		for (ArtifactResult artifactResult : result) {
+			Artifact artifact = artifactResult.getArtifact();
+			list.add(artifact.getFile());
+		}
+		return list;
+	}
+
+	private List<ArtifactRequest> getArtifactRequests(List<Dependency> dependencies) {
+		List<ArtifactRequest> list = new ArrayList<>();
+		for (Dependency dependency : dependencies) {
+			ArtifactRequest request = new ArtifactRequest(dependency.getArtifact(),
+					this.repositories, null);
+			list.add(request);
+		}
+		return list;
+	}
+
+	private List<File> resolveTransitive(List<Dependency> dependencies)
 			throws ArtifactResolutionException {
 		try {
 			CollectRequest collectRequest = getCollectRequest(dependencies);
@@ -205,12 +255,11 @@ public class AetherEngine {
 					throw new IllegalStateException(
 							"Cannot resolve version for " + dependency);
 				}
-				resolve.add(dependency
-						.setArtifact(dependency.getArtifact().setVersion(version)));
+				dependency = dependency
+						.setArtifact(dependency.getArtifact().setVersion(version));
 			}
-			else {
-				resolve.add(dependency);
-			}
+			resolve.add(dependency);
+
 		}
 		CollectRequest collectRequest = new CollectRequest((Dependency) null, resolve,
 				new ArrayList<RemoteRepository>(this.repositories));
@@ -220,9 +269,18 @@ public class AetherEngine {
 	}
 
 	private DependencyRequest getDependencyRequest(CollectRequest collectRequest) {
+		Set<String> exclusions = new HashSet<>();
+		for (Dependency dependency : collectRequest.getDependencies()) {
+			if (dependency.getExclusions()!=null) {
+				for (Exclusion exclusion : dependency.getExclusions()) {
+					exclusions.add(exclusion.getGroupId() + ":" + exclusion.getArtifactId());
+				}
+			}
+		}
 		DependencyRequest dependencyRequest = new DependencyRequest(collectRequest,
-				DependencyFilterUtils.classpathFilter(JavaScopes.COMPILE,
-						JavaScopes.RUNTIME));
+				DependencyFilterUtils.andFilter(DependencyFilterUtils
+						.classpathFilter(JavaScopes.COMPILE, JavaScopes.RUNTIME),
+						new ExclusionsDependencyFilter(exclusions)));
 		return dependencyRequest;
 	}
 
@@ -241,7 +299,8 @@ public class AetherEngine {
 				.newSession();
 
 		ServiceLoader<RepositorySystemSessionAutoConfiguration> autoConfigurations = ServiceLoader
-				.load(RepositorySystemSessionAutoConfiguration.class, AetherEngine.class.getClassLoader());
+				.load(RepositorySystemSessionAutoConfiguration.class,
+						AetherEngine.class.getClassLoader());
 
 		for (RepositorySystemSessionAutoConfiguration autoConfiguration : autoConfigurations) {
 			autoConfiguration.apply(repositorySystemSession, repositorySystem);
