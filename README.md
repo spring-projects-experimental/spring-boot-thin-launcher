@@ -3,8 +3,8 @@ Prototype "thin" jar launcher for java apps. See https://github.com/spring-proje
 TODO:
 
 * [X] Support the wrapper as a layout in Spring Boot build plugins(*)
-* [X] Extract `AetherEngine` and re-use it in Spring Boot CLI(*)
-* [ ] Close old PR and send a new one for custom layouts in build plugin
+* [X] Extract `AetherEngine` and re-use it in Spring Boot CLI(**)
+* [X] Close old PR and send a new one for custom layouts in build plugin
 * [X] Deploy jars to snapshot repo at repo.spring.io
 * [X] Make it easy to override the dependencies at runtime (e.g. rolling upgrades of library jars for security patches)
 * [X] Add a "dry run" or "download only" feature so grab the dependencies and warm up the local cache, but not run the app
@@ -18,9 +18,11 @@ TODO:
 * [ ] Support for configuring launcher via manifest and/or properties file
 * [ ] Support for configuring wrapper via env vars  and/or properties file
 * [X] Generate lib.properties during build (e.g. to support Gradle)
+* [ ] Experiment with "container" apps and multi-tenant/ephemeral child contexts
 
-(*) Implemented in a pull request to Spring Boot, not in this
-project: https://github.com/spring-projects/spring-boot/issues/1813.
+(*) Implemented in Spring Boot, not in this project.
+(**) Implemented in a pull request to Spring Boot, not in this
+project.
 
 ## Getting Started
 
@@ -55,12 +57,13 @@ local Maven repository.
 The launcher then takes over and reads the `lib.properties`,
 downloading the dependencies (and all transitives) as necessary, and
 setting up a new class loader with them all on the classpath. It then
-runs the application's own main method with that class loader.
+runs the application's own main method with that class loader.  If the
+`lib.properties` is not there then the `pom.xml` is used instead (it
+can be in the root of the jar or in the standard `META-INF/maven`
+location).
 
-The app jar in the demo is build using the Maven assembly plugin. You
-could copy paste the configuration and it would probably work with
-your app. It would be nice to be able to support it from Spring Boot
-as a build plugin option.
+The app jar in the demo is build using the Spring Boot plugin and a
+custom `Layout` (so it only builds with Spring Boot 1.5.x),
 
 ## Caching
 
@@ -89,12 +92,60 @@ layer in a container image, for example.
 
 You can upgrade all the libraries by changing the `lib.properties`.
 
+## Packaging
+
+The thin-launcher provides its own custom layout for the Spring Boot
+plugins. If this layout is used then the jar built by Spring Boot will
+be executable and thin.
+
+### Maven
+
+```xml
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+				<version>${spring-boot.version}</version>
+				<configuration>
+					<layout>THIN</layout>
+				</configuration>
+				<dependencies>
+					<dependency>
+						<groupId>org.springframework.boot.experimental</groupId>
+						<artifactId>spring-boot-thin-launcher</artifactId>
+						<version>${wrapper.version}</version>
+					</dependency>
+				</dependencies>
+			</plugin>
+```
+
+### Gradle
+
+```groovy
+buildscript {
+	ext {
+		springBootVersion = '1.5.0.BUILD-SNAPSHOT'
+		wrapperVersion = '0.0.1.BUILD-SNAPSHOT'
+	}
+	repositories {
+		mavenLocal()
+		mavenCentral()
+	}
+	dependencies {
+		classpath("org.springframework.boot.experimental:spring-boot-thin-gradle-plugin:${wrapperVersion}")
+		classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+	}
+}
+springBoot { layout = 'THIN' }
+```
+
+
 ## Creating the Metadata
 
 ### Maven
 
-The `pom.xml` works just fine. To generate a properties file there are
-a few options.
+The `pom.xml` works just fine, so Maven projects can just rely on
+that. If you want to generate a properties file there are a few
+options.
 
 There's an existing maven plugin that can list dependencies into a
 properties file. We could support it's format as well as or instead of
@@ -119,23 +170,37 @@ lib.properties. Example:
 			</plugin>
 ```
 
-Also there is the `effective-pom`, which is easy to generate.
+Also there is the `effective-pom`, which is easy to generate and can be transformed using XSLT (for example).
 
 ### Gradle
 
-There doesn't seem to be an equivalent plugin in Gradle land, but you
-can create dependency lists by scripting in the `build.gradle`, e.g.
+There doesn't seem to be an equivalent plugin in Gradle land, so we provide a thin launcher plugin
+specifically for creating the `lib.properties` file. It is activated just by  e.g:
 
 ```groovy
-task libs << {
-	def file = new File('$buildDir/resources/main/META-INF/dependencies.properties')
-	file.text=''
-	configurations.runtime.dependencies.each { def version = it.version ? ":${it.version}" : ""; file << "dependencies.${it.name}=${it.group}:${it.name}${version}\n" }
-	configurations.compile.dependencies.each { def version = it.version ? ":${it.version}" : "";file << "dependencies.${it.name}=${it.group}:${it.name}${version}\n" }
+buildscript {
+	ext {
+		springBootVersion = '1.5.0.BUILD-SNAPSHOT'
+		wrapperVersion = '0.0.1.BUILD-SNAPSHOT'
+	}
+	repositories {
+		mavenLocal()
+		mavenCentral()
+	}
+	dependencies {
+		classpath("org.springframework.boot.experimental:spring-boot-thin-gradle-plugin:${wrapperVersion}")
+		classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+	}
 }
+
+...
+apply plugin: 'spring-boot'
+apply plugin: 'org.springframework.boot.experimental.thin-launcher'
 ```
 
-or generate a pom:
+### Generating a POM
+
+Instead of the `lib.properties` you can generate a pom in Gradle:
 
 ```groovy
 apply plugin: 'maven'
