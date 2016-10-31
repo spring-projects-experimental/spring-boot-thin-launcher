@@ -46,11 +46,13 @@ public class GenerateLauncherPropertiesTask extends DefaultTask {
 	@TaskAction
 	public void generateLibProperties() {
 		Properties properties = new Properties();
+		properties.setProperty("transitive.enabled", "false");
 		for (ResolvedArtifact artifact: this.configuration.getResolvedConfiguration().getResolvedArtifacts()) {
 			ModuleVersionIdentifier artifactId = artifact.getModuleVersion().getId();
 			properties.setProperty("dependencies." + artifactId.getName(), artifactId.getGroup()
 					+ ":" + artifactId.getName() + ":" + artifactId.getVersion());
 		}
+		this.output.getParentFile().mkdirs();
 		try (FileOutputStream stream = new FileOutputStream(this.output)) {
 			properties.store(new FileOutputStream(this.output), null);
 		}

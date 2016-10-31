@@ -17,10 +17,10 @@
 	<modules>
 		<module>wrapper</module>
 		<module>launcher</module>
+		<module>gradle-plugin</module>
 		<module>capsule-app</module>
 		<module>app</module>
 		<module>simple</module>
-		<module>gradle-plugin</module>
 	</modules>
 
 	<properties>
