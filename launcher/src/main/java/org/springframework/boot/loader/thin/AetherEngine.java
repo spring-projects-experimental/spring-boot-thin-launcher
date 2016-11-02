@@ -20,7 +20,9 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.ServiceLoader;
 import java.util.Set;
 
@@ -234,6 +236,7 @@ public class AetherEngine {
 						.readArtifactDescriptor(session, request);
 				List<Dependency> managedDependencies = descriptor
 						.getManagedDependencies();
+				// TODO: accept non-bom dependencies for direct management
 				resolutionContext.addManagedDependencies(managedDependencies);
 			}
 			catch (Exception ex) {
@@ -263,23 +266,39 @@ public class AetherEngine {
 		}
 		CollectRequest collectRequest = new CollectRequest((Dependency) null, resolve,
 				new ArrayList<RemoteRepository>(this.repositories));
-		collectRequest
-				.setManagedDependencies(this.resolutionContext.getManagedDependencies());
+		collectRequest.setManagedDependencies(collapseManagedDependencies());
 		return collectRequest;
+	}
+
+	private List<Dependency> collapseManagedDependencies() {
+		// TODO: put this feature in DependencyResolutionContext
+		List<Dependency> managed = this.resolutionContext.getManagedDependencies();
+		Map<String, Dependency> coordinates = new LinkedHashMap<>();
+		for (Dependency dependency : managed) {
+			String key = artifactKey(dependency.getArtifact());
+			coordinates.put(key, dependency);
+		}
+		return new ArrayList<>(coordinates.values());
+	}
+
+	private String artifactKey(Artifact artifact) {
+		return artifact.getGroupId() + ":" + artifact.getArtifactId();
 	}
 
 	private DependencyRequest getDependencyRequest(CollectRequest collectRequest) {
 		Set<String> exclusions = new HashSet<>();
 		for (Dependency dependency : collectRequest.getDependencies()) {
-			if (dependency.getExclusions()!=null) {
+			if (dependency.getExclusions() != null) {
 				for (Exclusion exclusion : dependency.getExclusions()) {
-					exclusions.add(exclusion.getGroupId() + ":" + exclusion.getArtifactId());
+					exclusions.add(
+							exclusion.getGroupId() + ":" + exclusion.getArtifactId());
 				}
 			}
 		}
 		DependencyRequest dependencyRequest = new DependencyRequest(collectRequest,
-				DependencyFilterUtils.andFilter(DependencyFilterUtils
-						.classpathFilter(JavaScopes.COMPILE, JavaScopes.RUNTIME),
+				DependencyFilterUtils.andFilter(
+						DependencyFilterUtils.classpathFilter(JavaScopes.COMPILE,
+								JavaScopes.RUNTIME),
 						new ExclusionsDependencyFilter(exclusions)));
 		return dependencyRequest;
 	}

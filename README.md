@@ -19,6 +19,7 @@ TODO:
 * [ ] Support for configuring wrapper via env vars  and/or properties file
 * [X] Generate lib.properties during build (e.g. to support Gradle)
 * [ ] Experiment with "container" apps and multi-tenant/ephemeral child contexts
+* [ ] Deployment time support for the dry run to assist with CI pipelines
 
 (*) Implemented in Spring Boot, not in this project.
 (**) Implemented in a pull request to Spring Boot, not in this

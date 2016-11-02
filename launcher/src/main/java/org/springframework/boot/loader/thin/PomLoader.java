@@ -16,6 +16,13 @@
 
 package org.springframework.boot.loader.thin;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+
+import org.apache.maven.model.DependencyManagement;
 import org.apache.maven.model.Model;
 import org.apache.maven.model.Parent;
 import org.apache.maven.model.building.DefaultModelProcessor;
@@ -27,12 +34,7 @@ import org.eclipse.aether.graph.Dependency;
 import org.eclipse.aether.graph.Exclusion;
 
 import org.springframework.core.io.Resource;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import org.springframework.util.PropertyPlaceholderHelper;
 
 /**
  * Utility class to help with reading and extracting dependencies from a physical pom.
@@ -42,11 +44,25 @@ import java.util.List;
  */
 public class PomLoader {
 
+	public String getParent(Resource pom) {
+		if (!pom.exists()) {
+			return null;
+		}
+		Model model = readModel(pom);
+		Parent parent = model.getParent();
+		if (parent != null) {
+			return parent.getGroupId() + ":" + parent.getArtifactId() + ":pom::"
+					+ parent.getVersion();
+		}
+		return null;
+	}
+
 	public List<Dependency> getDependencies(Resource pom) {
 		if (!pom.exists()) {
 			return Collections.emptyList();
 		}
 		Model model = readModel(pom);
+		replacePlaceholders(model);
 		return convertDependencies(model.getDependencies());
 	}
 
@@ -56,14 +72,42 @@ public class PomLoader {
 		}
 		List<Dependency> list = new ArrayList<>();
 		Model model = readModel(pom);
+		replacePlaceholders(model);
 		if (model.getParent() != null) {
 			list.add(new Dependency(getParentArtifact(model), "import"));
 		}
 		if (model.getDependencyManagement() != null) {
-			list.addAll(
-					convertDependencies(model.getDependencyManagement().getDependencies()));
+			list.addAll(convertDependencies(
+					model.getDependencyManagement().getDependencies()));
 		}
 		return list;
+	}
+
+	private void replacePlaceholders(Model model) {
+		PropertyPlaceholderHelper helper = new PropertyPlaceholderHelper("${", "}");
+
+		for (org.apache.maven.model.Dependency dependency : model.getDependencies()) {
+			String version = dependency.getVersion();
+			if (version != null) {
+				dependency.setVersion(
+						helper.replacePlaceholders(version, model.getProperties()));
+			}
+		}
+
+		DependencyManagement dependencyManagement = model.getDependencyManagement();
+		if (dependencyManagement != null) {
+
+			for (org.apache.maven.model.Dependency dependency : dependencyManagement
+					.getDependencies()) {
+				String version = dependency.getVersion();
+				if (version != null) {
+					dependency.setVersion(
+							helper.replacePlaceholders(version, model.getProperties()));
+				}
+			}
+
+		}
+
 	}
 
 	private Artifact getParentArtifact(Model model) {

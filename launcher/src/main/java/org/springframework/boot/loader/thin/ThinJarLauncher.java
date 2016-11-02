@@ -17,23 +17,12 @@
 package org.springframework.boot.loader.thin;
 
 import java.io.File;
-import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Properties;
 import java.util.jar.JarFile;
 
-import org.eclipse.aether.artifact.DefaultArtifact;
-import org.eclipse.aether.graph.Dependency;
-import org.eclipse.aether.graph.Exclusion;
-
-import org.springframework.boot.cli.compiler.RepositoryConfigurationFactory;
-import org.springframework.boot.cli.compiler.grape.DependencyResolutionContext;
 import org.springframework.boot.loader.ExecutableArchiveLauncher;
 import org.springframework.boot.loader.LaunchedURLClassLoader;
 import org.springframework.boot.loader.archive.Archive;
@@ -41,12 +30,6 @@ import org.springframework.boot.loader.archive.Archive.Entry;
 import org.springframework.boot.loader.archive.ExplodedArchive;
 import org.springframework.boot.loader.archive.JarFileArchive;
 import org.springframework.boot.loader.tools.MainClassFinder;
-import org.springframework.core.io.DefaultResourceLoader;
-import org.springframework.core.io.FileSystemResource;
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.UrlResource;
-import org.springframework.core.io.support.PropertiesLoaderUtils;
-import org.springframework.core.io.support.ResourcePatternUtils;
 
 /**
  *
@@ -54,29 +37,33 @@ import org.springframework.core.io.support.ResourcePatternUtils;
  */
 public class ThinJarLauncher extends ExecutableArchiveLauncher {
 
-	private static final String DEFAULT_BOM = "org.springframework.boot:spring-boot-dependencies:1.4.1.RELEASE";
-	private PomLoader pomLoader = new PomLoader();
-	private String debug;
+	private ArchiveFactory archives = new ArchiveFactory();
+	private boolean debug;
 
 	public static void main(String[] args) throws Exception {
 		new ThinJarLauncher().launch(args);
 	}
 
 	public ThinJarLauncher() throws Exception {
-		super(computeArchive());
+		this(computeArchive());
+	}
+
+	public ThinJarLauncher(Archive archive) {
+		super(archive);
 	}
 
 	@Override
 	protected void launch(String[] args) throws Exception {
 		String root = System.getProperty("main.root");
-		this.debug = System.getProperty("debug");
+		this.debug = !"false".equals(System.getProperty("debug"));
+		this.archives.setDebug(debug);
 		if (root != null) {
 			// There is a grape root that is used by the aether engine internally
 			System.setProperty("grape.root", root);
 		}
 		if (System.getProperty("main.dryrun") != null) {
 			getClassPathArchives();
-			if (this.debug != null) {
+			if (this.debug) {
 				System.out.println(
 						"Downloaded dependencies" + (root == null ? "" : " to " + root));
 			}
@@ -138,54 +125,7 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 
 	@Override
 	protected List<Archive> getClassPathArchives() throws Exception {
-		Collection<Dependency> dependencies = new LinkedHashSet<>();
-		Collection<Dependency> boms = new LinkedHashSet<>();
-		// TODO: Maybe use something that conserves order?
-		Properties libs = loadLibraryProperties();
-		boolean transitive = libs.getProperty("transitive.enabled", "true")
-				.equals("true");
-		for (String key : libs.stringPropertyNames()) {
-			String lib = libs.getProperty(key);
-			if (key.startsWith("dependencies")) {
-				Dependency dependency = dependency(lib);
-				dependencies.add(dependency);
-			}
-			if (key.startsWith("boms")) {
-				boms.add(dependency(lib));
-			}
-		}
-
-		boms.addAll(getPomDependencyManagement());
-		dependencies.addAll(getPomDependencies());
-
-		if (boms.isEmpty()) {
-			boms.add(dependency(DEFAULT_BOM));
-		}
-
-		if (this.debug != null) {
-			System.out.println("BOMs:");
-			for (Dependency dependency : boms) {
-				System.out.println(" " + dependency);
-			}
-			System.out.println("Dependencies:");
-			for (Dependency dependency : dependencies) {
-				System.out.println(" " + dependency);
-				if (dependency.getExclusions() != null) {
-					for (Exclusion exclude : dependency.getExclusions()) {
-						System.out.println(" - " + exclude);
-					}
-				}
-			}
-		}
-
-		List<Archive> archives = archives(
-				resolve(new ArrayList<>(boms), new ArrayList<>(dependencies), transitive));
-		if (this.debug != null) {
-			System.out.println("Archives:");
-			for (Archive dependency : archives) {
-				System.out.println(" " + dependency);
-			}
-		}
+		List<Archive> archives = new ArrayList<>(this.archives.extract(getArchive()));
 		if (!archives.isEmpty()) {
 			archives.add(0, getArchive());
 		}
@@ -194,113 +134,6 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 		}
 		return archives;
 	}
-
-	private Properties loadLibraryProperties() throws IOException, MalformedURLException {
-		UrlResource resource = new UrlResource(
-				getArchive().getUrl() + "META-INF/lib.properties");
-		Properties props = resource.exists()
-				? PropertiesLoaderUtils.loadProperties(resource) : new Properties();
-		FileSystemResource local = new FileSystemResource("lib.properties");
-		if (local.exists()) {
-			PropertiesLoaderUtils.fillProperties(props, local);
-		}
-		return props;
-	}
-
-	private List<Archive> archives(List<File> files) throws IOException {
-		List<Archive> archives = new ArrayList<>();
-		for (File file : files) {
-			archives.add(new JarFileArchive(file, file.toURI().toURL()));
-		}
-		return archives;
-	}
-
-	private Dependency dependency(String coordinates) {
-		String[] parts = coordinates.split(":");
-		if (parts.length < 2) {
-			throw new IllegalArgumentException(
-					"Co-ordinates should contain group:artifact[:extension][:classifier][:version]. Found " + coordinates + ".");
-		}
-		String extension = "jar", classifier, version, artifactId, groupId;
-		if (parts.length > 4) {
-			extension = parts[2];
-			classifier = parts[3];
-			version = parts[4];
-		}
-		else if (parts.length > 3) {
-			if (parts[3].contains(".")) {
-				version = parts[3];
-				classifier = parts[2];
-			}
-			else {
-				extension = parts[2];
-				classifier = parts[3];
-				version = null;
-			}
-
-		}
-		else if (parts.length > 2) {
-			if (parts[2].contains(".")) {
-				version = parts[2];
-				classifier = null;
-			}
-			else {
-				classifier = parts[2];
-				version = null;
-			}
-		}
-		else {
-			classifier = null;
-			version = null;
-		}
-		groupId = parts[0];
-		artifactId = parts[1];
-		return new Dependency(
-				new DefaultArtifact(groupId, artifactId, classifier, extension, version),
-				"compile");
-	}
-
-	private List<File> resolve(List<Dependency> boms, List<Dependency> dependencies, boolean transitive)
-			throws Exception {
-		DependencyResolutionContext context = new DependencyResolutionContext();
-		AetherEngine engine = AetherEngine.create(
-				RepositoryConfigurationFactory.createDefaultRepositoryConfiguration(),
-				context);
-		engine.addDependencyManagementBoms(boms);
-		List<File> files = engine.resolve(dependencies, transitive);
-		return files;
-	}
-
-	private List<Dependency> getPomDependencies() throws Exception {
-		return this.pomLoader.getDependencies(getPom());
-	}
-
-	private List<Dependency> getPomDependencyManagement() throws Exception {
-		return this.pomLoader.getDependencyManagement(getPom());
-	}
-
-	private Resource getPom() throws Exception {
-		Resource pom = new UrlResource(getArchive().getUrl() + "pom.xml");
-		if (!pom.exists()) {
-			try {
-				for (Resource resource : ResourcePatternUtils
-						.getResourcePatternResolver(new DefaultResourceLoader())
-						.getResources(
-								getArchive().getUrl() + "META-INF/maven/**/pom.xml")) {
-					if (resource.exists()) {
-						return resource;
-					}
-				}
-			}
-			catch (Exception e) {
-			}
-		}
-		if (!pom.exists()) {
-			pom = new FileSystemResource("./pom.xml");
-		}
-		return pom;
-	}
-
 	@Override
 	protected boolean isNestedArchive(Entry entry) {
 		return false;
