@@ -22,9 +22,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 
 import org.eclipse.aether.artifact.DefaultArtifact;
 import org.eclipse.aether.graph.Dependency;
@@ -126,26 +128,11 @@ public class ArchiveFactory {
 		return archives;
 	}
 
-	private Properties loadLibraryProperties(Archive archive) {
-		UrlResource resource;
-		try {
-			resource = new UrlResource(archive.getUrl() + "META-INF/lib.properties");
-			Properties props = resource.exists()
-					? PropertiesLoaderUtils.loadProperties(resource) : new Properties();
-			FileSystemResource local = new FileSystemResource("lib.properties");
-			if (local.exists()) {
-				PropertiesLoaderUtils.fillProperties(props, local);
-			}
-			return props;
-		}
-		catch (Exception e) {
-			throw new IllegalStateException("Cannot load properties", e);
-		}
-	}
-
 	class ArchiveDependencies {
+
 		private Map<String, Dependency> dependencies = new LinkedHashMap<>();
 		private Map<String, Dependency> boms = new LinkedHashMap<>();
+		private Set<Dependency> exclusions = new LinkedHashSet<>();
 		private boolean transitive = true;
 		private PomLoader pomLoader = new PomLoader();
 
@@ -177,6 +164,11 @@ public class ArchiveFactory {
 
 		public void addDependency(Dependency dependency) {
 			this.dependencies.put(key(dependency), dependency);
+		}
+
+		public void removeDependency(Dependency dependency) {
+			this.dependencies.remove(key(dependency));
+			this.exclusions.add(dependency);
 		}
 
 		public void addBoms(Collection<Dependency> boms) {
@@ -222,6 +214,7 @@ public class ArchiveFactory {
 					RepositoryConfigurationFactory.createDefaultRepositoryConfiguration(),
 					context);
 			engine.addDependencyManagementBoms(new ArrayList<>(boms.values()));
+			addExclusions();
 			List<File> files;
 			try {
 				files = engine.resolve(new ArrayList<>(dependencies.values()),
@@ -233,7 +226,37 @@ public class ArchiveFactory {
 			return files;
 		}
 
+		private void addExclusions() {
+			if (this.exclusions.isEmpty()) {
+				return;
+			}
+			for (String key : this.dependencies.keySet()) {
+				Dependency target = this.dependencies.get(key);
+				Collection<Exclusion> exclusions = target.getExclusions();
+				if (exclusions == null) {
+					exclusions = new HashSet<>();
+				}
+				else {
+					exclusions = new HashSet<>(exclusions);
+				}
+				exclusions.addAll(exclusions(this.exclusions));
+				addDependency(target.setExclusions(exclusions));
+			}
+		}
+
+		private Collection<? extends Exclusion> exclusions(Set<Dependency> exclusions) {
+			List<Exclusion> result = new ArrayList<>();
+			for (Dependency dependency : exclusions) {
+				result.add(new Exclusion(dependency.getArtifact().getGroupId(),
+						dependency.getArtifact().getArtifactId(), "*", "*"));
+			}
+			return result;
+		}
+
 		private void compute(Archive root) {
+
+			addBoms(getPomDependencyManagement(root));
+			addDependencies(getPomDependencies(root));
 
 			// TODO: Maybe use something that conserves order?
 			Properties libs = loadLibraryProperties(root);
@@ -241,17 +264,18 @@ public class ArchiveFactory {
 					.equals("true");
 			for (String key : libs.stringPropertyNames()) {
 				String lib = libs.getProperty(key);
-				if (key.startsWith("dependencies")) {
-					Dependency dependency = dependency(lib);
-					addDependency(dependency);
-				}
-				if (key.startsWith("boms")) {
-					addBom(bom(lib));
+				if (StringUtils.hasText(lib)) {
+					if (key.startsWith("dependencies")) {
+						addDependency(dependency(lib));
+					}
+					if (key.startsWith("boms")) {
+						addBom(bom(lib));
+					}
+					if (key.startsWith("exclusions")) {
+						removeDependency(dependency(lib));
+					}
 				}
 			}
-
-			addBoms(getPomDependencyManagement(root));
-			addDependencies(getPomDependencies(root));
 
 			if (boms.isEmpty()) {
 				addBom(dependency(DEFAULT_BOM));
@@ -304,6 +328,24 @@ public class ArchiveFactory {
 				coordinates = StringUtils.arrayToDelimitedString(result, ":");
 			}
 			return dependency(coordinates);
+		}
+
+		private Properties loadLibraryProperties(Archive archive) {
+			UrlResource resource;
+			try {
+				resource = new UrlResource(archive.getUrl() + "META-INF/lib.properties");
+				Properties props = resource.exists()
+						? PropertiesLoaderUtils.loadProperties(resource)
+						: new Properties();
+				FileSystemResource local = new FileSystemResource("lib.properties");
+				if (local.exists()) {
+					PropertiesLoaderUtils.fillProperties(props, local);
+				}
+				return props;
+			}
+			catch (Exception e) {
+				throw new IllegalStateException("Cannot load properties", e);
+			}
 		}
 
 		private Dependency dependency(String coordinates) {

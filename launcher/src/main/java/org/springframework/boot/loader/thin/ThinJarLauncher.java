@@ -55,7 +55,8 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 	@Override
 	protected void launch(String[] args) throws Exception {
 		String root = System.getProperty("main.root");
-		this.debug = !"false".equals(System.getProperty("debug"));
+		this.debug = System.getProperty("debug") != null
+				&& !"false".equals(System.getProperty("debug"));
 		this.archives.setDebug(debug);
 		if (root != null) {
 			// There is a grape root that is used by the aether engine internally
@@ -134,6 +135,7 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 		}
 		return archives;
 	}
+
 	@Override
 	protected boolean isNestedArchive(Entry entry) {
 		return false;
