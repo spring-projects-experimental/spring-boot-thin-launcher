@@ -1,0 +1,50 @@
+buildscript {
+	ext {
+		springBootVersion = '1.5.0.BUILD-SNAPSHOT'
+		wrapperVersion = '0.0.1.BUILD-SNAPSHOT'
+	}
+	repositories {
+		mavenLocal()
+		mavenCentral()
+		maven { url "https://repo.spring.io/snapshot" }
+		maven { url "https://repo.spring.io/milestone" }
+	}
+	dependencies {
+		classpath("org.springframework.boot.experimental:spring-boot-thin-launcher:${wrapperVersion}")
+		classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+	}
+}
+
+apply plugin: 'java'
+apply plugin: 'eclipse'
+apply plugin: 'org.springframework.boot'
+
+task libs << {
+	def file = new File('build/resources/main/META-INF/dependencies.properties')
+	file.text=''
+	configurations.runtime.dependencies.each { def version = it.version ? ":${it.version}" : ""; file << "dependencies.${it.name}=${it.group}:${it.name}${version}\n" }
+	configurations.compile.dependencies.each { def version = it.version ? ":${it.version}" : "";file << "dependencies.${it.name}=${it.group}:${it.name}${version}\n" }
+}
+
+jar {
+	baseName = 'app'
+	version = '0.0.1-SNAPSHOT'
+}
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+repositories {
+	mavenLocal()
+	mavenCentral()
+	maven { url "https://repo.spring.io/snapshot" }
+	maven { url "https://repo.spring.io/milestone" }
+}
+
+springBoot { layout = 'THIN' }
+
+dependencies {
+	compile('org.springframework.boot:spring-boot-starter')
+	testCompile('org.springframework.boot:spring-boot-starter-test')
+}
+
+jar.dependsOn = [libs]

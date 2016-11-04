@@ -8,7 +8,7 @@
 	<version>0.0.1.BUILD-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
-	<name>launcher</name>
+	<name>Thin Launcher</name>
 	<description>Demo project for Spring Boot</description>
 
 	<properties>

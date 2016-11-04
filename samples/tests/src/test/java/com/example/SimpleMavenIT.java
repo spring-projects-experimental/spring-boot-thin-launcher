@@ -32,7 +32,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * @author Dave Syer
  *
  */
-public class LauncherApplicationGradleIT {
+public class SimpleMavenIT {
 
 	private Process started;
 
@@ -53,14 +53,15 @@ public class LauncherApplicationGradleIT {
 	@Test
 	public void runJar() throws Exception {
 		ProcessBuilder builder = new ProcessBuilder("java", "-jar",
-				"build/libs/app-0.0.1-SNAPSHOT.jar");
+				"../simple/target/simple-0.0.1-SNAPSHOT.jar");
 		builder.redirectErrorStream(true);
 		started = builder.start();
-		String output = output(started.getInputStream(), "Started");
+		String output = output(started.getInputStream(), "Started LauncherApplication");
 		assertThat(output).contains("Started LauncherApplication");
 	}
 
-	private static String output(InputStream inputStream, String marker) throws IOException {
+	private static String output(InputStream inputStream, String marker)
+			throws IOException {
 		StringBuilder sb = new StringBuilder();
 		BufferedReader br = null;
 		try {
@@ -69,7 +70,7 @@ public class LauncherApplicationGradleIT {
 			while ((line = br.readLine()) != null && !line.contains(marker)) {
 				sb.append(line + System.getProperty("line.separator"));
 			}
-			if (line!=null) {
+			if (line != null) {
 				sb.append(line + System.getProperty("line.separator"));
 			}
 		}

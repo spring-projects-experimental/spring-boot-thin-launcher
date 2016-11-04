@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<groupId>com.example</groupId>
+	<artifactId>thin-launcher-tests</artifactId>
+	<packaging>jar</packaging>
+
+	<name>Thin Launcher Sample Tests</name>
+	<description>Thin Launcher Sample Tests</description>
+
+	<parent>
+		<groupId>org.springframework.boot.experimental</groupId>
+		<artifactId>spring-boot-thin-launcher-samples</artifactId>
+		<version>0.0.1.BUILD-SNAPSHOT</version>
+	</parent>
+
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+		<java.version>1.8</java.version>
+		<spring-boot.version>1.5.0.BUILD-SNAPSHOT</spring-boot.version>
+		<wrapper.version>0.0.1.BUILD-SNAPSHOT</wrapper.version>
+	</properties>
+
+	<dependencies>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-failsafe-plugin</artifactId>
+				<configuration>
+					<systemPropertyVariables>
+						<integration.test>true</integration.test>
+						<server.port>0</server.port>
+					</systemPropertyVariables>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-clean-plugin</artifactId>
+				<configuration>
+					<filesets>
+						<fileset>
+							<directory>${basedir}/../app/build</directory>
+						</fileset>
+						<fileset>
+							<directory>${basedir}/../simple/build</directory>
+						</fileset>
+						<fileset>
+							<directory>target</directory>
+						</fileset>
+					</filesets>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>exec-maven-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>app</id>
+						<phase>pre-integration-test</phase>
+						<configuration>
+							<workingDirectory>${basedir}/../app</workingDirectory>
+							<executable>./gradlew</executable>
+							<arguments>
+								<argument>build</argument>
+							</arguments>
+						</configuration>
+						<goals>
+							<goal>exec</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>simple</id>
+						<phase>pre-integration-test</phase>
+						<configuration>
+							<workingDirectory>${basedir}/../simple</workingDirectory>
+							<executable>./gradlew</executable>
+							<arguments>
+								<argument>build</argument>
+							</arguments>
+						</configuration>
+						<goals>
+							<goal>exec</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+
+</project>

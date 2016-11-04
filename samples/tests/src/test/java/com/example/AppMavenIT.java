@@ -32,7 +32,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * @author Dave Syer
  *
  */
-public class LauncherApplicationGradleIT {
+public class AppMavenIT {
 
 	private Process started;
 
@@ -53,11 +53,12 @@ public class LauncherApplicationGradleIT {
 	@Test
 	public void runJar() throws Exception {
 		ProcessBuilder builder = new ProcessBuilder("java", "-jar",
-				"build/libs/simple-0.0.1-SNAPSHOT.jar");
+				"../app/target/app-0.0.1-SNAPSHOT.jar");
 		builder.redirectErrorStream(true);
 		started = builder.start();
-		String output = output(started.getInputStream(), "Started LauncherApplication");
+		String output = output(started.getInputStream(), "Started");
 		assertThat(output).contains("Started LauncherApplication");
+		assertThat(output).contains("1.3.8.RELEASE");
 	}
 
 	private static String output(InputStream inputStream, String marker)

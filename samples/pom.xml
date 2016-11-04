@@ -1,0 +1,35 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>org.springframework.boot.experimental</groupId>
+		<artifactId>spring-boot-thin-launcher-parent</artifactId>
+		<version>0.0.1.BUILD-SNAPSHOT</version>
+	</parent>
+
+	<groupId>org.springframework.boot.experimental</groupId>
+	<artifactId>spring-boot-thin-launcher-samples</artifactId>
+	<packaging>pom</packaging>
+	<name>Thin Launcher Samples</name>
+
+	<modules>
+		<module>capsule-app</module>
+		<module>app</module>
+		<module>simple</module>	
+		<module>tests</module>
+	</modules>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-deploy-plugin</artifactId>
+				<configuration>
+					<skip>true</skip>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+
+</project>

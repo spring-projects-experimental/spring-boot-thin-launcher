@@ -18,9 +18,7 @@
 		<module>wrapper</module>
 		<module>launcher</module>
 		<module>gradle-plugin</module>
-		<module>capsule-app</module>
-		<module>app</module>
-		<module>simple</module>
+		<module>samples</module>
 	</modules>
 
 	<properties>

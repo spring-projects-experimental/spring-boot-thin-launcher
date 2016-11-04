@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.springframework.boot.experimental</groupId>
   <artifactId>spring-boot-thin-launcher</artifactId>
-  <name>launcher</name>
+  <name>Thin Launcher</name>
   <version>0.0.1.BUILD-SNAPSHOT</version>
   <description>Demo project for Spring Boot</description>
   <build>
