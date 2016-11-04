@@ -16,10 +16,93 @@
 
 package org.springframework.boot.loader.wrapper;
 
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.PrintStream;
+import java.util.Map.Entry;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
+
 /**
  * @author Dave Syer
  *
  */
 public class ThinJarWrapperTests {
+
+	private PrintStream out;
+
+	@Before
+	public void open() {
+		out = System.out;
+	}
+
+	@After
+	public void init() {
+		System.setOut(out);
+		System.clearProperty("thin.root");
+		System.clearProperty("thin.repo");
+		System.clearProperty("thin.library");
+		System.clearProperty("thin.launcher");
+	}
+
+	@Test
+	public void testDefaultLibrary() throws Exception {
+		ThinJarWrapper wrapper = new ThinJarWrapper();
+		assertThat(wrapper.library().getCoordinates(),
+				containsString("spring-boot-thin-launcher"));
+	}
+
+	@Test
+	public void testCustomLibrary() throws Exception {
+		System.setProperty("thin.library", "com.example:main:0.0.1-SNAPSHOT");
+		ThinJarWrapper wrapper = new ThinJarWrapper();
+		assertThat(wrapper.library().getCoordinates(), containsString("com.example"));
+	}
+
+	@Test
+	public void testMavenLocalOverride() throws Exception {
+		System.setProperty("thin.root", "target");
+		ThinJarWrapper wrapper = new ThinJarWrapper();
+		assertEquals("target/repository", wrapper.mavenLocal());
+	}
+
+	@Test
+	public void testLaunch() throws Exception {
+		System.setProperty("thin.root", "target");
+		System.setProperty("thin.repo", new File("./src/test/resources/repository")
+				.getAbsoluteFile().toURI().toURL().toString());
+		System.setProperty("thin.library", "com.example:main:0.0.1-SNAPSHOT");
+		System.setProperty("thin.launcher", "main.Main");
+		ByteArrayOutputStream stream = new ByteArrayOutputStream();
+		System.setOut(new PrintStream(stream));
+		ThinJarWrapper.main(new String[0]);
+		String output = stream.toString();
+		assertThat(output, containsString("Main Running"));
+	}
+
+	@Test
+	public void testSystemEnvironmentOverride() throws Exception {
+		String key = null;
+		String value = null;
+		for (Entry<String, String> entry : System.getenv().entrySet()) {
+			if (entry.getKey().contains("_")) {
+				key = entry.getKey();
+				value = entry.getValue();
+				break;
+			}
+		}
+		if (key != null) {
+			assertEquals(value,
+					ThinJarWrapper.getProperty(key.toLowerCase().replace("_", ".")));
+		} else {
+			System.err.println("WARN: no testable env var");
+		}
+	}
 
 }

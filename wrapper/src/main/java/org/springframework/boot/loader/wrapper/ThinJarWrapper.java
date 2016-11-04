@@ -72,12 +72,12 @@ public class ThinJarWrapper {
 		new ThinJarWrapper().launch(args);
 	}
 
-	public ThinJarWrapper() {
+	ThinJarWrapper() {
 		this.library = library();
 	}
 
-	private Library library() {
-		String coordinates = System.getProperty(THIN_LIBRARY);
+	Library library() {
+		String coordinates = getProperty(THIN_LIBRARY);
 		return new Library(coordinates == null ? DEFAULT_LIBRARY : coordinates);
 	}
 
@@ -88,7 +88,7 @@ public class ThinJarWrapper {
 	}
 
 	private String launcherClass() {
-		String launcher = System.getProperty(THIN_LAUNCHER);
+		String launcher = getProperty(THIN_LAUNCHER);
 		return launcher == null ? DEFAULT_LAUNCHER_CLASS : launcher;
 	}
 
@@ -109,12 +109,12 @@ public class ThinJarWrapper {
 		return new URL[] { new File(mavenLocal() + library.getPath()).toURI().toURL() };
 	}
 
-	private String mavenLocal() {
+	String mavenLocal() {
 		return mvnHome() + "/repository";
 	}
 
 	private String mvnHome() {
-		String home = System.getProperty(THIN_ROOT);
+		String home = getProperty(THIN_ROOT);
 		if (home != null) {
 			return home;
 		}
@@ -122,8 +122,15 @@ public class ThinJarWrapper {
 	}
 
 	private String home() {
-		String home = System.getProperty("user.home");
+		String home = getProperty("user.home");
 		return home == null ? "." : home;
+	}
+
+	static String getProperty(String key) {
+		if (System.getProperty(key)!=null) {
+			return System.getProperty(key);
+		}
+		return System.getenv(key.replace(".", "_").toUpperCase());
 	}
 
 	static class Library {
@@ -194,7 +201,7 @@ public class ThinJarWrapper {
 		}
 
 		private static String repo() {
-			String repo = System.getProperty(THIN_REPO);
+			String repo = getProperty(THIN_REPO);
 			return repo != null ? repo : "https://repo.spring.io/libs-snapshot";
 		}
 
