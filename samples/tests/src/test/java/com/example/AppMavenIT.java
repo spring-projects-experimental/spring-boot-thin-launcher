@@ -17,13 +17,12 @@
 package com.example;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
 import org.junit.After;
-import org.junit.Assume;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -35,13 +34,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class AppMavenIT {
 
 	private Process started;
-
-	@BeforeClass
-	public static void init() {
-		Assume.assumeTrue("Not an integration test",
-				System.getProperty("integration.test") != null
-						&& !"false".equals(System.getProperty("integration.test")));
-	}
 
 	@After
 	public void after() {
@@ -59,6 +51,30 @@ public class AppMavenIT {
 		String output = output(started.getInputStream(), "Started");
 		assertThat(output).contains("Started LauncherApplication");
 		assertThat(output).contains("1.3.8.RELEASE");
+	}
+
+	@Test
+	public void runJarCustomProperties() throws Exception {
+		ProcessBuilder builder = new ProcessBuilder("java", "-jar",
+				"../../../../../app/target/app-0.0.1-SNAPSHOT.jar");
+		builder.redirectErrorStream(true);
+		builder.directory(new File("src/test/resources/app"));
+		started = builder.start();
+		String output = output(started.getInputStream(), "Started");
+		assertThat(output).contains("Started LauncherApplication");
+		assertThat(output).contains("1.4.0.RELEASE");
+	}
+
+	@Test
+	public void runJarNamedProperties() throws Exception {
+		ProcessBuilder builder = new ProcessBuilder("java", "-Dthin.name=app", "-jar",
+				"../../../../../app/target/app-0.0.1-SNAPSHOT.jar");
+		builder.redirectErrorStream(true);
+		builder.directory(new File("src/test/resources/app"));
+		started = builder.start();
+		String output = output(started.getInputStream(), "Started");
+		assertThat(output).contains("Started LauncherApplication");
+		assertThat(output).contains("1.3.5.RELEASE");
 	}
 
 	private static String output(InputStream inputStream, String marker)

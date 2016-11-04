@@ -22,8 +22,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 
 import org.junit.After;
-import org.junit.Assume;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -35,13 +33,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class AppGradleIT {
 
 	private Process started;
-
-	@BeforeClass
-	public static void init() {
-		Assume.assumeTrue("Not an integration test",
-				System.getProperty("integration.test") != null
-						&& !"false".equals(System.getProperty("integration.test")));
-	}
 
 	@After
 	public void after() {

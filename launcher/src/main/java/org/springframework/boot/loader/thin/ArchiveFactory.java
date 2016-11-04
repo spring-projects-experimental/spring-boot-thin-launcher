@@ -17,9 +17,9 @@
 package org.springframework.boot.loader.thin;
 
 import java.io.File;
-import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -45,6 +45,7 @@ import org.springframework.core.io.UrlResource;
 import org.springframework.core.io.support.PropertiesLoaderUtils;
 import org.springframework.core.io.support.ResourcePatternUtils;
 import org.springframework.util.StringUtils;
+import org.springframework.util.SystemPropertyUtils;
 
 /**
  * @author Dave Syer
@@ -52,7 +53,7 @@ import org.springframework.util.StringUtils;
  */
 public class ArchiveFactory {
 
-	private static final String DEFAULT_BOM = "org.springframework.boot:spring-boot-dependencies:pom:1.4.1.RELEASE";
+	private static final String DEFAULT_BOM = "org.springframework.boot:spring-boot-dependencies:1.4.1.RELEASE";
 	private boolean debug;
 
 	/**
@@ -85,24 +86,6 @@ public class ArchiveFactory {
 	public List<Archive> extract(Archive root) throws Exception {
 
 		ArchiveDependencies computed = new ArchiveDependencies(root);
-		Collection<Dependency> dependencies = computed.getDependencies();
-		Collection<Dependency> boms = computed.getBoms();
-
-		if (this.debug) {
-			System.out.println("BOMs:");
-			for (Dependency dependency : boms) {
-				System.out.println(" " + dependency);
-			}
-			System.out.println("Dependencies:");
-			for (Dependency dependency : dependencies) {
-				System.out.println(" " + dependency);
-				if (dependency.getExclusions() != null) {
-					for (Exclusion exclude : dependency.getExclusions()) {
-						System.out.println(" - " + exclude);
-					}
-				}
-			}
-		}
 
 		List<Archive> archives = archives(computed.resolve());
 
@@ -215,9 +198,25 @@ public class ArchiveFactory {
 					RepositoryConfigurationFactory.createDefaultRepositoryConfiguration(),
 					context);
 			engine.addDependencyManagementBoms(new ArrayList<>(boms.values()));
-			addExclusions();
 			List<File> files;
 			try {
+				addParentBoms(engine);
+				addExclusions();
+				if (debug) {
+					System.out.println("BOMs:");
+					for (Dependency dependency : boms.values()) {
+						System.out.println(" " + dependency);
+					}
+					System.out.println("Dependencies:");
+					for (Dependency dependency : dependencies.values()) {
+						System.out.println(" " + dependency);
+						if (dependency.getExclusions() != null) {
+							for (Exclusion exclude : dependency.getExclusions()) {
+								System.out.println(" - " + exclude);
+							}
+						}
+					}
+				}
 				files = engine.resolve(new ArrayList<>(dependencies.values()),
 						transitive);
 			}
@@ -225,6 +224,23 @@ public class ArchiveFactory {
 				throw new IllegalStateException("Cannot resolve artifacts", e);
 			}
 			return files;
+		}
+
+		private void addParentBoms(AetherEngine engine)
+				throws ArtifactResolutionException {
+			List<File> poms = engine.resolve(new ArrayList<>(boms.values()), false);
+			for (File pom : poms) {
+				String parent = pomLoader.getParent(new FileSystemResource(pom));
+				while (parent != null) {
+					Dependency dependency = dependency(parent, "pom", "import");
+					addBom(dependency);
+					List<File> parents = engine.resolve(Arrays.asList(dependency), false);
+					if (parents.isEmpty()) {
+						break;
+					}
+					parent = pomLoader.getParent(new FileSystemResource(parents.get(0)));
+				}
+			}
 		}
 
 		private void addExclusions() {
@@ -279,7 +295,7 @@ public class ArchiveFactory {
 			}
 
 			if (boms.isEmpty()) {
-				addBom(dependency(DEFAULT_BOM));
+				addBom(bom(DEFAULT_BOM));
 			}
 
 		}
@@ -318,23 +334,17 @@ public class ArchiveFactory {
 		}
 
 		private Dependency bom(String coordinates) {
-			if (!coordinates.contains(":pom")) {
-				String[] parts = coordinates.split(":");
-				String[] result = new String[parts.length + 1];
-				for (int i = 0; i < result.length - 2; i++) {
-					result[i] = parts[i];
-				}
-				result[parts.length - 1] = "pom:";
-				result[parts.length] = parts[parts.length - 1];
-				coordinates = StringUtils.arrayToDelimitedString(result, ":");
-			}
-			return dependency(coordinates);
+			return dependency(coordinates, "pom", "import");
 		}
 
 		private Properties loadLibraryProperties(Archive archive) {
 			Properties props = new Properties();
-			String path = "thin.properties";
-			loadProperties(props, archive, path);
+			String prefixes = SystemPropertyUtils
+					.resolvePlaceholders("${thin.name:thin}");
+			for (String prefix : prefixes.split(",")) {
+				String path = prefix + ".properties";
+				loadProperties(props, archive, path);
+			}
 			return props;
 		}
 
@@ -344,10 +354,16 @@ public class ArchiveFactory {
 				Resource resource = new UrlResource(
 						archive.getUrl() + "META-INF/" + path);
 				if (resource.exists()) {
+					if (debug) {
+						System.out.println("Loading properties from archive: " + path);
+					}
 					PropertiesLoaderUtils.fillProperties(props, resource);
 				}
 				resource = new FileSystemResource(path);
 				if (resource.exists()) {
+					if (debug) {
+						System.out.println("Loading properties from local: " + resource);
+					}
 					PropertiesLoaderUtils.fillProperties(props, resource);
 				}
 				return props;
@@ -358,13 +374,17 @@ public class ArchiveFactory {
 		}
 
 		private Dependency dependency(String coordinates) {
+			return dependency(coordinates, "jar", "compile");
+		}
+		
+		private Dependency dependency(String coordinates, String defaultExtension, String scope) {
 			String[] parts = coordinates.split(":");
 			if (parts.length < 2) {
 				throw new IllegalArgumentException(
 						"Co-ordinates should contain group:artifact[:extension][:classifier][:version]. Found "
 								+ coordinates + ".");
 			}
-			String extension = "jar", classifier, version, artifactId, groupId;
+			String extension = defaultExtension, classifier, version, artifactId, groupId;
 			if (parts.length > 4) {
 				extension = parts[2];
 				classifier = parts[3];
@@ -402,7 +422,7 @@ public class ArchiveFactory {
 			groupId = parts[0];
 			artifactId = parts[1];
 			return new Dependency(new DefaultArtifact(groupId, artifactId, classifier,
-					extension, version), "compile");
+					extension, version), scope);
 		}
 
 	}
