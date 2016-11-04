@@ -362,7 +362,7 @@ public class AetherEngine {
 								RepositoryPolicy.CHECKSUM_POLICY_IGNORE));
 			}
 			else {
-				// Artifactory convention with no access to non-snapshots
+				// Artifactory by convention gives no access to releases in a snapshot repo
 				builder.setReleasePolicy(
 						new RepositoryPolicy(false, RepositoryPolicy.UPDATE_POLICY_NEVER,
 								RepositoryPolicy.CHECKSUM_POLICY_IGNORE));

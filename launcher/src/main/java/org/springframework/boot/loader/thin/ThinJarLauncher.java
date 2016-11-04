@@ -30,6 +30,9 @@ import org.springframework.boot.loader.archive.Archive.Entry;
 import org.springframework.boot.loader.archive.ExplodedArchive;
 import org.springframework.boot.loader.archive.JarFileArchive;
 import org.springframework.boot.loader.tools.MainClassFinder;
+import org.springframework.core.env.Environment;
+import org.springframework.core.env.StandardEnvironment;
+import org.springframework.util.StringUtils;
 
 /**
  *
@@ -38,6 +41,7 @@ import org.springframework.boot.loader.tools.MainClassFinder;
 public class ThinJarLauncher extends ExecutableArchiveLauncher {
 
 	private ArchiveFactory archives = new ArchiveFactory();
+	private Environment environment = new StandardEnvironment();
 	private boolean debug;
 
 	public static void main(String[] args) throws Exception {
@@ -54,15 +58,14 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 
 	@Override
 	protected void launch(String[] args) throws Exception {
-		String root = System.getProperty("thin.root");
-		this.debug = System.getProperty("debug") != null
-				&& !"false".equals(System.getProperty("debug"));
+		String root = environment.resolvePlaceholders("${thin.root:}");
+		this.debug = !"false".equals(environment.resolvePlaceholders("${debug:false}"));
 		this.archives.setDebug(debug);
-		if (root != null) {
+		if (StringUtils.hasText(root)) {
 			// There is a grape root that is used by the aether engine internally
 			System.setProperty("grape.root", root);
 		}
-		if (System.getProperty("thin.dryrun") != null) {
+		if (!"false".equals(environment.resolvePlaceholders("${thin.dryrun:false}"))) {
 			getClassPathArchives();
 			if (this.debug) {
 				System.out.println(
@@ -79,8 +82,9 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 
 	@Override
 	protected String getMainClass() throws Exception {
-		if (System.getProperty("thin.main") != null) {
-			return System.getProperty("thin.main");
+		String mainClass = environment.resolvePlaceholders("${thin.main:}");
+		if (StringUtils.hasText(mainClass)) {
+			return mainClass;
 		}
 		try {
 			return super.getMainClass();

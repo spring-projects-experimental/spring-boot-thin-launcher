@@ -38,6 +38,8 @@ import org.springframework.boot.cli.compiler.RepositoryConfigurationFactory;
 import org.springframework.boot.cli.compiler.grape.DependencyResolutionContext;
 import org.springframework.boot.loader.archive.Archive;
 import org.springframework.boot.loader.archive.JarFileArchive;
+import org.springframework.core.env.Environment;
+import org.springframework.core.env.StandardEnvironment;
 import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
@@ -45,7 +47,6 @@ import org.springframework.core.io.UrlResource;
 import org.springframework.core.io.support.PropertiesLoaderUtils;
 import org.springframework.core.io.support.ResourcePatternUtils;
 import org.springframework.util.StringUtils;
-import org.springframework.util.SystemPropertyUtils;
 
 /**
  * @author Dave Syer
@@ -119,6 +120,7 @@ public class ArchiveFactory {
 		private Set<Dependency> exclusions = new LinkedHashSet<>();
 		private boolean transitive = true;
 		private PomLoader pomLoader = new PomLoader();
+		private Environment environment = new StandardEnvironment();
 
 		public ArchiveDependencies(Archive root) {
 			compute(root);
@@ -339,8 +341,7 @@ public class ArchiveFactory {
 
 		private Properties loadLibraryProperties(Archive archive) {
 			Properties props = new Properties();
-			String prefixes = SystemPropertyUtils
-					.resolvePlaceholders("${thin.name:thin}");
+			String prefixes = environment.resolvePlaceholders("${thin.name:thin}");
 			for (String prefix : prefixes.split(",")) {
 				String path = prefix + ".properties";
 				loadProperties(props, archive, path);

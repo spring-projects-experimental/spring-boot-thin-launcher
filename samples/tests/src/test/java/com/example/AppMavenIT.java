@@ -77,6 +77,19 @@ public class AppMavenIT {
 		assertThat(output).contains("1.3.5.RELEASE");
 	}
 
+	@Test
+	public void runJarNamedPropertiesEnvVar() throws Exception {
+		ProcessBuilder builder = new ProcessBuilder("java", "-jar",
+				"../../../../../app/target/app-0.0.1-SNAPSHOT.jar");
+		builder.environment().put("THIN_NAME", "app");
+		builder.redirectErrorStream(true);
+		builder.directory(new File("src/test/resources/app"));
+		started = builder.start();
+		String output = output(started.getInputStream(), "Started");
+		assertThat(output).contains("Started LauncherApplication");
+		assertThat(output).contains("1.3.5.RELEASE");
+	}
+
 	private static String output(InputStream inputStream, String marker)
 			throws IOException {
 		StringBuilder sb = new StringBuilder();
