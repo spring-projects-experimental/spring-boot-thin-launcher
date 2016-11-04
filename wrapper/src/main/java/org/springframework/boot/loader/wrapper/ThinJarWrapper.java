@@ -34,30 +34,30 @@ public class ThinJarWrapper {
 	 * System property for the root where the launcher jar is downloaded and cached (level
 	 * above /repository). Defaults to <code>${user.home}/.m2</code>.
 	 */
-	public static final String MAIN_ROOT = "main.root";
+	public static final String THIN_ROOT = "thin.root";
 
 	/**
 	 * System property key for the main library where the launcher class is located.
 	 */
-	public static final String MAIN_LIBRARY = "main.library";
+	public static final String THIN_LIBRARY = "thin.library";
 
 	/**
 	 * System property key used to store location of main archive (the one that this class
 	 * is found in).
 	 */
-	public static final String MAIN_ARCHIVE = "main.archive";
+	public static final String THIN_ARCHIVE = "thin.archive";
 
 	/**
 	 * System property key for remote location of main archive (the one that this class is
 	 * found in).
 	 */
-	public static final String MAIN_REPO = "main.repo";
+	public static final String THIN_REPO = "thin.repo";
 
 	/**
 	 * System property key used to override the launcher main class if necessary. Defaults
 	 * to <code>ThinJarLauncher</code>.
 	 */
-	public static final String MAIN_LAUNCHER = "main.launcher";
+	public static final String THIN_LAUNCHER = "thin.launcher";
 
 	private static final String DEFAULT_LAUNCHER_CLASS = "org.springframework.boot.loader.thin.ThinJarLauncher";
 
@@ -67,7 +67,7 @@ public class ThinJarWrapper {
 
 	public static void main(String[] args) throws Exception {
 		Class<?> launcher = ThinJarWrapper.class;
-		System.setProperty(MAIN_ARCHIVE, launcher.getProtectionDomain().getCodeSource()
+		System.setProperty(THIN_ARCHIVE, launcher.getProtectionDomain().getCodeSource()
 				.getLocation().toURI().toString());
 		new ThinJarWrapper().launch(args);
 	}
@@ -77,7 +77,7 @@ public class ThinJarWrapper {
 	}
 
 	private Library library() {
-		String coordinates = System.getProperty(MAIN_LIBRARY);
+		String coordinates = System.getProperty(THIN_LIBRARY);
 		return new Library(coordinates == null ? DEFAULT_LIBRARY : coordinates);
 	}
 
@@ -88,7 +88,7 @@ public class ThinJarWrapper {
 	}
 
 	private String launcherClass() {
-		String launcher = System.getProperty(MAIN_LAUNCHER);
+		String launcher = System.getProperty(THIN_LAUNCHER);
 		return launcher == null ? DEFAULT_LAUNCHER_CLASS : launcher;
 	}
 
@@ -114,7 +114,7 @@ public class ThinJarWrapper {
 	}
 
 	private String mvnHome() {
-		String home = System.getProperty(MAIN_ROOT);
+		String home = System.getProperty(THIN_ROOT);
 		if (home != null) {
 			return home;
 		}
@@ -194,7 +194,7 @@ public class ThinJarWrapper {
 		}
 
 		private static String repo() {
-			String repo = System.getProperty(MAIN_REPO);
+			String repo = System.getProperty(THIN_REPO);
 			return repo != null ? repo : "https://repo.spring.io/libs-snapshot";
 		}
 

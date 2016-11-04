@@ -54,7 +54,7 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 
 	@Override
 	protected void launch(String[] args) throws Exception {
-		String root = System.getProperty("main.root");
+		String root = System.getProperty("thin.root");
 		this.debug = System.getProperty("debug") != null
 				&& !"false".equals(System.getProperty("debug"));
 		this.archives.setDebug(debug);
@@ -62,7 +62,7 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 			// There is a grape root that is used by the aether engine internally
 			System.setProperty("grape.root", root);
 		}
-		if (System.getProperty("main.dryrun") != null) {
+		if (System.getProperty("thin.dryrun") != null) {
 			getClassPathArchives();
 			if (this.debug) {
 				System.out.println(
@@ -79,8 +79,8 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 
 	@Override
 	protected String getMainClass() throws Exception {
-		if (System.getProperty("main.class") != null) {
-			return System.getProperty("main.class");
+		if (System.getProperty("thin.main") != null) {
+			return System.getProperty("thin.main");
 		}
 		try {
 			return super.getMainClass();
@@ -105,7 +105,7 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 	}
 
 	private static URI findArchive() throws Exception {
-		String path = System.getProperty("main.archive");
+		String path = System.getProperty("thin.archive");
 		URI archive = path == null ? null : new URI(path);
 		File dir = new File("target/classes");
 		if (archive == null && dir.exists()) {

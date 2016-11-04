@@ -72,17 +72,17 @@ All jar files are cached in the local Maven repository, so if you are
 building and running the same app repeatedly, it should be faster
 after the first time, or if the local repo is already warm.
 
-The local repository can be re-located by setting a System property "main.root". For example to use the current directory:
+The local repository can be re-located by setting a System property "thin.root". For example to use the current directory:
 
 ```
-$ java -Dmain.root=. -jar app/target/*.jar
+$ java -Dthin.root=. -jar app/target/*.jar
 ```
 
-This will download all the dependencies to `${main.root}/repository`,
-and look for Maven settings in `${main.root}/settings.xml`.
+This will download all the dependencies to `${thin.root}/repository`,
+and look for Maven settings in `${thin.root}/settings.xml`.
 
 You can also do a "dry run", just to warm up the cache and not run the
-app, by setting a System property "main.dryrun" (to any value). In
+app, by setting a System property "thins.dryrun" (to any value). In
 fact, since you don't need the application code for this (except the
 `META-INF/lib.properties`), you could run only the launcher, or the
 wrapper, which might be a useful trick for laying down a file system
