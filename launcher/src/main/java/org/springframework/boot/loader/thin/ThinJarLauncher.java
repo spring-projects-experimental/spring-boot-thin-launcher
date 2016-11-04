@@ -40,6 +40,29 @@ import org.springframework.util.StringUtils;
  */
 public class ThinJarLauncher extends ExecutableArchiveLauncher {
 
+	/**
+	 * System property key for main class to launch. Defaults to finding it via
+	 * Start-Class of the main archive.
+	 */
+	public static final String THIN_MAIN = "thin.main";
+
+	/**
+	 * System property to signal a "dry run" where dependencies are resolved but the main
+	 * method is not executed.
+	 */
+	public static final String THIN_DRYRUN = "thin.dryrun";
+
+	/**
+	 * System property holding the path to the root directory, where Maven repository and
+	 * settings live. Defaults to <code>${user.home}/.m2</code>.
+	 */
+	public static final String THIN_ROOT = "thin.root";
+
+	/**
+	 * System property used by wrapper to communicate the location of the main archive.
+	 */
+	public static final String THIN_ARCHIVE = "thin.archive";
+
 	private ArchiveFactory archives = new ArchiveFactory();
 	private Environment environment = new StandardEnvironment();
 	private boolean debug;
@@ -58,14 +81,15 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 
 	@Override
 	protected void launch(String[] args) throws Exception {
-		String root = environment.resolvePlaceholders("${thin.root:}");
+		String root = environment.resolvePlaceholders("${" + THIN_ROOT + ":}");
 		this.debug = !"false".equals(environment.resolvePlaceholders("${debug:false}"));
 		this.archives.setDebug(debug);
 		if (StringUtils.hasText(root)) {
 			// There is a grape root that is used by the aether engine internally
 			System.setProperty("grape.root", root);
 		}
-		if (!"false".equals(environment.resolvePlaceholders("${thin.dryrun:false}"))) {
+		if (!"false".equals(
+				environment.resolvePlaceholders("${" + THIN_DRYRUN + ":false}"))) {
 			getClassPathArchives();
 			if (this.debug) {
 				System.out.println(
@@ -82,7 +106,7 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 
 	@Override
 	protected String getMainClass() throws Exception {
-		String mainClass = environment.resolvePlaceholders("${thin.main:}");
+		String mainClass = environment.resolvePlaceholders("${" + THIN_MAIN + ":}");
 		if (StringUtils.hasText(mainClass)) {
 			return mainClass;
 		}
@@ -109,7 +133,7 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 	}
 
 	private static URI findArchive() throws Exception {
-		String path = System.getProperty("thin.archive");
+		String path = System.getProperty(THIN_ARCHIVE);
 		URI archive = path == null ? null : new URI(path);
 		File dir = new File("target/classes");
 		if (archive == null && dir.exists()) {

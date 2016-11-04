@@ -43,7 +43,7 @@ public class SimpleGradleIT {
 
 	@Test
 	public void runJar() throws Exception {
-		ProcessBuilder builder = new ProcessBuilder("java", "-jar",
+		ProcessBuilder builder = new ProcessBuilder("java", "-Xmx64m", "-jar",
 				"../simple/build/libs/simple-0.0.1-SNAPSHOT.jar");
 		builder.redirectErrorStream(true);
 		started = builder.start();

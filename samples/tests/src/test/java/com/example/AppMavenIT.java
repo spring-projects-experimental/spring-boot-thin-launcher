@@ -44,7 +44,7 @@ public class AppMavenIT {
 
 	@Test
 	public void runJar() throws Exception {
-		ProcessBuilder builder = new ProcessBuilder("java", "-jar",
+		ProcessBuilder builder = new ProcessBuilder("java", "-Xmx64m", "-jar",
 				"../app/target/app-0.0.1-SNAPSHOT.jar");
 		builder.redirectErrorStream(true);
 		started = builder.start();
@@ -55,7 +55,7 @@ public class AppMavenIT {
 
 	@Test
 	public void runJarCustomProperties() throws Exception {
-		ProcessBuilder builder = new ProcessBuilder("java", "-jar",
+		ProcessBuilder builder = new ProcessBuilder("java", "-Xmx64m", "-jar",
 				"../../../../../app/target/app-0.0.1-SNAPSHOT.jar");
 		builder.redirectErrorStream(true);
 		builder.directory(new File("src/test/resources/app"));
@@ -67,7 +67,7 @@ public class AppMavenIT {
 
 	@Test
 	public void runJarNamedProperties() throws Exception {
-		ProcessBuilder builder = new ProcessBuilder("java", "-Dthin.name=app", "-jar",
+		ProcessBuilder builder = new ProcessBuilder("java", "-Xmx64m", "-Dthin.name=app", "-jar",
 				"../../../../../app/target/app-0.0.1-SNAPSHOT.jar");
 		builder.redirectErrorStream(true);
 		builder.directory(new File("src/test/resources/app"));
@@ -79,7 +79,7 @@ public class AppMavenIT {
 
 	@Test
 	public void runJarNamedPropertiesEnvVar() throws Exception {
-		ProcessBuilder builder = new ProcessBuilder("java", "-jar",
+		ProcessBuilder builder = new ProcessBuilder("java", "-Xmx64m", "-jar",
 				"../../../../../app/target/app-0.0.1-SNAPSHOT.jar");
 		builder.environment().put("THIN_NAME", "app");
 		builder.redirectErrorStream(true);
