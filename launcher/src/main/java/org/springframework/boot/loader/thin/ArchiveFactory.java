@@ -17,6 +17,7 @@
 package org.springframework.boot.loader.thin;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -331,15 +332,23 @@ public class ArchiveFactory {
 		}
 
 		private Properties loadLibraryProperties(Archive archive) {
-			UrlResource resource;
+			Properties props = new Properties();
+			String path = "thin.properties";
+			loadProperties(props, archive, path);
+			return props;
+		}
+
+		private Properties loadProperties(Properties props, Archive archive,
+				String path) {
 			try {
-				resource = new UrlResource(archive.getUrl() + "META-INF/thin.properties");
-				Properties props = resource.exists()
-						? PropertiesLoaderUtils.loadProperties(resource)
-						: new Properties();
-				FileSystemResource local = new FileSystemResource("thin.properties");
-				if (local.exists()) {
-					PropertiesLoaderUtils.fillProperties(props, local);
+				Resource resource = new UrlResource(
+						archive.getUrl() + "META-INF/" + path);
+				if (resource.exists()) {
+					PropertiesLoaderUtils.fillProperties(props, resource);
+				}
+				resource = new FileSystemResource(path);
+				if (resource.exists()) {
+					PropertiesLoaderUtils.fillProperties(props, resource);
 				}
 				return props;
 			}
