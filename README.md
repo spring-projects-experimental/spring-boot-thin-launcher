@@ -9,7 +9,7 @@ TODO:
 * [X] Make it easy to override the dependencies at runtime (e.g. rolling upgrades of library jars for security patches)
 * [X] Add a "dry run" or "download only" feature so grab the dependencies and warm up the local cache, but not run the app
 * [X] Hone the dependencies in the launcher a bit (some optional stuff probably still there)
-* [X] Either autogenerate the `lib.properties` or find a way to model the pom without a lot of extra machinery
+* [X] Either autogenerate the `thin.properties` or find a way to model the pom without a lot of extra machinery
 * [X] Worry about the other stuff on the classpath of the launcher (e.g. spring-core)
 * [X] Make it work in Cloud Foundry
 * [ ] Work with Ben to make it a nice experience in Cloud Foundry
@@ -17,7 +17,7 @@ TODO:
 * [X] Support for exclusions
 * [ ] Support for configuring launcher via manifest and/or properties file
 * [ ] Support for configuring wrapper via env vars  and/or properties file
-* [X] Generate lib.properties during build (e.g. to support Gradle)
+* [X] Generate `thin.properties` during build (e.g. to support Gradle)
 * [ ] Experiment with "container" apps and multi-tenant/ephemeral child contexts
 * [ ] Deployment time support for the dry run to assist with CI pipelines
 
@@ -47,7 +47,7 @@ Inspect the "app" jar. It is just a regular jar file with the app
 classes in it and two extra features:
 
 1. The `ThinJarWrapper` class has been added.
-2. A `META-INF/lib.properties` which lists the dependencies of the app.
+2. A `META-INF/thin.properties` which lists the dependencies of the app.
 
 When the app runs the main method is in the `ThinJarWrapper`. It's job
 is to download another jar file that you just built (the "launcher"),
@@ -55,11 +55,11 @@ or locate it in your local Maven repo if it can. The wrapper downloads
 the launcher (if it needs to), or else uses the cached version in your
 local Maven repository.
 
-The launcher then takes over and reads the `lib.properties`,
+The launcher then takes over and reads the `thin.properties`,
 downloading the dependencies (and all transitives) as necessary, and
 setting up a new class loader with them all on the classpath. It then
 runs the application's own main method with that class loader.  If the
-`lib.properties` is not there then the `pom.xml` is used instead (it
+`thin.properties` is not there then the `pom.xml` is used instead (it
 can be in the root of the jar or in the standard `META-INF/maven`
 location).
 
@@ -84,14 +84,14 @@ and look for Maven settings in `${thin.root}/settings.xml`.
 You can also do a "dry run", just to warm up the cache and not run the
 app, by setting a System property "thins.dryrun" (to any value). In
 fact, since you don't need the application code for this (except the
-`META-INF/lib.properties`), you could run only the launcher, or the
+`META-INF/thin.properties`), you could run only the launcher, or the
 wrapper, which might be a useful trick for laying down a file system
 layer in a container image, for example.
 
 
 ## Upgrades
 
-You can upgrade all the libraries by changing the `lib.properties`.
+You can upgrade all the libraries by changing the `thin.properties`.
 
 ## Packaging
 
@@ -150,7 +150,7 @@ options.
 
 There's an existing maven plugin that can list dependencies into a
 properties file. We could support it's format as well as or instead of
-lib.properties. Example:
+thin.properties. Example:
 
 ```xml
 			<plugin>
@@ -176,7 +176,7 @@ Also there is the `effective-pom`, which is easy to generate and can be transfor
 ### Gradle
 
 There doesn't seem to be an equivalent plugin in Gradle land, so we provide a thin launcher plugin
-specifically for creating the `lib.properties` file. It is activated just by  e.g:
+specifically for creating the `thin.properties` file. It is activated just by  e.g:
 
 ```groovy
 buildscript {
@@ -201,7 +201,7 @@ apply plugin: 'org.springframework.boot.experimental.thin-launcher'
 
 ### Generating a POM
 
-Instead of the `lib.properties` you can generate a pom in Gradle:
+Instead of the `thin.properties` you can generate a pom in Gradle:
 
 ```groovy
 apply plugin: 'maven'

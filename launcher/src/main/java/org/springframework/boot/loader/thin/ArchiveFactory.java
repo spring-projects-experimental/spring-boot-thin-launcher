@@ -333,11 +333,11 @@ public class ArchiveFactory {
 		private Properties loadLibraryProperties(Archive archive) {
 			UrlResource resource;
 			try {
-				resource = new UrlResource(archive.getUrl() + "META-INF/lib.properties");
+				resource = new UrlResource(archive.getUrl() + "META-INF/thin.properties");
 				Properties props = resource.exists()
 						? PropertiesLoaderUtils.loadProperties(resource)
 						: new Properties();
-				FileSystemResource local = new FileSystemResource("lib.properties");
+				FileSystemResource local = new FileSystemResource("thin.properties");
 				if (local.exists()) {
 					PropertiesLoaderUtils.fillProperties(props, local);
 				}

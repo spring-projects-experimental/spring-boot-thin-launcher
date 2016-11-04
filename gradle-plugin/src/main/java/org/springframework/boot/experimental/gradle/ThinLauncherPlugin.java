@@ -31,7 +31,7 @@ import org.gradle.api.tasks.TaskContainer;
  * <p>
  * If the Java plugin is applied to the project, a {@link GenerateLauncherPropertiesTask}
  * named {@code generateLibProperties} is added to the project. This task is configured to
- * use the {@code runtime} configuration to generate a {@code META-INF/lib.properties}
+ * use the {@code runtime} configuration to generate a {@code META-INF/thin.properties}
  * file in the {@code main} source set's resource output directory.
  *
  * @author Andy Wilkinson
@@ -68,7 +68,7 @@ public class ThinLauncherPlugin implements Plugin<Project> {
 		SourceSetContainer sourceSets = project.getConvention()
 				.getPlugin(JavaPluginConvention.class).getSourceSets();
 		File resourcesDir = sourceSets.getByName("main").getOutput().getResourcesDir();
-		libPropertiesTask.setOutput(new File(resourcesDir, "META-INF/lib.properties"));
+		libPropertiesTask.setOutput(new File(resourcesDir, "META-INF/thin.properties"));
 		project.getTasks().getByName(JavaPlugin.JAR_TASK_NAME).dependsOn(libPropertiesTask);
 	}
 
