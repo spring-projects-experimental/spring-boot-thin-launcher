@@ -20,6 +20,7 @@ import java.net.MalformedURLException;
 import java.util.List;
 
 import org.assertj.core.api.Condition;
+import org.junit.After;
 import org.junit.Test;
 
 import org.springframework.boot.loader.archive.Archive;
@@ -35,12 +36,28 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class ArchiveFactoryTests {
 
 	private ArchiveFactory factory = new ArchiveFactory();
+	
+	@After
+	public void close() {
+		System.clearProperty(ThinJarLauncher.THIN_NAME);
+		System.clearProperty(ThinJarLauncher.THIN_PROFILE);
+	}
 
 	@Test
 	public void dependenciesWithPlaceholders() throws Exception {
-		Archive child = new ExplodedArchive(new File("src/test/resources/apps/placeholders"));
+		Archive child = new ExplodedArchive(
+				new File("src/test/resources/apps/placeholders"));
 		List<Archive> result = factory.extract(child);
 		assertThat(result).isNotEmpty();
+	}
+
+	@Test
+	public void libsWithProfile() throws Exception {
+		Archive child = new ExplodedArchive(new File("src/test/resources/apps/eureka"));
+		System.setProperty(ThinJarLauncher.THIN_PROFILE, "extra");
+		List<Archive> result = factory.extract(child);
+		assertThat(result).size().isGreaterThan(3);
+		assertThat(result).areAtLeastOne(UrlContains.value("spring-boot-1.4.1.RELEASE"));
 	}
 
 	@Test

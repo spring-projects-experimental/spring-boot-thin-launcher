@@ -82,16 +82,24 @@ This will download all the dependencies to `${thin.root}/repository`,
 and look for Maven settings in `${thin.root}/settings.xml`.
 
 You can also do a "dry run", just to warm up the cache and not run the
-app, by setting a System property "thins.dryrun" (to any value). In
+app, by setting a System property "thin.dryrun" (to any value). In
 fact, since you don't need the application code for this (except the
 `META-INF/thin.properties`), you could run only the launcher, or the
 wrapper, which might be a useful trick for laying down a file system
 layer in a container image, for example.
 
 
-## Upgrades
+## Upgrades and Profiles
 
-You can upgrade all the libraries by changing the `thin.properties`.
+You can upgrade all the libraries by changing the
+`thin.properties`. You can also read a local `thin.properties` from
+the current working directory, or set a System property `thin.name` to
+change the local file name (defaults to `thin`). There is also a
+`thin.profile` (comma separated list) which is appended to
+`thin.name`, so additional libraries can be added using
+`thin-{profile}.properties`. Profile-specific properties are loaded
+last so they take precedence. You can exclude and remove dependencies
+by prepending a key in the properties file with `exlcusions.`.
 
 ## Packaging
 

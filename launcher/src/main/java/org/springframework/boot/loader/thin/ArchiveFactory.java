@@ -37,6 +37,7 @@ import org.eclipse.aether.resolution.ArtifactResolutionException;
 import org.springframework.boot.cli.compiler.RepositoryConfigurationFactory;
 import org.springframework.boot.cli.compiler.grape.DependencyResolutionContext;
 import org.springframework.boot.loader.archive.Archive;
+import org.springframework.boot.loader.archive.ExplodedArchive;
 import org.springframework.boot.loader.archive.JarFileArchive;
 import org.springframework.core.env.Environment;
 import org.springframework.core.env.StandardEnvironment;
@@ -274,11 +275,13 @@ public class ArchiveFactory {
 
 		private void compute(Archive root) {
 
+			// TODO: Maybe use something that conserves order?
+			Properties libs = new Properties();
 			addBoms(getPomDependencyManagement(root));
 			addDependencies(getPomDependencies(root));
+			loadLibraryProperties(libs, root);
+			loadLibraryProperties(libs, new ExplodedArchive(new File(".")));
 
-			// TODO: Maybe use something that conserves order?
-			Properties libs = loadLibraryProperties(root);
 			this.transitive = libs.getProperty("transitive.enabled", "true")
 					.equals("true");
 			for (String key : libs.stringPropertyNames()) {
@@ -339,11 +342,20 @@ public class ArchiveFactory {
 			return dependency(coordinates, "pom", "import");
 		}
 
-		private Properties loadLibraryProperties(Archive archive) {
-			Properties props = new Properties();
-			String prefixes = environment.resolvePlaceholders("${thin.name:thin}");
-			for (String prefix : prefixes.split(",")) {
-				String path = prefix + ".properties";
+		private Properties loadLibraryProperties(Properties props, Archive archive) {
+			String name = environment
+					.resolvePlaceholders("${" + ThinJarLauncher.THIN_NAME + ":thin}");
+			List<String> prefixes = new ArrayList<>(
+					Arrays.asList(environment
+							.resolvePlaceholders(
+									"${" + ThinJarLauncher.THIN_PROFILE + ":}")
+							.split(",")));
+			if (!prefixes.contains("")) {
+				prefixes.add(0, "");
+			}
+			for (String prefix : prefixes) {
+				String path = name + ("".equals(prefix) ? "" : "-") + prefix
+						+ ".properties";
 				loadProperties(props, archive, path);
 			}
 			return props;
@@ -360,10 +372,10 @@ public class ArchiveFactory {
 					}
 					PropertiesLoaderUtils.fillProperties(props, resource);
 				}
-				resource = new FileSystemResource(path);
+				resource = new UrlResource(archive.getUrl() + "/" + path);
 				if (resource.exists()) {
 					if (debug) {
-						System.out.println("Loading properties from local: " + resource);
+						System.out.println("Loading properties from archive: " + path);
 					}
 					PropertiesLoaderUtils.fillProperties(props, resource);
 				}
@@ -377,8 +389,9 @@ public class ArchiveFactory {
 		private Dependency dependency(String coordinates) {
 			return dependency(coordinates, "jar", "compile");
 		}
-		
-		private Dependency dependency(String coordinates, String defaultExtension, String scope) {
+
+		private Dependency dependency(String coordinates, String defaultExtension,
+				String scope) {
 			String[] parts = coordinates.split(":");
 			if (parts.length < 2) {
 				throw new IllegalArgumentException(

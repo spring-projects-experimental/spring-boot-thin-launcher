@@ -63,6 +63,17 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 	 */
 	public static final String THIN_ARCHIVE = "thin.archive";
 
+	/**
+	 * The name of the launchable (i.e. the properties file name).
+	 */
+	public static final String THIN_NAME = "thin.name";
+
+	/**
+	 * The name of the profile to run, changing the location of the properties files to
+	 * look up.
+	 */
+	public static final String THIN_PROFILE = "thin.profile";
+
 	private ArchiveFactory archives = new ArchiveFactory();
 	private Environment environment = new StandardEnvironment();
 	private boolean debug;
