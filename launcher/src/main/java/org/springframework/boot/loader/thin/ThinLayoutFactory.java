@@ -16,8 +16,10 @@
 
 package org.springframework.boot.loader.thin;
 
+import org.springframework.boot.loader.tools.DefaultLayoutFactory;
 import org.springframework.boot.loader.tools.Layout;
 import org.springframework.boot.loader.tools.LayoutFactory;
+import org.springframework.boot.loader.tools.LayoutType;
 
 /**
  * @author Dave Syer
@@ -25,14 +27,14 @@ import org.springframework.boot.loader.tools.LayoutFactory;
  */
 public class ThinLayoutFactory implements LayoutFactory {
 
-	@Override
-	public Layout getLayout() {
-		return new ThinLayout();
-	}
+	private LayoutFactory delegate = new DefaultLayoutFactory();
 
 	@Override
-	public String getName() {
-		return "THIN";
+	public Layout getLayout(LayoutType type) {
+		if (type == LayoutType.JAR) {
+			return new ThinLayout();
+		}
+		return delegate.getLayout(type);
 	}
 
 }

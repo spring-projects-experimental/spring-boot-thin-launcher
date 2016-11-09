@@ -35,7 +35,7 @@ repositories {
 	maven { url "https://repo.spring.io/milestone" }
 }
 
-springBoot { layout = 'THIN' }
+springBoot { layoutFactory = new org.springframework.boot.loader.thin.ThinLayoutFactory() }
 
 configurations { compile.exclude module: 'spring-boot-starter-tomcat' }
 

@@ -44,7 +44,7 @@ public class AppGradleIT {
 	@Test
 	public void runJar() throws Exception {
 		ProcessBuilder builder = new ProcessBuilder("java", "-Xmx64m", "-jar",
-				"../app/build/libs/app-0.0.1-SNAPSHOT.jar");
+				"../app/build/libs/app-0.0.1-SNAPSHOT.jar", "--server.port=0");
 		builder.redirectErrorStream(true);
 		started = builder.start();
 		String output = output(started.getInputStream(), "Started");
