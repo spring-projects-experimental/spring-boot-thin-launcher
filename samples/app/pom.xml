@@ -67,9 +67,6 @@
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
 				<version>${spring-boot.version}</version>
-				<configuration>
-					<layoutFactory implementation="org.springframework.boot.loader.thin.ThinLayoutFactory"/>
-				</configuration>
 				<dependencies>
 					<dependency>
 						<groupId>org.springframework.boot.experimental</groupId>

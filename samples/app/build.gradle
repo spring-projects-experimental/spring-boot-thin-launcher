@@ -42,8 +42,6 @@ repositories {
 	maven { url "https://repo.spring.io/milestone" }
 }
 
-springBoot { layoutFactory = new org.springframework.boot.loader.thin.ThinLayoutFactory() }
-
 dependencies {
 	compile('org.springframework.boot:spring-boot-starter')
 	testCompile('org.springframework.boot:spring-boot-starter-test')
