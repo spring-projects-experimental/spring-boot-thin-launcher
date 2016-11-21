@@ -43,7 +43,8 @@ public class ThinJarWrapper {
 
 	/**
 	 * System property key used to store location of main archive (the one that this class
-	 * is found in).
+	 * is found in). Can also be used to run a different archive, resolving it via a URL
+	 * or a "maven://group:artifact:version".
 	 */
 	public static final String THIN_ARCHIVE = "thin.archive";
 
@@ -67,8 +68,10 @@ public class ThinJarWrapper {
 
 	public static void main(String[] args) throws Exception {
 		Class<?> launcher = ThinJarWrapper.class;
-		System.setProperty(THIN_ARCHIVE, launcher.getProtectionDomain().getCodeSource()
-				.getLocation().toURI().toString());
+		if (getProperty(THIN_ARCHIVE) == null) {
+			System.setProperty(THIN_ARCHIVE, launcher.getProtectionDomain()
+					.getCodeSource().getLocation().toURI().toString());
+		}
 		new ThinJarWrapper().launch(args);
 	}
 
@@ -127,7 +130,7 @@ public class ThinJarWrapper {
 	}
 
 	static String getProperty(String key) {
-		if (System.getProperty(key)!=null) {
+		if (System.getProperty(key) != null) {
 			return System.getProperty(key);
 		}
 		return System.getenv(key.replace(".", "_").toUpperCase());

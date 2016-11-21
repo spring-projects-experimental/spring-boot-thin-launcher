@@ -20,9 +20,16 @@ import java.io.File;
 import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.jar.JarFile;
 
+import org.eclipse.aether.artifact.DefaultArtifact;
+import org.eclipse.aether.graph.Dependency;
+import org.eclipse.aether.resolution.ArtifactResolutionException;
+
+import org.springframework.boot.cli.compiler.RepositoryConfigurationFactory;
+import org.springframework.boot.cli.compiler.grape.DependencyResolutionContext;
 import org.springframework.boot.loader.ExecutableArchiveLauncher;
 import org.springframework.boot.loader.LaunchedURLClassLoader;
 import org.springframework.boot.loader.archive.Archive;
@@ -144,7 +151,7 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 	}
 
 	private static URI findArchive() throws Exception {
-		String path = System.getProperty(THIN_ARCHIVE);
+		String path = findPath();
 		URI archive = path == null ? null : new URI(path);
 		File dir = new File("target/classes");
 		if (archive == null && dir.exists()) {
@@ -161,6 +168,29 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 			archive = dir.toURI();
 		}
 		return archive;
+	}
+
+	private static String findPath() {
+		String property = System.getProperty(THIN_ARCHIVE);
+		if (property==null) {
+			return null;
+		}
+		if (property.startsWith("maven:")) {
+			// Resolving an explicit external archive 
+			String coordinates = property.replaceFirst("maven:\\/*", "");
+			DependencyResolutionContext context = new DependencyResolutionContext();
+			AetherEngine engine = AetherEngine.create(
+					RepositoryConfigurationFactory.createDefaultRepositoryConfiguration(),
+					context);
+			try {
+				List<File> resolved = engine.resolve(Arrays.asList(new Dependency(new DefaultArtifact(coordinates), "runtime")), false);
+				return resolved.get(0).toURI().toString();
+			}
+			catch (ArtifactResolutionException e) {
+				throw new IllegalStateException("Cannot resolve archive: " + coordinates, e);
+			}
+		}
+		return property;
 	}
 
 	@Override

@@ -55,7 +55,7 @@ import org.springframework.util.StringUtils;
  */
 public class ArchiveFactory {
 
-	private static final String DEFAULT_BOM = "org.springframework.boot:spring-boot-dependencies:1.4.1.RELEASE";
+	private static final String DEFAULT_BOM = "org.springframework.boot:spring-boot-dependencies:1.4.2.RELEASE";
 	private boolean debug;
 
 	/**

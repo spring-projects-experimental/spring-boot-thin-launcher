@@ -16,33 +16,39 @@
 
 package org.springframework.boot.loader.thin;
 
+import java.io.File;
+import java.io.IOException;
+
+import org.springframework.boot.loader.tools.JarWriter;
 import org.springframework.boot.loader.tools.Layout;
-import org.springframework.boot.loader.tools.LibraryScope;
+import org.springframework.boot.loader.tools.Repackager;
+import org.springframework.boot.loader.tools.RepackagerFactory;
 
 /**
  * @author Dave Syer
  *
  */
-public class ThinLayout implements Layout {
+public class ThinRepackagerFactory implements RepackagerFactory {
 
-	@Override
-	public String getLauncherClassName() {
-		return "org.springframework.boot.loader.wrapper.ThinJarWrapper";
+	private final class RepackagerExtension extends Repackager {
+		private RepackagerExtension(File source) {
+			super(source);
+			super.setLayout(new ThinLayout());
+		}
+
+		@Override
+		protected void writeLoaderClasses(JarWriter writer) throws IOException {
+			writer.writeLoaderClasses("META-INF/loader/spring-boot-thin-wrapper.jar");
+		}
+
+		@Override
+		public void setLayout(Layout layout) {
+		}
 	}
 
 	@Override
-	public String getLibraryDestination(String libraryName, LibraryScope scope) {
-		return null;
-	}
-
-	@Override
-	public String getClassesLocation() {
-		return "";
-	}
-
-	@Override
-	public boolean isExecutable() {
-		return true;
+	public Repackager getRepackager(File source) {
+		return new RepackagerExtension(source);
 	}
 
 }
