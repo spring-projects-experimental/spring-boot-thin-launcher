@@ -23,6 +23,8 @@ import java.io.OutputStream;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * @author Dave Syer
@@ -143,23 +145,27 @@ public class ThinJarWrapper {
 		private String artifactId;
 		private String version;
 		private String classifier;
+		private String extension;
 
 		public Library(String coordinates) {
 			this.coordinates = coordinates;
-			String[] parts = coordinates.split(":");
-			if (parts.length < 3) {
-				throw new IllegalArgumentException(
-						"Co-ordinates should contain group:artifact[:classifier]:version");
+			Pattern p = Pattern
+					.compile("([^: ]+):([^: ]+)(:([^: ]*)(:([^: ]+))?)?:([^: ]+)");
+			Matcher m = p.matcher(coordinates);
+			if (!m.matches()) {
+				throw new IllegalArgumentException("Bad artifact coordinates "
+						+ coordinates
+						+ ", expected format is <groupId>:<artifactId>[:<extension>[:<classifier>]]:<version>");
 			}
-			if (parts.length > 3) {
-				this.classifier = parts[2];
-				this.version = parts[3];
-			}
-			else {
-				this.version = parts[2];
-			}
-			this.groupId = parts[0];
-			this.artifactId = parts[1];
+			this.groupId = m.group(1);
+			this.artifactId = m.group(2);
+			this.extension = get(m.group(4), "jar");
+			this.classifier = get(m.group(6), null);
+			this.version = m.group(7);
+		}
+
+		private static String get(String value, String defaultValue) {
+			return (value == null || value.length() <= 0) ? defaultValue : value;
 		}
 
 		public void download(String path) {
@@ -228,10 +234,14 @@ public class ThinJarWrapper {
 			return classifier;
 		}
 
+		public String getExtension() {
+			return extension;
+		}
+
 		public String getPath() {
 			return "/" + groupId.replace(".", "/") + "/" + artifactId + "/" + version
 					+ "/" + artifactId + "-" + version
-					+ (classifier != null ? "-" + classifier : "") + ".jar";
+					+ (classifier != null ? "-" + classifier : "") + "." + this.extension;
 		}
 
 	}
