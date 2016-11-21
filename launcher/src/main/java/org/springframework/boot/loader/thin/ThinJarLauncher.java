@@ -151,46 +151,48 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 	}
 
 	private static URI findArchive() throws Exception {
-		String path = findPath();
-		URI archive = path == null ? null : new URI(path);
+		URI archive = findPath();
+		if (archive != null) {
+			return archive;
+		}
 		File dir = new File("target/classes");
-		if (archive == null && dir.exists()) {
-			archive = dir.toURI();
+		if (dir.exists()) {
+			return dir.toURI();
 		}
-		if (archive == null) {
-			dir = new File("build/classes");
-			if (dir.exists()) {
-				archive = dir.toURI();
-			}
+		dir = new File("build/classes");
+		if (dir.exists()) {
+			return dir.toURI();
 		}
-		if (archive == null) {
-			dir = new File(".");
-			archive = dir.toURI();
-		}
-		return archive;
+		dir = new File(".");
+		return dir.toURI();
 	}
 
-	private static String findPath() {
+	private static URI findPath() throws Exception {
 		String property = System.getProperty(THIN_ARCHIVE);
-		if (property==null) {
+		if (property == null) {
 			return null;
 		}
 		if (property.startsWith("maven:")) {
-			// Resolving an explicit external archive 
+			// Resolving an explicit external archive
 			String coordinates = property.replaceFirst("maven:\\/*", "");
 			DependencyResolutionContext context = new DependencyResolutionContext();
 			AetherEngine engine = AetherEngine.create(
 					RepositoryConfigurationFactory.createDefaultRepositoryConfiguration(),
 					context);
 			try {
-				List<File> resolved = engine.resolve(Arrays.asList(new Dependency(new DefaultArtifact(coordinates), "runtime")), false);
-				return resolved.get(0).toURI().toString();
+				List<File> resolved = engine
+						.resolve(
+								Arrays.asList(new Dependency(
+										new DefaultArtifact(coordinates), "runtime")),
+								false);
+				return resolved.get(0).toURI();
 			}
 			catch (ArtifactResolutionException e) {
-				throw new IllegalStateException("Cannot resolve archive: " + coordinates, e);
+				throw new IllegalStateException("Cannot resolve archive: " + coordinates,
+						e);
 			}
 		}
-		return property;
+		return new URI(property);
 	}
 
 	@Override
