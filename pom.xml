@@ -17,6 +17,7 @@
 	<modules>
 		<module>wrapper</module>
 		<module>launcher</module>
+		<module>maven-plugin</module>
 		<module>gradle-plugin</module>
 		<module>samples</module>
 	</modules>

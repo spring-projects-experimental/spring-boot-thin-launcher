@@ -102,17 +102,8 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 		super(archive);
 	}
 	
-	public File getArchiveFile() {
-		try {
-			return new File(getArchive().getUrl().toURI());
-		}
-		catch (Exception e) {
-			throw new IllegalStateException("Not a file: " + getArchive());
-		}
-	}
-
 	@Override
-	public void launch(String[] args) throws Exception {
+	protected void launch(String[] args) throws Exception {
 		addCommandLineProperties(args);
 		String root = environment.resolvePlaceholders("${" + THIN_ROOT + ":}");
 		this.debug = !"false".equals(environment.resolvePlaceholders("${debug:false}"));
