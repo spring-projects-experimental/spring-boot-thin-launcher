@@ -16,14 +16,18 @@
 
 package org.springframework.boot.loader.thin;
 
+import java.io.IOException;
+
+import org.springframework.boot.loader.tools.CustomLoaderLayout;
 import org.springframework.boot.loader.tools.Layout;
 import org.springframework.boot.loader.tools.LibraryScope;
+import org.springframework.boot.loader.tools.LoaderClassesWriter;
 
 /**
  * @author Dave Syer
  *
  */
-public class ThinLayout implements Layout {
+public class ThinLayout implements Layout, CustomLoaderLayout {
 
 	@Override
 	public String getLauncherClassName() {
@@ -43,6 +47,11 @@ public class ThinLayout implements Layout {
 	@Override
 	public boolean isExecutable() {
 		return true;
+	}
+
+	@Override
+	public void writeLoadedClasses(LoaderClassesWriter writer) throws IOException {
+		writer.writeLoaderClasses("META-INF/loader/spring-boot-thin-wrapper.jar");
 	}
 
 }

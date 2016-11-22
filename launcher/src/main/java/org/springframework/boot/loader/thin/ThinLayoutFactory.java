@@ -17,38 +17,19 @@
 package org.springframework.boot.loader.thin;
 
 import java.io.File;
-import java.io.IOException;
 
-import org.springframework.boot.loader.tools.JarWriter;
 import org.springframework.boot.loader.tools.Layout;
-import org.springframework.boot.loader.tools.Repackager;
-import org.springframework.boot.loader.tools.RepackagerFactory;
+import org.springframework.boot.loader.tools.LayoutFactory;
 
 /**
  * @author Dave Syer
  *
  */
-public class ThinRepackagerFactory implements RepackagerFactory {
-
-	private final class RepackagerExtension extends Repackager {
-		private RepackagerExtension(File source) {
-			super(source);
-			super.setLayout(new ThinLayout());
-		}
-
-		@Override
-		protected void writeLoaderClasses(JarWriter writer) throws IOException {
-			writer.writeLoaderClasses("META-INF/loader/spring-boot-thin-wrapper.jar");
-		}
-
-		@Override
-		public void setLayout(Layout layout) {
-		}
-	}
+public class ThinLayoutFactory implements LayoutFactory {
 
 	@Override
-	public Repackager getRepackager(File source) {
-		return new RepackagerExtension(source);
+	public Layout getLayout(File source) {
+		return new ThinLayout();
 	}
 
 }

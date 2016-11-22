@@ -37,7 +37,8 @@ import org.springframework.boot.loader.archive.Archive.Entry;
 import org.springframework.boot.loader.archive.ExplodedArchive;
 import org.springframework.boot.loader.archive.JarFileArchive;
 import org.springframework.boot.loader.tools.MainClassFinder;
-import org.springframework.core.env.Environment;
+import org.springframework.core.env.MutablePropertySources;
+import org.springframework.core.env.SimpleCommandLinePropertySource;
 import org.springframework.core.env.StandardEnvironment;
 import org.springframework.util.StringUtils;
 
@@ -82,7 +83,7 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 	public static final String THIN_PROFILE = "thin.profile";
 
 	private ArchiveFactory archives = new ArchiveFactory();
-	private Environment environment = new StandardEnvironment();
+	private StandardEnvironment environment = new StandardEnvironment();
 	private boolean debug;
 
 	public static void main(String[] args) throws Exception {
@@ -90,15 +91,29 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 	}
 
 	public ThinJarLauncher() throws Exception {
-		this(computeArchive());
+		this(computeArchive(System.getProperty(THIN_ARCHIVE)));
+	}
+
+	public ThinJarLauncher(String path) throws Exception {
+		this(computeArchive(path));
 	}
 
 	public ThinJarLauncher(Archive archive) {
 		super(archive);
 	}
+	
+	public File getArchiveFile() {
+		try {
+			return new File(getArchive().getUrl().toURI());
+		}
+		catch (Exception e) {
+			throw new IllegalStateException("Not a file: " + getArchive());
+		}
+	}
 
 	@Override
-	protected void launch(String[] args) throws Exception {
+	public void launch(String[] args) throws Exception {
+		addCommandLineProperties(args);
 		String root = environment.resolvePlaceholders("${" + THIN_ROOT + ":}");
 		this.debug = !"false".equals(environment.resolvePlaceholders("${debug:false}"));
 		this.archives.setDebug(debug);
@@ -116,6 +131,21 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 			return;
 		}
 		super.launch(args);
+	}
+
+	private void addCommandLineProperties(String[] args) {
+		if (args == null || args.length == 0) {
+			return;
+		}
+		MutablePropertySources properties = environment.getPropertySources();
+		SimpleCommandLinePropertySource source = new SimpleCommandLinePropertySource(
+				"commandArgs", args);
+		if (!properties.contains("commandArgs")) {
+			properties.addFirst(source);
+		}
+		else {
+			properties.replace("commandArgs", source);
+		}
 	}
 
 	protected ClassLoader createClassLoader(URL[] urls) throws Exception {
@@ -142,16 +172,16 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 		}
 	}
 
-	private static Archive computeArchive() throws Exception {
-		File file = new File(findArchive());
+	private static Archive computeArchive(String path) throws Exception {
+		File file = new File(findArchive(path));
 		if (file.isDirectory()) {
 			return new ExplodedArchive(file);
 		}
 		return new JarFileArchive(file);
 	}
 
-	private static URI findArchive() throws Exception {
-		URI archive = findPath();
+	private static URI findArchive(String path) throws Exception {
+		URI archive = findPath(path);
 		if (archive != null) {
 			return archive;
 		}
@@ -167,14 +197,13 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 		return dir.toURI();
 	}
 
-	private static URI findPath() throws Exception {
-		String property = System.getProperty(THIN_ARCHIVE);
-		if (property == null) {
+	private static URI findPath(String path) throws Exception {
+		if (path == null) {
 			return null;
 		}
-		if (property.startsWith("maven:")) {
+		if (path.startsWith("maven:")) {
 			// Resolving an explicit external archive
-			String coordinates = property.replaceFirst("maven:\\/*", "");
+			String coordinates = path.replaceFirst("maven:\\/*", "");
 			DependencyResolutionContext context = new DependencyResolutionContext();
 			AetherEngine engine = AetherEngine.create(
 					RepositoryConfigurationFactory.createDefaultRepositoryConfiguration(),
@@ -192,7 +221,7 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 						e);
 			}
 		}
-		return new URI(property);
+		return new URI(path);
 	}
 
 	@Override

@@ -1,2 +1,2 @@
-org.springframework.boot.loader.tools.RepackagerFactory=\
-org.springframework.boot.loader.thin.ThinRepackagerFactory
+org.springframework.boot.loader.tools.LayoutFactory=\
+org.springframework.boot.loader.thin.ThinLayoutFactory
