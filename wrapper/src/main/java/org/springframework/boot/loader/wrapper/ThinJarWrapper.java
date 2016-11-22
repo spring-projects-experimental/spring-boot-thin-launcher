@@ -110,16 +110,19 @@ public class ThinJarWrapper {
 	}
 
 	private URL[] getUrls() throws Exception {
-		library.download(mavenLocal());
+		library.download(mavenLocal(), mavenLocal(null));
 		return new URL[] { new File(mavenLocal() + library.getPath()).toURI().toURL() };
 	}
 
 	String mavenLocal() {
-		return mvnHome() + "/repository";
+		return mavenLocal(getProperty(THIN_ROOT));
 	}
 
-	private String mvnHome() {
-		String home = getProperty(THIN_ROOT);
+	private String mavenLocal(String home) {
+		return mvnHome(home) + "/repository";
+	}
+
+	private String mvnHome(String home) {
 		if (home != null) {
 			return home;
 		}
@@ -168,48 +171,70 @@ public class ThinJarWrapper {
 			return (value == null || value.length() <= 0) ? defaultValue : value;
 		}
 
-		public void download(String path) {
+		public void download(String path, String defaultPath) {
+			if (path==null) {
+				path = defaultPath;
+			}
 			File target = new File(path + getPath());
-			if (!target.exists()) {
-				String repo = repo();
-				InputStream input = null;
-				OutputStream output = null;
-				try {
-					input = new URL(repo + getPath()).openStream();
-					if (target.getParentFile().mkdirs()) {
-						output = new FileOutputStream(target);
-						byte[] bytes = new byte[4096];
-						int count = input.read(bytes);
-						while (count > 0) {
-							output.write(bytes, 0, count);
-							count = input.read(bytes);
-						}
-					}
+			if (!target.exists() && target.getParentFile().mkdirs()) {
+				boolean result = false;
+				if (!defaultPath.equals(path)) {
+					// Try local repo first
+					result = downloadFromUrl(getUrl(defaultPath), target);
 				}
-				catch (Exception e) {
+				if (!result) {
+					result = downloadFromUrl(repo(), target);
+				}
+				if (!result) {
 					throw new IllegalStateException(
-							"Cannot download library for launcher " + coordinates, e);
-				}
-				finally {
-					if (input != null) {
-						try {
-							input.close();
-						}
-						catch (Exception e) {
-						}
-					}
-					if (output != null) {
-						try {
-							output.close();
-						}
-						catch (Exception e) {
-						}
-					}
+							"Cannot download library for launcher " + coordinates);
 				}
 			}
 		}
 
-		private static String repo() {
+		private String getUrl(String file) {
+			if (!file.startsWith(".") && !file.startsWith("/")) {
+				file = "./" + file;
+			}
+			return "file://" + file;
+		}
+
+		private boolean downloadFromUrl(String repo, File target) {
+			InputStream input = null;
+			OutputStream output = null;
+			try {
+				input = new URL(repo + getPath()).openStream();
+				output = new FileOutputStream(target);
+				byte[] bytes = new byte[4096];
+				int count = input.read(bytes);
+				while (count > 0) {
+					output.write(bytes, 0, count);
+					count = input.read(bytes);
+				}
+				return true;
+			}
+			catch (Exception e) {
+			}
+			finally {
+				if (input != null) {
+					try {
+						input.close();
+					}
+					catch (Exception e) {
+					}
+				}
+				if (output != null) {
+					try {
+						output.close();
+					}
+					catch (Exception e) {
+					}
+				}
+			}
+			return false;
+		}
+
+		private String repo() {
 			String repo = getProperty(THIN_REPO);
 			return repo != null ? repo : "https://repo.spring.io/libs-snapshot";
 		}

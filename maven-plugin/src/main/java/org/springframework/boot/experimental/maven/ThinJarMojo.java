@@ -129,16 +129,13 @@ public class ThinJarMojo extends AbstractMojo {
 	protected void runWithForkedJvm(File archive, File workingDirectory, String... args)
 			throws MojoExecutionException {
 
-		String localRepo = RepositorySystem.defaultUserLocalRepository.toURI().toString();
-
 		try {
 			RunProcess runProcess = new RunProcess(workingDirectory,
-					new JavaExecutable().toString(), "-Dthin.dryrun",
-					"-Dthin.repo=" + localRepo, "-Dthin.root=.", "-jar",
-					archive.getName());
+					new JavaExecutable().toString(), "-Dthin.dryrun", "-Dthin.root=.",
+					"-jar", archive.getName());
 			Runtime.getRuntime()
 					.addShutdownHook(new Thread(new RunProcessKiller(runProcess)));
-			getLog().debug("Running: " + archive + " with local repo: " + localRepo);
+			getLog().debug("Running: " + archive);
 			int exitCode = runProcess.run(true, args);
 			if (exitCode == 0 || exitCode == EXIT_CODE_SIGINT) {
 				return;

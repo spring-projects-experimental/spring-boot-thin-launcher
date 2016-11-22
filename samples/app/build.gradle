@@ -1,4 +1,4 @@
-import javax.swing.LayoutFocusTraversalPolicy;
+import org.gradle.internal.jvm.Jvm;
 
 buildscript {
 	ext {
@@ -32,6 +32,20 @@ jar {
 	baseName = 'app'
 	version = '0.0.1-SNAPSHOT'
 }
+
+task(prepareResolve, type: Copy) {
+	dependsOn = [bootRepackage]
+	from jar.archivePath
+	into 'build/thin/root'
+}
+
+task(resolve, type: Exec) {
+	dependsOn = [prepareResolve]
+	workingDir 'build/thin/root'
+	commandLine Jvm.current().javaExecutable
+	args "-Dthin.root=.", "-Dthin.dryrun", "-jar", jar.archiveName
+}
+
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
