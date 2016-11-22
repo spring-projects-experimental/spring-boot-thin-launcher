@@ -39,10 +39,21 @@ import org.springframework.boot.loader.tools.JavaExecutable;
 import org.springframework.boot.loader.tools.RunProcess;
 
 /**
+ * Resolves the dependencies for a thin jar artifact (or a set of them). The deployable
+ * artifact is copied to <code>target/thin/root</code> by default, and then it is executed
+ * with <code>-Dthin.root=.</code> in "dry run" mode. As a result, it can be executed
+ * efficiently again from that directory, without downloading any more libraries. I.e.
+ * 
+ * <pre>
+ * $ mvn package spring-boot-thin:resolve
+ * $ cd target/thin/root
+ * $ java -Dthin.root=. -jar *.jar
+ * </pre>
+ * 
  * @author Dave Syer
  *
  */
-@Mojo(name = "resolve", defaultPhase = LifecyclePhase.PACKAGE, requiresProject = true, threadSafe = true, requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME, requiresDependencyCollection = ResolutionScope.COMPILE_PLUS_RUNTIME)
+@Mojo(name = "resolve", defaultPhase = LifecyclePhase.PACKAGE, requiresProject = true, threadSafe = true, requiresDependencyResolution = ResolutionScope.NONE, requiresDependencyCollection = ResolutionScope.NONE)
 public class ThinJarMojo extends AbstractMojo {
 
 	/**

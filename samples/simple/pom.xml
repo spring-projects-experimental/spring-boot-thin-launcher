@@ -84,7 +84,6 @@
 				<executions>
 					<execution>
 						<id>resolve</id>
-						<phase>package</phase>
 						<goals>
 							<goal>resolve</goal>
 						</goals>
