@@ -36,12 +36,12 @@ jar {
 task(prepareResolve, type: Copy) {
 	dependsOn = [bootRepackage]
 	from jar.archivePath
-	into 'build/thin/root'
+	into "${buildDir}/thin/root"
 }
 
 task(resolve, type: Exec) {
 	dependsOn = [prepareResolve]
-	workingDir 'build/thin/root'
+	workingDir "${buildDir}/thin/root"
 	commandLine Jvm.current().javaExecutable
 	args "-Dthin.root=.", "-Dthin.dryrun", "-jar", jar.archiveName
 }

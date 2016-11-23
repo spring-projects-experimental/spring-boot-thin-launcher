@@ -17,14 +17,20 @@
 package org.springframework.boot.experimental.gradle;
 
 import java.io.File;
+import java.util.Arrays;
 
 import org.gradle.api.Action;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
+import org.gradle.api.Task;
 import org.gradle.api.plugins.JavaPlugin;
 import org.gradle.api.plugins.JavaPluginConvention;
+import org.gradle.api.tasks.Copy;
+import org.gradle.api.tasks.Exec;
 import org.gradle.api.tasks.SourceSetContainer;
 import org.gradle.api.tasks.TaskContainer;
+import org.gradle.internal.jvm.Jvm;
+import org.gradle.jvm.tasks.Jar;
 
 /**
  * Gradle {@link Plugin} for Spring Boot's thin launcher.
@@ -47,29 +53,64 @@ public class ThinLauncherPlugin implements Plugin<Project> {
 			}
 
 		});
+		target.getTasks().withType(Jar.class, new Action<Jar>() {
+
+			@Override
+			public void execute(Jar jar) {
+				createCopyTask(target, jar);
+				createResolveTask(target, jar);
+			}
+
+		});
+	}
+
+	private void createCopyTask(Project target, Jar jar) {
+		Copy copy = target.getTasks().create("thinResolvePrepare", Copy.class);
+		copy.dependsOn("bootRepackage");
+		copy.from(jar.getOutputs().getFiles());
+		copy.into(new File(target.getBuildDir(), "thin/root"));
+	}
+
+	private void createResolveTask(final Project target, final Jar jar) {
+		final Exec exec = target.getTasks().create("thinResolve", Exec.class);
+		exec.dependsOn("thinResolvePrepare");
+		exec.setWorkingDir(new File(target.getBuildDir(), "thin/root"));
+		exec.doFirst(new Action<Task>() {
+			@Override
+			public void execute(Task task) {
+				exec.setCommandLine(Jvm.current().getJavaExecutable());
+				exec.args(Arrays.asList("-Dthin.root=.", "-Dthin.dryrun", "-jar",
+						jar.getArchiveName()));
+			}
+		});
 	}
 
 	private void createLibPropertiesTask(final Project project) {
 		TaskContainer taskContainer = project.getTasks();
-		taskContainer.create("generateLibProperties", GenerateLauncherPropertiesTask.class, new Action<GenerateLauncherPropertiesTask>() {
+		taskContainer.create("generateLibProperties",
+				GenerateLauncherPropertiesTask.class,
+				new Action<GenerateLauncherPropertiesTask>() {
 
-				@Override
-				public void execute(GenerateLauncherPropertiesTask libPropertiesTask) {
-					configureLibPropertiesTask(libPropertiesTask, project);
-				}
+					@Override
+					public void execute(
+							GenerateLauncherPropertiesTask libPropertiesTask) {
+						configureLibPropertiesTask(libPropertiesTask, project);
+					}
 
-		});
+				});
 
 	}
 
-	private void configureLibPropertiesTask(GenerateLauncherPropertiesTask libPropertiesTask, Project project) {
+	private void configureLibPropertiesTask(
+			GenerateLauncherPropertiesTask libPropertiesTask, Project project) {
 		libPropertiesTask.setConfiguration(project.getConfigurations()
 				.getByName(JavaPlugin.RUNTIME_CONFIGURATION_NAME));
 		SourceSetContainer sourceSets = project.getConvention()
 				.getPlugin(JavaPluginConvention.class).getSourceSets();
 		File resourcesDir = sourceSets.getByName("main").getOutput().getResourcesDir();
 		libPropertiesTask.setOutput(new File(resourcesDir, "META-INF/thin.properties"));
-		project.getTasks().getByName(JavaPlugin.JAR_TASK_NAME).dependsOn(libPropertiesTask);
+		project.getTasks().getByName(JavaPlugin.JAR_TASK_NAME)
+				.dependsOn(libPropertiesTask);
 	}
 
 }
