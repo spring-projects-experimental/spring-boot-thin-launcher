@@ -63,7 +63,7 @@ import org.springframework.boot.cli.compiler.grape.RepositorySystemSessionAutoCo
 import org.springframework.util.StringUtils;
 
 /**
- * A {@link GrapeEngine} implementation that uses
+ * A utility that resolves dependencies using
  * <a href="http://eclipse.org/aether">Aether</a>, the dependency resolution system used
  * by Maven.
  *
@@ -362,7 +362,8 @@ public class AetherEngine {
 								RepositoryPolicy.CHECKSUM_POLICY_IGNORE));
 			}
 			else {
-				// Artifactory by convention gives no access to releases in a snapshot repo
+				// Artifactory by convention gives no access to releases in a snapshot
+				// repo
 				builder.setReleasePolicy(
 						new RepositoryPolicy(false, RepositoryPolicy.UPDATE_POLICY_NEVER,
 								RepositoryPolicy.CHECKSUM_POLICY_IGNORE));

@@ -36,6 +36,7 @@ import org.eclipse.aether.resolution.ArtifactResolutionException;
 
 import org.springframework.boot.cli.compiler.RepositoryConfigurationFactory;
 import org.springframework.boot.cli.compiler.grape.DependencyResolutionContext;
+import org.springframework.boot.cli.compiler.grape.RepositoryConfiguration;
 import org.springframework.boot.loader.archive.Archive;
 import org.springframework.boot.loader.archive.ExplodedArchive;
 import org.springframework.boot.loader.archive.JarFileArchive;
@@ -197,9 +198,9 @@ public class ArchiveFactory {
 
 		public List<File> resolve() {
 			DependencyResolutionContext context = new DependencyResolutionContext();
-			AetherEngine engine = AetherEngine.create(
-					RepositoryConfigurationFactory.createDefaultRepositoryConfiguration(),
-					context);
+			List<RepositoryConfiguration> repositories = RepositoryConfigurationFactory
+					.createDefaultRepositoryConfiguration();
+			AetherEngine engine = AetherEngine.create(repositories, context);
 			engine.addDependencyManagementBoms(new ArrayList<>(boms.values()));
 			List<File> files;
 			try {

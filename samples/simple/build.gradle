@@ -28,8 +28,8 @@ jar {
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
-thinLauncher {
-	outputDirectory = new File("${buildDir}/thin/deploy")
+thinResolvePrepare {
+	into new File("${buildDir}/thin/deploy")
 }
 
 repositories {

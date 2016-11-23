@@ -18,7 +18,6 @@ package org.springframework.boot.experimental.gradle;
 
 import java.io.File;
 import java.util.Arrays;
-import java.util.List;
 
 import org.gradle.api.Action;
 import org.gradle.api.Plugin;
@@ -46,8 +45,6 @@ import org.gradle.jvm.tasks.Jar;
 public class ThinLauncherPlugin implements Plugin<Project> {
 
 	public void apply(final Project project) {
-		project.getExtensions().create("thinLauncher", ThinLauncherPluginExtension.class,
-				project);
 		project.getPlugins().withType(JavaPlugin.class, new Action<JavaPlugin>() {
 
 			@Override
@@ -69,19 +66,9 @@ public class ThinLauncherPlugin implements Plugin<Project> {
 
 	private void createCopyTask(final Project project, final Jar jar) {
 		final Copy copy = project.getTasks().create("thinResolvePrepare", Copy.class);
-		final ThinLauncherPluginExtension extension = project.getExtensions()
-				.getByType(ThinLauncherPluginExtension.class);
 		copy.dependsOn("bootRepackage");
 		copy.from(jar.getOutputs().getFiles());
-		copy.into(extension.getOutputDirectory());
-		copy.doFirst(new Action<Task>() {
-			@Override
-			public void execute(Task task) {
-				// hack to make sure it picks up the user-configured destination before it
-				// runs:
-				copy.into(extension.getOutputDirectory());
-			}
-		});
+		copy.into(new File(project.getBuildDir(), "thin/root"));
 	}
 
 	private void createResolveTask(final Project project, final Jar jar) {
@@ -91,9 +78,8 @@ public class ThinLauncherPlugin implements Plugin<Project> {
 			@SuppressWarnings("unchecked")
 			@Override
 			public void execute(Task task) {
-				ThinLauncherPluginExtension extension = project.getExtensions()
-						.getByType(ThinLauncherPluginExtension.class);
-				exec.setWorkingDir(extension.getOutputDirectory());
+				Copy copy = (Copy) project.getTasks().getByName("thinResolvePrepare");
+				exec.setWorkingDir(copy.getOutputs().getFiles().getSingleFile());
 				exec.setCommandLine(Jvm.current().getJavaExecutable());
 				exec.args(Arrays.asList("-Dthin.root=.", "-Dthin.dryrun", "-jar",
 						jar.getArchiveName()));
