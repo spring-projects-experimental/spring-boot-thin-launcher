@@ -28,6 +28,10 @@ jar {
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
+thinLauncher {
+	outputDirectory = new File("${buildDir}/thin/deploy")
+}
+
 repositories {
 	mavenLocal()
 	mavenCentral()

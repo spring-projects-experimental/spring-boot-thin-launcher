@@ -18,6 +18,7 @@ package org.springframework.boot.experimental.gradle;
 
 import java.io.File;
 import java.util.Arrays;
+import java.util.List;
 
 import org.gradle.api.Action;
 import org.gradle.api.Plugin;
@@ -44,40 +45,55 @@ import org.gradle.jvm.tasks.Jar;
  */
 public class ThinLauncherPlugin implements Plugin<Project> {
 
-	public void apply(final Project target) {
-		target.getPlugins().withType(JavaPlugin.class, new Action<JavaPlugin>() {
+	public void apply(final Project project) {
+		project.getExtensions().create("thinLauncher", ThinLauncherPluginExtension.class,
+				project);
+		project.getPlugins().withType(JavaPlugin.class, new Action<JavaPlugin>() {
 
 			@Override
 			public void execute(JavaPlugin plugin) {
-				createLibPropertiesTask(target);
+				createLibPropertiesTask(project);
 			}
 
 		});
-		target.getTasks().withType(Jar.class, new Action<Jar>() {
+		project.getTasks().withType(Jar.class, new Action<Jar>() {
 
 			@Override
 			public void execute(Jar jar) {
-				createCopyTask(target, jar);
-				createResolveTask(target, jar);
+				createCopyTask(project, jar);
+				createResolveTask(project, jar);
 			}
 
 		});
 	}
 
-	private void createCopyTask(Project target, Jar jar) {
-		Copy copy = target.getTasks().create("thinResolvePrepare", Copy.class);
+	private void createCopyTask(final Project project, final Jar jar) {
+		final Copy copy = project.getTasks().create("thinResolvePrepare", Copy.class);
+		final ThinLauncherPluginExtension extension = project.getExtensions()
+				.getByType(ThinLauncherPluginExtension.class);
 		copy.dependsOn("bootRepackage");
 		copy.from(jar.getOutputs().getFiles());
-		copy.into(new File(target.getBuildDir(), "thin/root"));
-	}
-
-	private void createResolveTask(final Project target, final Jar jar) {
-		final Exec exec = target.getTasks().create("thinResolve", Exec.class);
-		exec.dependsOn("thinResolvePrepare");
-		exec.setWorkingDir(new File(target.getBuildDir(), "thin/root"));
-		exec.doFirst(new Action<Task>() {
+		copy.into(extension.getOutputDirectory());
+		copy.doFirst(new Action<Task>() {
 			@Override
 			public void execute(Task task) {
+				// hack to make sure it picks up the user-configured destination before it
+				// runs:
+				copy.into(extension.getOutputDirectory());
+			}
+		});
+	}
+
+	private void createResolveTask(final Project project, final Jar jar) {
+		final Exec exec = project.getTasks().create("thinResolve", Exec.class);
+		exec.dependsOn("thinResolvePrepare");
+		exec.doFirst(new Action<Task>() {
+			@SuppressWarnings("unchecked")
+			@Override
+			public void execute(Task task) {
+				ThinLauncherPluginExtension extension = project.getExtensions()
+						.getByType(ThinLauncherPluginExtension.class);
+				exec.setWorkingDir(extension.getOutputDirectory());
 				exec.setCommandLine(Jvm.current().getJavaExecutable());
 				exec.args(Arrays.asList("-Dthin.root=.", "-Dthin.dryrun", "-jar",
 						jar.getArchiveName()));

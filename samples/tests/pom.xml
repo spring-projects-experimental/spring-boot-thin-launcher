@@ -87,6 +87,7 @@
 							<executable>./gradlew</executable>
 							<arguments>
 								<argument>build</argument>
+								<argument>thinResolve</argument>
 							</arguments>
 						</configuration>
 						<goals>
