@@ -2,8 +2,8 @@ Prototype "thin" jar launcher for java apps. See https://github.com/spring-proje
 
 TODO:
 
-* [X] Support the wrapper as a layout in Spring Boot build plugins(*)
-* [X] Extract `AetherEngine` and re-use it in Spring Boot CLI(**)
+* [X] Support the wrapper as a layout in Spring Boot build plugins
+* [X] Extract `AetherEngine` and re-use it in Spring Boot CLI(*)
 * [X] Close old PR and send a new one for custom layouts in build plugin
 * [X] Deploy jars to snapshot repo at repo.spring.io
 * [X] Make it easy to override the dependencies at runtime (e.g. rolling upgrades of library jars for security patches)
@@ -16,14 +16,12 @@ TODO:
 * [X] Support for boms
 * [X] Support for exclusions
 * [ ] Support for configuring launcher via manifest and/or properties file
-* [ ] Support for configuring wrapper via env vars  and/or properties file
+* [X] Support for configuring wrapper via env vars  and/or properties file
 * [X] Generate `thin.properties` during build (e.g. to support Gradle)
 * [ ] Experiment with "container" apps and multi-tenant/ephemeral child contexts
-* [ ] Deployment time support for the dry run to assist with CI pipelines
+* [X] Deployment time support for the dry run to assist with CI pipelines
 
 (*) Implemented in Spring Boot, not in this project.
-(**) Implemented in a pull request to Spring Boot, not in this
-project.
 
 ## Getting Started
 
@@ -49,7 +47,7 @@ classes in it and two extra features:
 1. The `ThinJarWrapper` class has been added.
 2. A `META-INF/thin.properties` which lists the dependencies of the app.
 
-When the app runs the main method is in the `ThinJarWrapper`. It's job
+When the app runs the main method is in the `ThinJarWrapper`. Its job
 is to download another jar file that you just built (the "launcher"),
 or locate it in your local Maven repo if it can. The wrapper downloads
 the launcher (if it needs to), or else uses the cached version in your
@@ -58,7 +56,7 @@ local Maven repository.
 The launcher then takes over and reads the `thin.properties`,
 downloading the dependencies (and all transitives) as necessary, and
 setting up a new class loader with them all on the classpath. It then
-runs the application's own main method with that class loader.  If the
+runs the application's own main method with that class loader. If the
 `thin.properties` is not there then the `pom.xml` is used instead (it
 can be in the root of the jar or in the standard `META-INF/maven`
 location).
@@ -72,7 +70,8 @@ All jar files are cached in the local Maven repository, so if you are
 building and running the same app repeatedly, it should be faster
 after the first time, or if the local repo is already warm.
 
-The local repository can be re-located by setting a System property "thin.root". For example to use the current directory:
+The local repository can be re-located by setting a System property
+"thin.root". For example to use the current directory:
 
 ```
 $ java -Dthin.root=. -jar app/target/*.jar
@@ -87,7 +86,6 @@ fact, since you don't need the application code for this (except the
 `META-INF/thin.properties`), you could run only the launcher, or the
 wrapper, which might be a useful trick for laying down a file system
 layer in a container image, for example.
-
 
 ## Upgrades and Profiles
 
@@ -127,6 +125,43 @@ be executable and thin.
 			</plugin>
 ```
 
+There is also a Maven plugin which can be used to do the dry run
+(download and cache the depdendencies) for the current project, or for
+any project that has an executable thin jar in the same format. The
+"app" sample in this repo declares this plugin and inserts it into
+the "package" lifecycle:
+
+```xml
+<plugin>
+	<groupId>org.springframework.boot.experimental</groupId>
+	<artifactId>spring-boot-thin-maven-plugin</artifactId>
+	<version>${wrapper.version}</version>
+	<executions>
+		<execution>
+			<id>resolve</id>
+			<goals>
+				<goal>resolve</goal>
+			</goals>
+			<inherited>false</inherited>
+		</execution>
+	</executions>
+</plugin>
+```
+
+After running the build, there is a deployable warm-cache at
+`target/thin/root` (by default):
+
+```
+$ cd samples/app
+$ mvn package
+$ cd target/thin/root
+$ java -Dthin.root=. -jar app-0.0.1-SNAPSHOT.jar
+```
+
+The "simple" sample has the same feature, but it also downloads and
+warms up the cache for the "app" sample, so you could use the same
+build to run both apps if you felt like it.
+
 ### Gradle
 
 ```groovy
@@ -144,17 +179,43 @@ buildscript {
 		classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
 	}
 }
-springBoot { layout = 'THIN' }
+apply plugin: 'org.springframework.boot.experimental.thin-launcher'
 ```
 
+With this plugin in place to generate the thin jar, the result is an executable jar with a footprint of about 8kb:
+
+```
+$ cd samples/simple
+$ gradle build
+$ java -jar build/libs/simple-0.0.1-SNAPSHOT.jar
+```
+
+A "dry run" can be executed in Gradle by calling the "thinResolve"
+task (defined by the plugin above), e.g.
+
+```
+$ cd samples/simple
+$ gradle thinResolve
+$ cd build/thin/deploy
+$ java -Dthin.root=. -jar simple-0.0.1-SNAPSHOT.jar
+```
+
+The default location for the cache is `build/thin/root` but this was
+changed in the `build.gradle` for that sample:
+
+```
+thinResolvePrepare {
+	into new File("${buildDir}/thin/deploy")
+}
+```
 
 ## Creating the Metadata
 
 ### Maven
 
-The `pom.xml` works just fine, so Maven projects can just rely on
-that. If you want to generate a properties file there are a few
-options.
+A `pom.xml` works just fine to drive the dependency resolution, so
+Maven projects can just rely on that. If you want to generate a
+properties file there are a few options.
 
 There's an existing maven plugin that can list dependencies into a
 properties file. We could support it's format as well as or instead of
@@ -183,29 +244,10 @@ Also there is the `effective-pom`, which is easy to generate and can be transfor
 
 ### Gradle
 
-There doesn't seem to be an equivalent plugin in Gradle land, so we provide a thin launcher plugin
-specifically for creating the `thin.properties` file. It is activated just by  e.g:
-
-```groovy
-buildscript {
-	ext {
-		springBootVersion = '1.5.0.BUILD-SNAPSHOT'
-		wrapperVersion = '0.0.1.BUILD-SNAPSHOT'
-	}
-	repositories {
-		mavenLocal()
-		mavenCentral()
-	}
-	dependencies {
-		classpath("org.springframework.boot.experimental:spring-boot-thin-gradle-plugin:${wrapperVersion}")
-		classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
-	}
-}
-
-...
-apply plugin: 'spring-boot'
-apply plugin: 'org.springframework.boot.experimental.thin-launcher'
-```
+There doesn't seem to be an equivalent plugin in Gradle land, so the
+thin launcher plugin creates the `thin.properties` file. It is
+activated just by putting it in the classpath and then applying the
+plugin (as in the example above).
 
 ### Generating a POM
 
