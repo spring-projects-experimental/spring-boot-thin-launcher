@@ -224,6 +224,14 @@
 		</pluginManagement>
 	</build>
 
+	<repositories>
+		<repository>
+			<id>repo.spring.io</id>
+			<name>Spring Snapshot Repository</name>
+			<url>https://repo.spring.io/libs-snapshot</url>
+		</repository>
+	</repositories>
+
 	<distributionManagement>
 		<downloadUrl>https://github.com/spring-projects</downloadUrl>
 		<site>

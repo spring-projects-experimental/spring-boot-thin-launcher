@@ -171,6 +171,13 @@
       </distributionManagement>
     </profile>
   </profiles>
+  <repositories>
+    <repository>
+      <id>repo.spring.io</id>
+      <name>Spring Snapshot Repository</name>
+      <url>https://repo.spring.io/libs-snapshot</url>
+    </repository>
+  </repositories>
   <dependencies>
     <dependency>
       <groupId>org.springframework.boot</groupId>
