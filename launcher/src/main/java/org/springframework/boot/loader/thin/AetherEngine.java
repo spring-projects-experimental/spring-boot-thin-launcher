@@ -84,10 +84,14 @@ public class AetherEngine {
 
 	private final List<RemoteRepository> repositories;
 
+	public static enum ProgressType {
+		NONE, SUMMARY, DETAILED;
+	}
+
 	public AetherEngine(RepositorySystem repositorySystem,
 			DefaultRepositorySystemSession repositorySystemSession,
 			List<RemoteRepository> remoteRepositories,
-			DependencyResolutionContext resolutionContext) {
+			DependencyResolutionContext resolutionContext, ProgressType progress) {
 		this.repositorySystem = repositorySystem;
 		this.session = repositorySystemSession;
 		this.resolutionContext = resolutionContext;
@@ -98,14 +102,15 @@ public class AetherEngine {
 		for (RemoteRepository repository : remotes) {
 			addRepository(repository);
 		}
-		this.progressReporter = getProgressReporter(this.session);
+		this.progressReporter = getProgressReporter(this.session, progress);
 	}
 
-	private ProgressReporter getProgressReporter(DefaultRepositorySystemSession session) {
-		if (Boolean.getBoolean(ThinJarLauncher.THIN_CLASSPATH)) {
+	private ProgressReporter getProgressReporter(DefaultRepositorySystemSession session,
+			ProgressType progress) {
+		if (progress == ProgressType.NONE) {
 			return new NoopProgressReporter();
 		}
-		if (!"false".equals(System.getProperty("debug"))) {
+		if (progress == ProgressType.DETAILED) {
 			return new DetailedProgressReporter(session, System.out);
 		}
 		return new SummaryProgressReporter(session, System.out);
@@ -313,6 +318,14 @@ public class AetherEngine {
 	public static AetherEngine create(
 			List<RepositoryConfiguration> repositoryConfigurations,
 			DependencyResolutionContext dependencyResolutionContext) {
+		return create(repositoryConfigurations, dependencyResolutionContext,
+				ProgressType.SUMMARY);
+	}
+
+	public static AetherEngine create(
+			List<RepositoryConfiguration> repositoryConfigurations,
+			DependencyResolutionContext dependencyResolutionContext,
+			ProgressType progress) {
 
 		RepositorySystem repositorySystem = getServiceLocator()
 				.getService(RepositorySystem.class);
@@ -332,8 +345,8 @@ public class AetherEngine {
 				.apply(repositorySystemSession, repositorySystem);
 
 		return new AetherEngine(repositorySystem, repositorySystemSession,
-				createRepositories(repositoryConfigurations),
-				dependencyResolutionContext);
+				createRepositories(repositoryConfigurations), dependencyResolutionContext,
+				progress);
 	}
 
 	public static ServiceLocator getServiceLocator() {

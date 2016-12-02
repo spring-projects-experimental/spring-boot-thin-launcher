@@ -40,8 +40,7 @@ import org.springframework.boot.cli.compiler.grape.RepositoryConfiguration;
 import org.springframework.boot.loader.archive.Archive;
 import org.springframework.boot.loader.archive.ExplodedArchive;
 import org.springframework.boot.loader.archive.JarFileArchive;
-import org.springframework.core.env.Environment;
-import org.springframework.core.env.StandardEnvironment;
+import org.springframework.boot.loader.thin.AetherEngine.ProgressType;
 import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
@@ -57,23 +56,22 @@ import org.springframework.util.StringUtils;
 public class ArchiveFactory {
 
 	private static final String DEFAULT_BOM = "org.springframework.boot:spring-boot-dependencies:1.4.2.RELEASE";
-	private boolean debug;
+	private ProgressType progress = ProgressType.SUMMARY;
 
 	/**
-	 * Flag to say that we want verbose output on stdout.
-	 * 
-	 * @param debug the debug flag to set
+	 * Flag to indicate what level of progress report is needed
+	 * @param progress the progress type to set
 	 */
-	public void setDebug(boolean debug) {
-		this.debug = debug;
+	public void setProgress(ProgressType progress) {
+		this.progress = progress;
 	}
 
-	public List<Archive> subtract(Archive parent, Archive child) {
+	public List<Archive> subtract(Archive parent, Archive child, String name, String... prefixes) {
 
-		ArchiveDependencies parents = new ArchiveDependencies(parent);
+		ArchiveDependencies parents = new ArchiveDependencies(parent, name, prefixes);
 		List<File> resolved = parents.resolve();
 
-		ArchiveDependencies childs = new ArchiveDependencies(child);
+		ArchiveDependencies childs = new ArchiveDependencies(child, name, prefixes);
 		childs.addBoms(parents.getBoms());
 		childs.mergeExclusions(parents.getDependencies());
 		ArrayList<File> result = new ArrayList<>();
@@ -86,13 +84,13 @@ public class ArchiveFactory {
 
 	}
 
-	public List<Archive> extract(Archive root) throws Exception {
+	public List<Archive> extract(Archive root, String name, String... prefixes) throws Exception {
 
-		ArchiveDependencies computed = new ArchiveDependencies(root);
+		ArchiveDependencies computed = new ArchiveDependencies(root, name, prefixes);
 
 		List<Archive> archives = archives(computed.resolve());
 
-		if (this.debug) {
+		if (this.progress==ProgressType.DETAILED) {
 			System.out.println("Archives:");
 			for (Archive dependency : archives) {
 				System.out.println(" " + dependency);
@@ -122,9 +120,12 @@ public class ArchiveFactory {
 		private Set<Dependency> exclusions = new LinkedHashSet<>();
 		private boolean transitive = true;
 		private PomLoader pomLoader = new PomLoader();
-		private Environment environment = new StandardEnvironment();
+		private String name;
+		private List<String> prefixes;
 
-		public ArchiveDependencies(Archive root) {
+		public ArchiveDependencies(Archive root, String name, String... prefixes) {
+			this.name = name;
+			this.prefixes = new ArrayList<>(Arrays.asList(prefixes));
 			compute(root);
 		}
 
@@ -200,13 +201,13 @@ public class ArchiveFactory {
 			DependencyResolutionContext context = new DependencyResolutionContext();
 			List<RepositoryConfiguration> repositories = RepositoryConfigurationFactory
 					.createDefaultRepositoryConfiguration();
-			AetherEngine engine = AetherEngine.create(repositories, context);
+			AetherEngine engine = AetherEngine.create(repositories, context, progress);
 			engine.addDependencyManagementBoms(new ArrayList<>(boms.values()));
 			List<File> files;
 			try {
 				addParentBoms(engine);
 				addExclusions();
-				if (debug) {
+				if (progress==ProgressType.DETAILED) {
 					System.out.println("BOMs:");
 					for (Dependency dependency : boms.values()) {
 						System.out.println(" " + dependency);
@@ -344,13 +345,6 @@ public class ArchiveFactory {
 		}
 
 		private Properties loadLibraryProperties(Properties props, Archive archive) {
-			String name = environment
-					.resolvePlaceholders("${" + ThinJarLauncher.THIN_NAME + ":thin}");
-			List<String> prefixes = new ArrayList<>(
-					Arrays.asList(environment
-							.resolvePlaceholders(
-									"${" + ThinJarLauncher.THIN_PROFILE + ":}")
-							.split(",")));
 			if (!prefixes.contains("")) {
 				prefixes.add(0, "");
 			}
@@ -368,14 +362,14 @@ public class ArchiveFactory {
 				Resource resource = new UrlResource(
 						archive.getUrl() + "META-INF/" + path);
 				if (resource.exists()) {
-					if (debug) {
+					if (progress==ProgressType.DETAILED) {
 						System.out.println("Loading properties from archive: " + path);
 					}
 					PropertiesLoaderUtils.fillProperties(props, resource);
 				}
 				resource = new UrlResource(archive.getUrl() + "/" + path);
 				if (resource.exists()) {
-					if (debug) {
+					if (progress==ProgressType.DETAILED) {
 						System.out.println("Loading properties from archive: " + path);
 					}
 					PropertiesLoaderUtils.fillProperties(props, resource);

@@ -20,7 +20,6 @@ import java.net.MalformedURLException;
 import java.util.List;
 
 import org.assertj.core.api.Condition;
-import org.junit.After;
 import org.junit.Test;
 
 import org.springframework.boot.loader.archive.Archive;
@@ -37,25 +36,18 @@ public class ArchiveFactoryTests {
 
 	private ArchiveFactory factory = new ArchiveFactory();
 	
-	@After
-	public void close() {
-		System.clearProperty(ThinJarLauncher.THIN_NAME);
-		System.clearProperty(ThinJarLauncher.THIN_PROFILE);
-	}
-
 	@Test
 	public void dependenciesWithPlaceholders() throws Exception {
 		Archive child = new ExplodedArchive(
 				new File("src/test/resources/apps/placeholders"));
-		List<Archive> result = factory.extract(child);
+		List<Archive> result = factory.extract(child, "thin");
 		assertThat(result).isNotEmpty();
 	}
 
 	@Test
 	public void libsWithProfile() throws Exception {
 		Archive child = new ExplodedArchive(new File("src/test/resources/apps/eureka"));
-		System.setProperty(ThinJarLauncher.THIN_PROFILE, "extra");
-		List<Archive> result = factory.extract(child);
+		List<Archive> result = factory.extract(child, "thin", "extra");
 		assertThat(result).size().isGreaterThan(3);
 		assertThat(result).areAtLeastOne(UrlContains.value("spring-boot-1.4.1.RELEASE"));
 	}
@@ -66,7 +58,7 @@ public class ArchiveFactoryTests {
 				new File("src/test/resources/app-with-web-and-cloud-config.jar"));
 		Archive child = new JarFileArchive(
 				new File("src/test/resources/app-with-web-in-lib-properties.jar"));
-		List<Archive> result = factory.subtract(parent, child);
+		List<Archive> result = factory.subtract(parent, child, "thin");
 		assertThat(result).isEmpty();
 	}
 
@@ -75,7 +67,7 @@ public class ArchiveFactoryTests {
 		Archive parent = new JarFileArchive(
 				new File("src/test/resources/app-with-web-and-cloud-config.jar"));
 		Archive child = new ExplodedArchive(new File("src/test/resources/apps/db"));
-		List<Archive> result = factory.subtract(parent, child);
+		List<Archive> result = factory.subtract(parent, child, "thin");
 		assertThat(result).size().isGreaterThan(3);
 		assertThat(result).areAtLeastOne(UrlContains.value("spring-jdbc"));
 		assertThat(result).doNotHave(UrlContains.value("spring-boot/"));
@@ -86,7 +78,7 @@ public class ArchiveFactoryTests {
 		Archive parent = new ExplodedArchive(
 				new File("src/test/resources/apps/web-and-cloud"));
 		Archive child = new ExplodedArchive(new File("src/test/resources/apps/eureka"));
-		List<Archive> result = factory.subtract(parent, child);
+		List<Archive> result = factory.subtract(parent, child, "thin");
 		assertThat(result).size().isGreaterThan(3);
 		assertThat(result)
 				.areAtLeastOne(UrlContains.value("spring-cloud-netflix-eureka-client"));
@@ -98,7 +90,7 @@ public class ArchiveFactoryTests {
 		Archive parent = new JarFileArchive(
 				new File("src/test/resources/app-with-web-and-cloud-config.jar"));
 		Archive child = new ExplodedArchive(new File("src/test/resources/apps/eureka"));
-		List<Archive> result = factory.subtract(parent, child);
+		List<Archive> result = factory.subtract(parent, child, "thin");
 		assertThat(result).size().isGreaterThan(3);
 		assertThat(result)
 				.areAtLeastOne(UrlContains.value("spring-cloud-netflix-eureka-client"));
