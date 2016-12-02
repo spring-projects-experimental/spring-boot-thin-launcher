@@ -102,7 +102,10 @@ public class AetherEngine {
 	}
 
 	private ProgressReporter getProgressReporter(DefaultRepositorySystemSession session) {
-		if (Boolean.getBoolean("groovy.grape.report.downloads")) {
+		if (Boolean.getBoolean(ThinJarLauncher.THIN_CLASSPATH)) {
+			return new NoopProgressReporter();
+		}
+		if (!"false".equals(System.getProperty("debug"))) {
 			return new DetailedProgressReporter(session, System.out);
 		}
 		return new SummaryProgressReporter(session, System.out);
@@ -371,6 +374,13 @@ public class AetherEngine {
 			repositories.add(builder.build());
 		}
 		return repositories;
+	}
+
+	private static final class NoopProgressReporter implements ProgressReporter {
+		@Override
+		public void finished() {
+			// Do nothing
+		}
 	}
 
 }

@@ -27,7 +27,6 @@ import java.util.jar.JarFile;
 import org.eclipse.aether.artifact.DefaultArtifact;
 import org.eclipse.aether.graph.Dependency;
 import org.eclipse.aether.resolution.ArtifactResolutionException;
-
 import org.springframework.boot.cli.compiler.RepositoryConfigurationFactory;
 import org.springframework.boot.cli.compiler.grape.DependencyResolutionContext;
 import org.springframework.boot.loader.ExecutableArchiveLauncher;
@@ -55,19 +54,27 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 	public static final String THIN_MAIN = "thin.main";
 
 	/**
-	 * System property to signal a "dry run" where dependencies are resolved but the main
-	 * method is not executed.
+	 * System property to signal a "dry run" where dependencies are resolved but
+	 * the main method is not executed.
 	 */
 	public static final String THIN_DRYRUN = "thin.dryrun";
 
 	/**
-	 * System property holding the path to the root directory, where Maven repository and
-	 * settings live. Defaults to <code>${user.home}/.m2</code>.
+	 * System property to signal a "classpath run" where dependencies are
+	 * resolved but the main method is not executed and the output is in the
+	 * form of a classpath.
+	 */
+	public static final String THIN_CLASSPATH = "thin.classpath";
+
+	/**
+	 * System property holding the path to the root directory, where Maven
+	 * repository and settings live. Defaults to <code>${user.home}/.m2</code>.
 	 */
 	public static final String THIN_ROOT = "thin.root";
 
 	/**
-	 * System property used by wrapper to communicate the location of the main archive.
+	 * System property used by wrapper to communicate the location of the main
+	 * archive.
 	 */
 	public static final String THIN_ARCHIVE = "thin.archive";
 
@@ -77,8 +84,8 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 	public static final String THIN_NAME = "thin.name";
 
 	/**
-	 * The name of the profile to run, changing the location of the properties files to
-	 * look up.
+	 * The name of the profile to run, changing the location of the properties
+	 * files to look up.
 	 */
 	public static final String THIN_PROFILE = "thin.profile";
 
@@ -101,7 +108,7 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 	public ThinJarLauncher(Archive archive) {
 		super(archive);
 	}
-	
+
 	@Override
 	protected void launch(String[] args) throws Exception {
 		addCommandLineProperties(args);
@@ -109,19 +116,38 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 		this.debug = !"false".equals(environment.resolvePlaceholders("${debug:false}"));
 		this.archives.setDebug(debug);
 		if (StringUtils.hasText(root)) {
-			// There is a grape root that is used by the aether engine internally
+			// There is a grape root that is used by the aether engine
+			// internally
 			System.setProperty("grape.root", root);
 		}
-		if (!"false".equals(
-				environment.resolvePlaceholders("${" + THIN_DRYRUN + ":false}"))) {
+		if (!"false".equals(environment.resolvePlaceholders("${" + THIN_DRYRUN + ":false}"))) {
 			getClassPathArchives();
 			if (this.debug) {
-				System.out.println(
-						"Downloaded dependencies" + (root == null ? "" : " to " + root));
+				System.out.println("Downloaded dependencies" + (root == null ? "" : " to " + root));
 			}
 			return;
 		}
+		if (!"false".equals(environment.resolvePlaceholders("${" + THIN_CLASSPATH + ":false}"))) {
+			List<Archive> archives = getClassPathArchives();
+			System.out.println(classpath(archives));
+			return;
+		}
 		super.launch(args);
+	}
+
+	private String classpath(List<Archive> archives) throws Exception {
+		StringBuilder builder = new StringBuilder();
+		String separator = System.getProperty("path.separator");
+		for (Archive archive : archives) {
+			if (archive.getUrl().toString().startsWith("jar:")) {
+				continue;
+			}
+			if (builder.length() > 0) {
+				builder.append(separator);
+			}
+			builder.append(new File(archive.getUrl().toURI()).getCanonicalPath());
+		}
+		return builder.toString();
 	}
 
 	private void addCommandLineProperties(String[] args) {
@@ -129,12 +155,10 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 			return;
 		}
 		MutablePropertySources properties = environment.getPropertySources();
-		SimpleCommandLinePropertySource source = new SimpleCommandLinePropertySource(
-				"commandArgs", args);
+		SimpleCommandLinePropertySource source = new SimpleCommandLinePropertySource("commandArgs", args);
 		if (!properties.contains("commandArgs")) {
 			properties.addFirst(source);
-		}
-		else {
+		} else {
 			properties.replace("commandArgs", source);
 		}
 	}
@@ -151,13 +175,11 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 		}
 		try {
 			return super.getMainClass();
-		}
-		catch (IllegalStateException e) {
+		} catch (IllegalStateException e) {
 			File root = new File(getArchive().getUrl().toURI());
 			if (getArchive() instanceof ExplodedArchive) {
 				return MainClassFinder.findSingleMainClass(root);
-			}
-			else {
+			} else {
 				return MainClassFinder.findSingleMainClass(new JarFile(root), "/");
 			}
 		}
@@ -196,20 +218,14 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 			// Resolving an explicit external archive
 			String coordinates = path.replaceFirst("maven:\\/*", "");
 			DependencyResolutionContext context = new DependencyResolutionContext();
-			AetherEngine engine = AetherEngine.create(
-					RepositoryConfigurationFactory.createDefaultRepositoryConfiguration(),
-					context);
+			AetherEngine engine = AetherEngine
+					.create(RepositoryConfigurationFactory.createDefaultRepositoryConfiguration(), context);
 			try {
 				List<File> resolved = engine
-						.resolve(
-								Arrays.asList(new Dependency(
-										new DefaultArtifact(coordinates), "runtime")),
-								false);
+						.resolve(Arrays.asList(new Dependency(new DefaultArtifact(coordinates), "runtime")), false);
 				return resolved.get(0).toURI();
-			}
-			catch (ArtifactResolutionException e) {
-				throw new IllegalStateException("Cannot resolve archive: " + coordinates,
-						e);
+			} catch (ArtifactResolutionException e) {
+				throw new IllegalStateException("Cannot resolve archive: " + coordinates, e);
 			}
 		}
 		return new URI(path);
@@ -220,8 +236,7 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 		List<Archive> archives = new ArrayList<>(this.archives.extract(getArchive()));
 		if (!archives.isEmpty()) {
 			archives.add(0, getArchive());
-		}
-		else {
+		} else {
 			archives.add(getArchive());
 		}
 		return archives;
