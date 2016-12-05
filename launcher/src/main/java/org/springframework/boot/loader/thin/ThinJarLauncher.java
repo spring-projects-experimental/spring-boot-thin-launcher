@@ -27,6 +27,7 @@ import java.util.jar.JarFile;
 import org.eclipse.aether.artifact.DefaultArtifact;
 import org.eclipse.aether.graph.Dependency;
 import org.eclipse.aether.resolution.ArtifactResolutionException;
+
 import org.springframework.boot.cli.compiler.RepositoryConfigurationFactory;
 import org.springframework.boot.cli.compiler.grape.DependencyResolutionContext;
 import org.springframework.boot.loader.ExecutableArchiveLauncher;
@@ -74,8 +75,16 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 
 	/**
 	 * System property used by wrapper to communicate the location of the main archive.
+	 * Can also be used in a dryrun or classpath launch to override the archive location
+	 * with a file or "maven://..." style URL.
 	 */
 	public static final String THIN_ARCHIVE = "thin.archive";
+
+	/**
+	 * A parent archive (URL or "maven://..." locator) that controls the classpath and
+	 * dependency management defaults for the main archive.
+	 */
+	public static final String THIN_PARENT = "thin.parent";
 
 	/**
 	 * The name of the launchable (i.e. the properties file name).
@@ -93,27 +102,21 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 	private boolean debug;
 
 	public static void main(String[] args) throws Exception {
-		new ThinJarLauncher().launch(args);
+		new ThinJarLauncher(args).launch(args);
 	}
 
-	public ThinJarLauncher() throws Exception {
-		this(computeArchive(System.getProperty(THIN_ARCHIVE)));
-	}
-
-	public ThinJarLauncher(String path) throws Exception {
-		this(computeArchive(path));
-	}
-
-	public ThinJarLauncher(Archive archive) {
-		super(archive);
+	protected ThinJarLauncher(String[] args) throws Exception {
+		super(computeArchive(args));
 	}
 
 	@Override
 	protected void launch(String[] args) throws Exception {
 		addCommandLineProperties(args);
+		args = removeThinArgs(args);
 		String root = environment.resolvePlaceholders("${" + THIN_ROOT + ":}");
-		if (!"false".equals(
-				environment.resolvePlaceholders("${" + THIN_CLASSPATH + ":false}"))) {
+		boolean classpath = !"false".equals(
+				environment.resolvePlaceholders("${" + THIN_CLASSPATH + ":false}"));
+		if (classpath) {
 			this.debug = false;
 			this.archives.setProgress(ProgressType.NONE);
 		}
@@ -129,6 +132,11 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 			// internally
 			System.setProperty("grape.root", root);
 		}
+		if (classpath) {
+			List<Archive> archives = getClassPathArchives();
+			System.out.println(classpath(archives));
+			return;
+		}
 		if (!"false".equals(
 				environment.resolvePlaceholders("${" + THIN_DRYRUN + ":false}"))) {
 			getClassPathArchives();
@@ -138,13 +146,21 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 			}
 			return;
 		}
-		if (!"false".equals(
-				environment.resolvePlaceholders("${" + THIN_CLASSPATH + ":false}"))) {
-			List<Archive> archives = getClassPathArchives();
-			System.out.println(classpath(archives));
-			return;
-		}
 		super.launch(args);
+	}
+
+	private String[] removeThinArgs(String[] args) {
+		List<String> result = new ArrayList<>();
+		for (String arg : args) {
+			if ("--".equals(arg)) {
+				break;
+			}
+			if (arg.startsWith("--thin.")) {
+				continue;
+			}
+			result.add(arg);
+		}
+		return result.toArray(new String[0]);
 	}
 
 	private String classpath(List<Archive> archives) throws Exception {
@@ -201,6 +217,31 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 		}
 	}
 
+	private static Archive computeArchive(String[] args) throws Exception {
+		String path = getProperty(THIN_ARCHIVE);
+		for (String arg : args) {
+			String prefix = "--" + THIN_ARCHIVE;
+			if (arg.startsWith(prefix)) {
+				// You can always override --thin.archive on the command line
+				if (arg.length() <= prefix.length() + 1) {
+					// ... even cancel it by setting it to empty
+					path = null;
+				}
+				else {
+					path = arg.substring(prefix.length() + 1);
+				}
+			}
+		}
+		return computeArchive(path);
+	}
+
+	static String getProperty(String key) {
+		if (System.getProperty(key) != null) {
+			return System.getProperty(key);
+		}
+		return System.getenv(key.replace(".", "_").toUpperCase());
+	}
+
 	private static Archive computeArchive(String path) throws Exception {
 		File file = new File(findArchive(path));
 		if (file.isDirectory()) {
@@ -255,13 +296,22 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 
 	@Override
 	protected List<Archive> getClassPathArchives() throws Exception {
+		String parent = environment
+				.resolvePlaceholders("${" + ThinJarLauncher.THIN_PARENT + ":}");
 		String name = environment
 				.resolvePlaceholders("${" + ThinJarLauncher.THIN_NAME + ":thin}");
 		String[] prefixes = environment
 				.resolvePlaceholders("${" + ThinJarLauncher.THIN_PROFILE + ":}")
 				.split(",");
-		List<Archive> archives = new ArrayList<>(
-				this.archives.extract(getArchive(), name, prefixes));
+		List<Archive> archives = new ArrayList<>();
+		if (!StringUtils.hasText(parent)) {
+			archives.addAll(this.archives.extract(getArchive(), name, prefixes));
+		}
+		else {
+			Archive parentArchive = computeArchive(parent);
+			archives.addAll(this.archives.extract(parentArchive, name, prefixes));
+			archives.addAll(this.archives.subtract(parentArchive, getArchive(), name, prefixes));
+		}
 		if (!archives.isEmpty()) {
 			archives.add(0, getArchive());
 		}
