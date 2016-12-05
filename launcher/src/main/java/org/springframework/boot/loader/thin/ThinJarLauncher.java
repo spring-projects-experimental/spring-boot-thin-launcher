@@ -17,6 +17,7 @@
 package org.springframework.boot.loader.thin;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
@@ -41,6 +42,7 @@ import org.springframework.boot.loader.tools.MainClassFinder;
 import org.springframework.core.env.MutablePropertySources;
 import org.springframework.core.env.SimpleCommandLinePropertySource;
 import org.springframework.core.env.StandardEnvironment;
+import org.springframework.util.StreamUtils;
 import org.springframework.util.StringUtils;
 
 /**
@@ -291,7 +293,20 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 						e);
 			}
 		}
-		return new URI(path);
+		URI uri = new URI(path);
+		if (path.startsWith("http:") || path.startsWith("https:")) {
+			File file = File.createTempFile(StringUtils.getFilename(path), "");
+			StreamUtils.copy(uri.toURL().openStream(), new FileOutputStream(file));
+			uri = file.toURI();
+		}
+		else {
+			if (path.startsWith("file:")) {
+				path = path.substring("file:".length());
+				uri = new File(path).toURI();
+			}
+			uri = new File(path).toURI();
+		}
+		return uri;
 	}
 
 	@Override
@@ -310,7 +325,8 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 		else {
 			Archive parentArchive = computeArchive(parent);
 			archives.addAll(this.archives.extract(parentArchive, name, prefixes));
-			archives.addAll(this.archives.subtract(parentArchive, getArchive(), name, prefixes));
+			archives.addAll(
+					this.archives.subtract(parentArchive, getArchive(), name, prefixes));
 		}
 		if (!archives.isEmpty()) {
 			archives.add(0, getArchive());

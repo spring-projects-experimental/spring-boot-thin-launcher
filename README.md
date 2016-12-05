@@ -87,6 +87,14 @@ fact, since you don't need the application code for this (except the
 wrapper, which might be a useful trick for laying down a file system
 layer in a container image, for example.
 
+> NOTE: options for the `ThinJarLauncher` that are listed as
+> `-Dthin.*` can also be provided as command line arguments
+> (`--thin.*` per Spring Boot conventions), or as environment
+> variables (`THIN_*` capitalized and underscored). The command line
+> options are removed before passing down to the Boot app. The
+> `ThinJarWrapper` accepts system properties or environment variables
+> for its (smaller) set of optional arguments.
+
 ## Upgrades and Profiles
 
 You can upgrade all the libraries by changing the
@@ -282,3 +290,54 @@ dependencyManagement {
 	}
 }
 ```
+
+## Classpath Computation
+
+The launcher has some optional arguments that result in classpath
+computations, instead of running the Boot app. E.g.
+
+```
+$ java -jar myapp.jar --thin.classpath
+```
+
+prints out (on stdout) a class path in the form that can be used
+directly in `java -cp`. So this is a way to run the app from its main
+method (which iis slightly faster than using the launcher):
+
+```
+$ CLASSPATH=`java -jar myapp.jar --thin.classpath`
+$ java -cp "$CLASSPATH:myapp.jar" demo.MyApplication
+```
+
+You can also compute the classpath using explicit name and profile parameters:
+
+```
+$ java -jar myapp.jar --thin.classpath --thin.name=app --thin.profile=dev
+```
+
+will look for `app.properties` and `app-dev.properties` to list the dependencies.
+
+You can also specify a "parent" archive which is used to calculate a
+prefix for the classpath. Two apps that share a parent then have the
+same prefix, and can share classes using `-Xshare:on`. For example:
+
+```
+$ CP1=`java -jar myapp.jar --thin.classpath`
+$ CP2=`java -jar otherapp.jar --thin.classpath --thin.parent=myapp.jar`
+
+$ java -XX:+UnlockCommercialFeatures -XX:+UseAppCDS -Xshare:off \
+  -XX:DumpLoadedClassList=app.classlist \
+  -noverify -cp $CP1:myapp.jar demo.MyApplication
+$ java -XX:+UnlockCommercialFeatures -XX:+UseAppCDS -Xshare:dump \
+  -XX:SharedArchiveFile=app.jsa -XX:SharedClassListFile=app.classlist \
+  -noverify -cp $CP1
+
+$ java -XX:+UnlockCommercialFeatures -XX:+UseAppCDS -Xshare:on \
+  -XX:SharedArchiveFile=app.jsa -noverify -cp $CP1:myapp.jar demo.MyApplication 
+$ java -XX:+UnlockCommercialFeatures -XX:+UseAppCDS -Xshare:on \
+  -XX:SharedArchiveFile=app.jsa -noverify -cp $CP1:otherapp.jar demo.OtherApplication
+```
+
+the two apps at the end are sharing class data from `app.jsa` and will
+also start up faster (e.g. 6s startup goes down to 4s for
+a vanilla Eureka Server).
