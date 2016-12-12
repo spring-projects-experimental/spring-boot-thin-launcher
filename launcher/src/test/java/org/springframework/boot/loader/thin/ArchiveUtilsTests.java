@@ -32,9 +32,9 @@ import static org.assertj.core.api.Assertions.assertThat;
  * @author Dave Syer
  *
  */
-public class ArchiveFactoryTests {
+public class ArchiveUtilsTests {
 
-	private ArchiveFactory factory = new ArchiveFactory();
+	private ArchiveUtils factory = new ArchiveUtils();
 	
 	@Test
 	public void dependenciesWithPlaceholders() throws Exception {

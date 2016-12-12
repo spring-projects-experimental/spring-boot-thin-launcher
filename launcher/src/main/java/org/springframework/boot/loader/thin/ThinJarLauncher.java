@@ -28,7 +28,6 @@ import java.util.jar.JarFile;
 import org.eclipse.aether.artifact.DefaultArtifact;
 import org.eclipse.aether.graph.Dependency;
 import org.eclipse.aether.resolution.ArtifactResolutionException;
-
 import org.springframework.boot.cli.compiler.RepositoryConfigurationFactory;
 import org.springframework.boot.cli.compiler.grape.DependencyResolutionContext;
 import org.springframework.boot.loader.ExecutableArchiveLauncher;
@@ -99,7 +98,7 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 	 */
 	public static final String THIN_PROFILE = "thin.profile";
 
-	private ArchiveFactory archives = new ArchiveFactory();
+	private ArchiveUtils archives = new ArchiveUtils();
 	private StandardEnvironment environment = new StandardEnvironment();
 	private boolean debug;
 
@@ -195,6 +194,7 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 		}
 	}
 
+	@Override
 	protected ClassLoader createClassLoader(URL[] urls) throws Exception {
 		return new LaunchedURLClassLoader(urls, getClass().getClassLoader().getParent());
 	}

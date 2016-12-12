@@ -17,7 +17,11 @@
 package org.springframework.boot.loader.thin;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -28,12 +32,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.jar.JarFile;
+import java.util.jar.Manifest;
 
 import org.eclipse.aether.artifact.DefaultArtifact;
 import org.eclipse.aether.graph.Dependency;
 import org.eclipse.aether.graph.Exclusion;
 import org.eclipse.aether.resolution.ArtifactResolutionException;
-
 import org.springframework.boot.cli.compiler.RepositoryConfigurationFactory;
 import org.springframework.boot.cli.compiler.grape.DependencyResolutionContext;
 import org.springframework.boot.cli.compiler.grape.RepositoryConfiguration;
@@ -41,6 +46,7 @@ import org.springframework.boot.loader.archive.Archive;
 import org.springframework.boot.loader.archive.ExplodedArchive;
 import org.springframework.boot.loader.archive.JarFileArchive;
 import org.springframework.boot.loader.thin.AetherEngine.ProgressType;
+import org.springframework.boot.loader.tools.MainClassFinder;
 import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
@@ -53,7 +59,7 @@ import org.springframework.util.StringUtils;
  * @author Dave Syer
  *
  */
-public class ArchiveFactory {
+public class ArchiveUtils {
 
 	private static final String DEFAULT_BOM = "org.springframework.boot:spring-boot-dependencies:1.4.2.RELEASE";
 	private ProgressType progress = ProgressType.SUMMARY;
@@ -66,7 +72,103 @@ public class ArchiveFactory {
 		this.progress = progress;
 	}
 
-	public List<Archive> subtract(Archive parent, Archive child, String name, String... prefixes) {
+	public static Archive getArchive(Class<?> cls) {
+		URL location = cls.getProtectionDomain().getCodeSource().getLocation();
+		return getArchive(location.toString());
+	}
+
+	public static Archive getArchive(String path) {
+		File file = new File(findArchive(path));
+		if (file.isDirectory()) {
+			return new ExplodedArchive(file);
+		}
+		try {
+			return new JarFileArchive(file);
+		}
+		catch (IOException e) {
+			throw new IllegalStateException("Cannot create JAR archive: " + file, e);
+		}
+	}
+
+	public static String findMainClass(Archive archive) {
+		try {
+			Manifest manifest = archive.getManifest();
+			String mainClass = null;
+			if (manifest != null) {
+				mainClass = manifest.getMainAttributes().getValue("Start-Class");
+			}
+			if (mainClass != null) {
+				return mainClass;
+			}
+		}
+		catch (Exception e) {
+		}
+		File root;
+		try {
+			root = new File(archive.getUrl().toURI());
+			if (archive instanceof ExplodedArchive) {
+				return MainClassFinder.findSingleMainClass(root);
+			}
+			else {
+				return MainClassFinder.findSingleMainClass(new JarFile(root), "/");
+			}
+		}
+		catch (Exception e) {
+			throw new IllegalStateException("Cannot locate main class in " + archive, e);
+		}
+	}
+
+	private static URI findArchive(String path) {
+		URI archive = findPath(path);
+		if (archive != null) {
+			return archive;
+		}
+		File dir = new File("target/classes");
+		if (dir.exists()) {
+			return dir.toURI();
+		}
+		dir = new File("build/classes");
+		if (dir.exists()) {
+			return dir.toURI();
+		}
+		dir = new File(".");
+		return dir.toURI();
+	}
+
+	private static URI findPath(String path) {
+		if (path == null) {
+			return null;
+		}
+		if (path.startsWith("maven:")) {
+			// Resolving an explicit external archive
+			String coordinates = path.replaceFirst("maven:\\/*", "");
+			DependencyResolutionContext context = new DependencyResolutionContext();
+			AetherEngine engine = AetherEngine.create(
+					RepositoryConfigurationFactory.createDefaultRepositoryConfiguration(),
+					context);
+			try {
+				List<File> resolved = engine
+						.resolve(
+								Arrays.asList(new Dependency(
+										new DefaultArtifact(coordinates), "runtime")),
+								false);
+				return resolved.get(0).toURI();
+			}
+			catch (ArtifactResolutionException e) {
+				throw new IllegalStateException("Cannot resolve archive: " + coordinates,
+						e);
+			}
+		}
+		try {
+			return new URI(path);
+		}
+		catch (URISyntaxException e) {
+			throw new IllegalArgumentException("Cannot resolve URI: " + path, e);
+		}
+	}
+
+	public List<Archive> subtract(Archive parent, Archive child, String name,
+			String... prefixes) {
 
 		ArchiveDependencies parents = new ArchiveDependencies(parent, name, prefixes);
 		List<File> resolved = parents.resolve();
@@ -84,13 +186,13 @@ public class ArchiveFactory {
 
 	}
 
-	public List<Archive> extract(Archive root, String name, String... prefixes) throws Exception {
+	public List<Archive> extract(Archive root, String name, String... prefixes) {
 
 		ArchiveDependencies computed = new ArchiveDependencies(root, name, prefixes);
 
 		List<Archive> archives = archives(computed.resolve());
 
-		if (this.progress==ProgressType.DETAILED) {
+		if (this.progress == ProgressType.DETAILED) {
 			System.out.println("Archives:");
 			for (Archive dependency : archives) {
 				System.out.println(" " + dependency);
@@ -207,7 +309,7 @@ public class ArchiveFactory {
 			try {
 				addParentBoms(engine);
 				addExclusions();
-				if (progress==ProgressType.DETAILED) {
+				if (progress == ProgressType.DETAILED) {
 					System.out.println("BOMs:");
 					for (Dependency dependency : boms.values()) {
 						System.out.println(" " + dependency);
@@ -362,14 +464,14 @@ public class ArchiveFactory {
 				Resource resource = new UrlResource(
 						archive.getUrl() + "META-INF/" + path);
 				if (resource.exists()) {
-					if (progress==ProgressType.DETAILED) {
+					if (progress == ProgressType.DETAILED) {
 						System.out.println("Loading properties from archive: " + path);
 					}
 					PropertiesLoaderUtils.fillProperties(props, resource);
 				}
 				resource = new UrlResource(archive.getUrl() + "/" + path);
 				if (resource.exists()) {
-					if (progress==ProgressType.DETAILED) {
+					if (progress == ProgressType.DETAILED) {
 						System.out.println("Loading properties from archive: " + path);
 					}
 					PropertiesLoaderUtils.fillProperties(props, resource);

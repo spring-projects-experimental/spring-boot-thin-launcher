@@ -341,3 +341,8 @@ $ java -XX:+UnlockCommercialFeatures -XX:+UseAppCDS -Xshare:on \
 the two apps at the end are sharing class data from `app.jsa` and will
 also start up faster (e.g. 6s startup goes down to 4s for
 a vanilla Eureka Server).
+
+## License
+This project is Open Source software released under the
+http://www.apache.org/licenses/LICENSE-2.0.html[Apache 2.0 license].
+
