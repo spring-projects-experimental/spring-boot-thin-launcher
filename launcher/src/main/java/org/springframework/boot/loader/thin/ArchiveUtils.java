@@ -169,12 +169,12 @@ public class ArchiveUtils {
 	}
 
 	public List<Archive> subtract(Archive parent, Archive child, String name,
-			String... prefixes) {
+			String... profiles) {
 
-		ArchiveDependencies parents = new ArchiveDependencies(parent, name, prefixes);
+		ArchiveDependencies parents = new ArchiveDependencies(parent, name, profiles);
 		List<File> resolved = parents.resolve();
 
-		ArchiveDependencies childs = new ArchiveDependencies(child, name, prefixes);
+		ArchiveDependencies childs = new ArchiveDependencies(child, name, profiles);
 		childs.addBoms(parents.getBoms());
 		childs.mergeExclusions(parents.getDependencies());
 		ArrayList<File> result = new ArrayList<>();
@@ -187,9 +187,9 @@ public class ArchiveUtils {
 
 	}
 
-	public List<Archive> extract(Archive root, String name, String... prefixes) {
+	public List<Archive> extract(Archive root, String name, String... profiles) {
 
-		ArchiveDependencies computed = new ArchiveDependencies(root, name, prefixes);
+		ArchiveDependencies computed = new ArchiveDependencies(root, name, profiles);
 
 		List<Archive> archives = archives(computed.resolve());
 
@@ -224,11 +224,11 @@ public class ArchiveUtils {
 		private boolean transitive = true;
 		private PomLoader pomLoader = new PomLoader();
 		private String name;
-		private List<String> prefixes;
+		private List<String> profiles;
 
-		public ArchiveDependencies(Archive root, String name, String... prefixes) {
+		public ArchiveDependencies(Archive root, String name, String... profiles) {
 			this.name = name;
-			this.prefixes = new ArrayList<>(Arrays.asList(prefixes));
+			this.profiles = new ArrayList<>(Arrays.asList(profiles));
 			compute(root);
 		}
 
@@ -488,11 +488,11 @@ public class ArchiveUtils {
 		}
 
 		private Properties loadLibraryProperties(Properties props, Archive archive) {
-			if (!prefixes.contains("")) {
-				prefixes.add(0, "");
+			if (!profiles.contains("")) {
+				profiles.add(0, "");
 			}
-			for (String prefix : prefixes) {
-				String path = name + ("".equals(prefix) ? "" : "-") + prefix
+			for (String profile : profiles) {
+				String path = name + ("".equals(profile) ? "" : "-") + profile
 						+ ".properties";
 				loadProperties(props, archive, path);
 			}
