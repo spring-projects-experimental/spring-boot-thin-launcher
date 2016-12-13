@@ -47,6 +47,7 @@ import org.springframework.boot.loader.archive.Archive;
 import org.springframework.boot.loader.archive.ExplodedArchive;
 import org.springframework.boot.loader.archive.JarFileArchive;
 import org.springframework.boot.loader.thin.AetherEngine.ProgressType;
+import org.springframework.boot.loader.tools.LogbackInitializer;
 import org.springframework.boot.loader.tools.MainClassFinder;
 import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.io.FileSystemResource;
@@ -64,6 +65,10 @@ public class ArchiveUtils {
 
 	private static final String DEFAULT_BOM = "org.springframework.boot:spring-boot-dependencies:1.4.2.RELEASE";
 	private ProgressType progress = ProgressType.SUMMARY;
+
+	static {
+		LogbackInitializer.initialize();
+	}
 
 	/**
 	 * Flag to indicate what level of progress report is needed
