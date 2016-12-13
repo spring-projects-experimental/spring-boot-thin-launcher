@@ -18,7 +18,9 @@ package org.springframework.boot.loader.thin;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -170,8 +172,10 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 	private String classpath(List<Archive> archives) throws Exception {
 		StringBuilder builder = new StringBuilder();
 		String separator = System.getProperty("path.separator");
+		boolean first = true;
 		for (Archive archive : archives) {
-			if (archive.getUrl().toString().startsWith("jar:")) {
+			if (!first) {
+				first = false;
 				continue;
 			}
 			if (builder.length() > 0) {
@@ -199,8 +203,27 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 
 	@Override
 	protected ClassLoader createClassLoader(URL[] urls) throws Exception {
-		return new LaunchedURLClassLoader(addNestedClasses(urls),
+		return new LaunchedURLClassLoader(locateFiles(addNestedClasses(urls)),
 				getClass().getClassLoader().getParent());
+	}
+
+	private URL[] locateFiles(URL[] urls) throws MalformedURLException {
+		for (int i = 0; i < urls.length; i++) {
+			urls[i] = jarFile(urls[i]);
+		}
+		return urls;
+	}
+
+	private URL jarFile(URL url) throws MalformedURLException {
+		String path = url.toString();
+		if (path.endsWith("!/")) {
+			path = path.substring(0, path.length() - "!/".length());
+			if (path.startsWith("jar:")) {
+				path = path.substring("jar:".length());
+			}
+			url = new URL(path);
+		}
+		return url;
 	}
 
 	private URL[] addNestedClasses(URL[] urls) throws Exception {
@@ -242,13 +265,17 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 		if (mainClass != null) {
 			return mainClass;
 		}
-		File root = new File(getArchive().getUrl().toURI());
+		File root = getArchiveRoot();
 		if (getArchive() instanceof ExplodedArchive) {
 			return MainClassFinder.findSingleMainClass(root);
 		}
 		else {
-			return MainClassFinder.findSingleMainClass(new JarFile(root), "/");
+			return MainClassFinder.findSingleMainClass(new JarFile(root), "");
 		}
+	}
+
+	private File getArchiveRoot() throws URISyntaxException, MalformedURLException {
+		return new File(jarFile(getArchive().getUrl()).toURI());
 	}
 
 	private static Archive computeArchive(String[] args) throws Exception {
