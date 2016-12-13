@@ -39,6 +39,7 @@ import org.eclipse.aether.artifact.DefaultArtifact;
 import org.eclipse.aether.graph.Dependency;
 import org.eclipse.aether.graph.Exclusion;
 import org.eclipse.aether.resolution.ArtifactResolutionException;
+
 import org.springframework.boot.cli.compiler.RepositoryConfigurationFactory;
 import org.springframework.boot.cli.compiler.grape.DependencyResolutionContext;
 import org.springframework.boot.cli.compiler.grape.RepositoryConfiguration;
@@ -419,27 +420,67 @@ public class ArchiveUtils {
 
 		private Resource getPom(Archive archive) {
 			Resource pom;
+			String artifactId;
 			try {
 				pom = new UrlResource(archive.getUrl() + "pom.xml");
+				artifactId = extractArtifactId(archive);
 			}
 			catch (MalformedURLException e) {
-				throw new IllegalStateException("Cannot locate pom", e);
+				throw new IllegalStateException("Cannot locate archive", e);
 			}
 			if (!pom.exists()) {
-				try {
-					for (Resource resource : ResourcePatternUtils
-							.getResourcePatternResolver(new DefaultResourceLoader())
-							.getResources(
-									archive.getUrl() + "META-INF/maven/**/pom.xml")) {
-						if (resource.exists()) {
-							return resource;
-						}
-					}
+				String pattern = "META-INF/maven/**"
+						+ (artifactId == null ? "" : "/" + artifactId) + "/pom.xml";
+				Resource resource = findResource(archive, pattern);
+				if (resource != null) {
+					return resource;
 				}
-				catch (Exception e) {
+				// Spring Boot fat jar
+				pattern = "BOOT-INF/classes/META-INF/maven/**"
+						+ (artifactId == null ? "" : "/" + artifactId) + "/pom.xml";
+				resource = findResource(archive, pattern);
+				if (resource != null) {
+					return resource;
+				}
+				// Someone renamed the jar, so we don't know the artifactid
+				pattern = "META-INF/maven/**/pom.xml";
+				resource = findResource(archive, pattern);
+				if (resource != null) {
+					return resource;
+				}
+				// Last chance
+				pattern = "**/META-INF/maven/**/pom.xml";
+				resource = findResource(archive, pattern);
+				if (resource != null) {
+					return resource;
 				}
 			}
 			return pom;
+		}
+
+		private Resource findResource(Archive archive, String pattern) {
+			try {
+				for (Resource resource : ResourcePatternUtils
+						.getResourcePatternResolver(new DefaultResourceLoader())
+						.getResources(archive.getUrl() + pattern)) {
+					if (resource.exists()) {
+						return resource;
+					}
+				}
+			}
+			catch (Exception e) {
+			}
+			return null;
+		}
+
+		private String extractArtifactId(Archive archive) throws MalformedURLException {
+			String path = archive.getUrl().getPath();
+			if (path.endsWith("!/")) {
+				path = path.substring(0, path.length() - 2);
+			}
+			path = StringUtils.getFilename(path);
+			path = path.split("-[0-9]")[0];
+			return path;
 		}
 
 		private Dependency bom(String coordinates) {

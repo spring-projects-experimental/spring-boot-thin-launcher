@@ -35,13 +35,33 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class ArchiveUtilsTests {
 
 	private ArchiveUtils factory = new ArchiveUtils();
-	
+
 	@Test
 	public void dependenciesWithPlaceholders() throws Exception {
 		Archive child = new ExplodedArchive(
 				new File("src/test/resources/apps/placeholders"));
 		List<Archive> result = factory.extract(child, "thin");
 		assertThat(result).isNotEmpty();
+	}
+
+	@Test
+	public void dependenciesWithMavenArchiveOldStyle() throws Exception {
+		Archive child = ArchiveUtils.getArchive(
+				"maven://org.springframework.boot:spring-boot-cli:jar:full:1.3.8.RELEASE");
+		List<Archive> result = factory.extract(child, "thin");
+		assertThat(result).isNotEmpty();
+		assertThat(result)
+				.areAtLeastOne(UrlContains.value("maven-aether-provider-3.2.1"));
+	}
+
+	@Test
+	public void dependenciesWithMavenArchiveBootInf() throws Exception {
+		Archive child = ArchiveUtils.getArchive(
+				"maven://org.springframework.boot:spring-boot-cli:jar:full:1.4.2.RELEASE");
+		List<Archive> result = factory.extract(child, "thin");
+		assertThat(result).isNotEmpty();
+		assertThat(result)
+				.areAtLeastOne(UrlContains.value("maven-aether-provider-3.2.1"));
 	}
 
 	@Test

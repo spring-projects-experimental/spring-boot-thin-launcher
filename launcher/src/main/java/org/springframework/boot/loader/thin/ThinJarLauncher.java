@@ -24,10 +24,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.jar.JarFile;
+import java.util.jar.Manifest;
 
 import org.eclipse.aether.artifact.DefaultArtifact;
 import org.eclipse.aether.graph.Dependency;
 import org.eclipse.aether.resolution.ArtifactResolutionException;
+
 import org.springframework.boot.cli.compiler.RepositoryConfigurationFactory;
 import org.springframework.boot.cli.compiler.grape.DependencyResolutionContext;
 import org.springframework.boot.loader.ExecutableArchiveLauncher;
@@ -41,6 +43,7 @@ import org.springframework.boot.loader.tools.MainClassFinder;
 import org.springframework.core.env.MutablePropertySources;
 import org.springframework.core.env.SimpleCommandLinePropertySource;
 import org.springframework.core.env.StandardEnvironment;
+import org.springframework.core.io.UrlResource;
 import org.springframework.util.StreamUtils;
 import org.springframework.util.StringUtils;
 
@@ -142,8 +145,8 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 				environment.resolvePlaceholders("${" + THIN_DRYRUN + ":false}"))) {
 			getClassPathArchives();
 			if (this.debug) {
-				System.out.println(
-						"Downloaded dependencies" + (root == null ? "" : " to " + root));
+				System.out.println("Downloaded dependencies"
+						+ (StringUtils.hasText(root) ? "" : " to " + root));
 			}
 			return;
 		}
@@ -196,7 +199,29 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 
 	@Override
 	protected ClassLoader createClassLoader(URL[] urls) throws Exception {
-		return new LaunchedURLClassLoader(urls, getClass().getClassLoader().getParent());
+		return new LaunchedURLClassLoader(addNestedClasses(urls),
+				getClass().getClassLoader().getParent());
+	}
+
+	private URL[] addNestedClasses(URL[] urls) throws Exception {
+		return addNestedClasses(urls, "BOOT-INF/classes/");
+	}
+
+	private URL[] addNestedClasses(URL[] urls, String... paths) throws Exception {
+		List<URL> extras = new ArrayList<>();
+		for (String path : paths) {
+			UrlResource classes = new UrlResource(
+					getArchive().getUrl().toString() + path);
+			if (classes.exists()) {
+				extras.add(classes.getURL());
+			}
+		}
+		URL[] result = urls;
+		if (!extras.isEmpty()) {
+			extras.addAll(Arrays.asList(urls));
+			result = extras.toArray(new URL[0]);
+		}
+		return result;
 	}
 
 	@Override
@@ -209,13 +234,20 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 			return super.getMainClass();
 		}
 		catch (IllegalStateException e) {
-			File root = new File(getArchive().getUrl().toURI());
-			if (getArchive() instanceof ExplodedArchive) {
-				return MainClassFinder.findSingleMainClass(root);
-			}
-			else {
-				return MainClassFinder.findSingleMainClass(new JarFile(root), "/");
-			}
+		}
+		Manifest manifest = getArchive().getManifest();
+		if (manifest != null) {
+			mainClass = manifest.getMainAttributes().getValue("Main-Class");
+		}
+		if (mainClass != null) {
+			return mainClass;
+		}
+		File root = new File(getArchive().getUrl().toURI());
+		if (getArchive() instanceof ExplodedArchive) {
+			return MainClassFinder.findSingleMainClass(root);
+		}
+		else {
+			return MainClassFinder.findSingleMainClass(new JarFile(root), "/");
 		}
 	}
 
