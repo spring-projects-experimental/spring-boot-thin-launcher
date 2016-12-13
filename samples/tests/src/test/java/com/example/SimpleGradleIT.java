@@ -44,8 +44,10 @@ public class SimpleGradleIT {
 
 	@Test
 	public void runJar() throws Exception {
-		ProcessBuilder builder = new ProcessBuilder("java", "-Xmx64m", "-jar",
-				"../simple/build/libs/simple-0.0.1-SNAPSHOT.jar", "--server.port=0");
+		ProcessBuilder builder = new ProcessBuilder("java", "-Xmx128m", "-noverify",
+				"-XX:TieredStopAtLevel=1", "-Djava.security.egd=file:/dev/./urandom",
+				"-jar", "../simple/build/libs/simple-0.0.1-SNAPSHOT.jar",
+				"--server.port=0");
 		builder.redirectErrorStream(true);
 		started = builder.start();
 		String output = output(started.getInputStream(), "Started LauncherApplication");
@@ -54,7 +56,9 @@ public class SimpleGradleIT {
 
 	@Test
 	public void resolveDependencies() throws Exception {
-		ProcessBuilder builder = new ProcessBuilder("java", "-Dthin.root=.", "-Xmx64m", "-jar",
+		ProcessBuilder builder = new ProcessBuilder("java", "-Dthin.root=.", "-Xmx128m",
+				"-noverify", "-XX:TieredStopAtLevel=1",
+				"-Djava.security.egd=file:/dev/./urandom", "-jar",
 				"simple-0.0.1-SNAPSHOT.jar", "--server.port=0");
 		builder.directory(new File("../simple/build/thin/deploy/"));
 		builder.redirectErrorStream(true);

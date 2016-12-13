@@ -43,15 +43,17 @@ public class AppGradleIT {
 
 	@Test
 	public void runJar() throws Exception {
-		ProcessBuilder builder = new ProcessBuilder("java", "-Xmx64m", "-jar",
-				"../app/build/libs/app-0.0.1-SNAPSHOT.jar", "--server.port=0");
+		ProcessBuilder builder = new ProcessBuilder("java", "-Xmx128m", "-noverify",
+				"-XX:TieredStopAtLevel=1", "-Djava.security.egd=file:/dev/./urandom",
+				"-jar", "../app/build/libs/app-0.0.1-SNAPSHOT.jar", "--server.port=0");
 		builder.redirectErrorStream(true);
 		started = builder.start();
 		String output = output(started.getInputStream(), "Started");
 		assertThat(output).contains("Started LauncherApplication");
 	}
 
-	private static String output(InputStream inputStream, String marker) throws IOException {
+	private static String output(InputStream inputStream, String marker)
+			throws IOException {
 		StringBuilder sb = new StringBuilder();
 		BufferedReader br = null;
 		try {
@@ -60,7 +62,7 @@ public class AppGradleIT {
 			while ((line = br.readLine()) != null && !line.contains(marker)) {
 				sb.append(line + System.getProperty("line.separator"));
 			}
-			if (line!=null) {
+			if (line != null) {
 				sb.append(line + System.getProperty("line.separator"));
 			}
 		}
