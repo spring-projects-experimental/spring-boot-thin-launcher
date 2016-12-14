@@ -192,33 +192,42 @@ public class ArchiveUtils {
 		return new File(path).toURI();
 	}
 
-	private static URL[] locateFiles(URL[] urls) throws MalformedURLException {
+	private static URL[] locateFiles(URL[] urls) {
 		for (int i = 0; i < urls.length; i++) {
 			urls[i] = jarFile(urls[i]);
 		}
 		return urls;
 	}
 
-	private static URL jarFile(URL url) throws MalformedURLException {
+	private static URL jarFile(URL url) {
 		String path = url.toString();
 		if (path.endsWith("!/")) {
 			path = path.substring(0, path.length() - "!/".length());
 			if (path.startsWith("jar:")) {
 				path = path.substring("jar:".length());
 			}
-			url = new URL(path);
+			try {
+				url = new URL(path);
+			}
+			catch (MalformedURLException e) {
+				throw new IllegalStateException("Bad URL for jar file: " + path, e);
+			}
 		}
 		return url;
 	}
 
-	public static URL[] addNestedClasses(Archive archive, URL[] urls, String... paths)
-			throws Exception {
+	public static URL[] addNestedClasses(Archive archive, URL[] urls, String... paths) {
 		List<URL> extras = new ArrayList<>();
-		for (String path : paths) {
-			UrlResource classes = new UrlResource(archive.getUrl().toString() + path);
-			if (classes.exists()) {
-				extras.add(classes.getURL());
+		try {
+			for (String path : paths) {
+				UrlResource classes = new UrlResource(archive.getUrl().toString() + path);
+				if (classes.exists()) {
+					extras.add(classes.getURL());
+				}
 			}
+		}
+		catch (Exception e) {
+			throw new IllegalStateException("Cannot create urls for resources", e);
 		}
 		URL[] result = urls;
 		if (!extras.isEmpty()) {
