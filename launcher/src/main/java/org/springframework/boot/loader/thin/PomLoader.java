@@ -86,6 +86,24 @@ public class PomLoader {
 	private void replacePlaceholders(Model model) {
 		PropertyPlaceholderHelper helper = new PropertyPlaceholderHelper("${", "}");
 
+		if (model.getVersion() != null) {
+			model.getProperties().setProperty("project.version", model.getVersion());
+		}
+		else if (model.getParent().getVersion() != null) {
+			model.getProperties().setProperty("project.version",
+					model.getParent().getVersion());
+		}
+		if (model.getGroupId() != null) {
+			model.getProperties().setProperty("project.groupId", model.getGroupId());
+		}
+		else if (model.getParent().getGroupId() != null) {
+			model.getProperties().setProperty("project.groupId",
+					model.getParent().getGroupId());
+		}
+		if (model.getArtifactId() != null) {
+			model.getProperties().setProperty("project.artifactId",
+					model.getArtifactId());
+		}
 		for (org.apache.maven.model.Dependency dependency : model.getDependencies()) {
 			String version = dependency.getVersion();
 			if (version != null) {

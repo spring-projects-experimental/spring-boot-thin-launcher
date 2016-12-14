@@ -45,6 +45,14 @@ public class ArchiveUtilsTests {
 	}
 
 	@Test
+	public void dependenciesWithProjectVariables() throws Exception {
+		Archive child = new ExplodedArchive(
+				new File("src/test/resources/apps/projectvariables"));
+		List<Archive> result = factory.extract(child, "thin");
+		assertThat(result).isNotEmpty();
+	}
+
+	@Test
 	public void dependenciesWithMavenArchiveOldStyle() throws Exception {
 		Archive child = ArchiveUtils.getArchive(
 				"maven://org.springframework.boot:spring-boot-cli:jar:full:1.3.8.RELEASE");
