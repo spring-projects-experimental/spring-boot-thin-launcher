@@ -96,27 +96,48 @@ public class ArchiveUtils {
 		}
 	}
 
+	public static File getArchiveRoot(Archive archive)
+			throws URISyntaxException, MalformedURLException {
+		return new File(jarFile(archive.getUrl()).toURI());
+	}
+
+	public static Archive computeArchive(String path) {
+		File file = new File(findArchive(path));
+		if (file.isDirectory()) {
+			return new ExplodedArchive(file);
+		}
+		try {
+			return new JarFileArchive(file);
+		}
+		catch (IOException e) {
+			throw new IllegalStateException("Cannot create jar archive", e);
+		}
+	}
+
 	public static String findMainClass(Archive archive) {
+		String mainClass = null;
 		try {
 			Manifest manifest = archive.getManifest();
-			String mainClass = null;
 			if (manifest != null) {
 				mainClass = manifest.getMainAttributes().getValue("Start-Class");
-			}
-			if (mainClass != null) {
-				return mainClass;
+				if (mainClass != null) {
+					return mainClass;
+				}
+				mainClass = manifest.getMainAttributes().getValue("Main-Class");
+				if (mainClass != null) {
+					return mainClass;
+				}
 			}
 		}
 		catch (Exception e) {
 		}
-		File root;
 		try {
-			root = new File(archive.getUrl().toURI());
+			File root = getArchiveRoot(archive);
 			if (archive instanceof ExplodedArchive) {
 				return MainClassFinder.findSingleMainClass(root);
 			}
 			else {
-				return MainClassFinder.findSingleMainClass(new JarFile(root), "/");
+				return MainClassFinder.findSingleMainClass(new JarFile(root), "");
 			}
 		}
 		catch (Exception e) {
@@ -165,12 +186,46 @@ public class ArchiveUtils {
 						e);
 			}
 		}
-		try {
-			return new URI(path);
+		if (path.startsWith("file:")) {
+			path = path.substring("file:".length());
 		}
-		catch (URISyntaxException e) {
-			throw new IllegalArgumentException("Cannot resolve URI: " + path, e);
+		return new File(path).toURI();
+	}
+
+	private static URL[] locateFiles(URL[] urls) throws MalformedURLException {
+		for (int i = 0; i < urls.length; i++) {
+			urls[i] = jarFile(urls[i]);
 		}
+		return urls;
+	}
+
+	private static URL jarFile(URL url) throws MalformedURLException {
+		String path = url.toString();
+		if (path.endsWith("!/")) {
+			path = path.substring(0, path.length() - "!/".length());
+			if (path.startsWith("jar:")) {
+				path = path.substring("jar:".length());
+			}
+			url = new URL(path);
+		}
+		return url;
+	}
+
+	public static URL[] addNestedClasses(Archive archive, URL[] urls, String... paths)
+			throws Exception {
+		List<URL> extras = new ArrayList<>();
+		for (String path : paths) {
+			UrlResource classes = new UrlResource(archive.getUrl().toString() + path);
+			if (classes.exists()) {
+				extras.add(classes.getURL());
+			}
+		}
+		URL[] result = urls;
+		if (!extras.isEmpty()) {
+			extras.addAll(Arrays.asList(urls));
+			result = extras.toArray(new URL[0]);
+		}
+		return locateFiles(result);
 	}
 
 	public List<Archive> subtract(Archive parent, Archive child, String name,
@@ -582,6 +637,25 @@ public class ArchiveUtils {
 					extension, version), scope);
 		}
 
+	}
+
+	public List<Archive> combine(Archive parent, Archive archive, String name,
+			String[] profiles) {
+		List<Archive> archives = new ArrayList<>();
+		if (parent == null) {
+			archives.addAll(extract(archive, name, profiles));
+		}
+		else {
+			archives.addAll(extract(parent, name, profiles));
+			archives.addAll(subtract(parent, archive, name, profiles));
+		}
+		if (!archives.isEmpty()) {
+			archives.add(0, archive);
+		}
+		else {
+			archives.add(archive);
+		}
+		return archives;
 	}
 
 }

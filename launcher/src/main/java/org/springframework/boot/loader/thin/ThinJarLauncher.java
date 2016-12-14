@@ -17,36 +17,18 @@
 package org.springframework.boot.loader.thin;
 
 import java.io.File;
-import java.io.FileOutputStream;
-import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.jar.JarFile;
-import java.util.jar.Manifest;
 
-import org.eclipse.aether.artifact.DefaultArtifact;
-import org.eclipse.aether.graph.Dependency;
-import org.eclipse.aether.resolution.ArtifactResolutionException;
-
-import org.springframework.boot.cli.compiler.RepositoryConfigurationFactory;
-import org.springframework.boot.cli.compiler.grape.DependencyResolutionContext;
 import org.springframework.boot.loader.ExecutableArchiveLauncher;
 import org.springframework.boot.loader.LaunchedURLClassLoader;
 import org.springframework.boot.loader.archive.Archive;
 import org.springframework.boot.loader.archive.Archive.Entry;
-import org.springframework.boot.loader.archive.ExplodedArchive;
-import org.springframework.boot.loader.archive.JarFileArchive;
 import org.springframework.boot.loader.thin.AetherEngine.ProgressType;
-import org.springframework.boot.loader.tools.MainClassFinder;
 import org.springframework.core.env.MutablePropertySources;
 import org.springframework.core.env.SimpleCommandLinePropertySource;
 import org.springframework.core.env.StandardEnvironment;
-import org.springframework.core.io.UrlResource;
-import org.springframework.util.StreamUtils;
 import org.springframework.util.StringUtils;
 
 /**
@@ -157,11 +139,13 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 
 	private String[] removeThinArgs(String[] args) {
 		List<String> result = new ArrayList<>();
+		boolean escaped = false;
 		for (String arg : args) {
 			if ("--".equals(arg)) {
-				break;
+				escaped = true;
+				continue;
 			}
-			if (arg.startsWith("--thin.")) {
+			if (!escaped && arg.startsWith("--thin.")) {
 				continue;
 			}
 			result.add(arg);
@@ -203,48 +187,9 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 
 	@Override
 	protected ClassLoader createClassLoader(URL[] urls) throws Exception {
-		return new LaunchedURLClassLoader(locateFiles(addNestedClasses(urls)),
+		return new LaunchedURLClassLoader(
+				ArchiveUtils.addNestedClasses(getArchive(), urls, "BOOT-INF/classes/"),
 				getClass().getClassLoader().getParent());
-	}
-
-	private URL[] locateFiles(URL[] urls) throws MalformedURLException {
-		for (int i = 0; i < urls.length; i++) {
-			urls[i] = jarFile(urls[i]);
-		}
-		return urls;
-	}
-
-	private URL jarFile(URL url) throws MalformedURLException {
-		String path = url.toString();
-		if (path.endsWith("!/")) {
-			path = path.substring(0, path.length() - "!/".length());
-			if (path.startsWith("jar:")) {
-				path = path.substring("jar:".length());
-			}
-			url = new URL(path);
-		}
-		return url;
-	}
-
-	private URL[] addNestedClasses(URL[] urls) throws Exception {
-		return addNestedClasses(urls, "BOOT-INF/classes/");
-	}
-
-	private URL[] addNestedClasses(URL[] urls, String... paths) throws Exception {
-		List<URL> extras = new ArrayList<>();
-		for (String path : paths) {
-			UrlResource classes = new UrlResource(
-					getArchive().getUrl().toString() + path);
-			if (classes.exists()) {
-				extras.add(classes.getURL());
-			}
-		}
-		URL[] result = urls;
-		if (!extras.isEmpty()) {
-			extras.addAll(Arrays.asList(urls));
-			result = extras.toArray(new URL[0]);
-		}
-		return result;
 	}
 
 	@Override
@@ -253,29 +198,30 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 		if (StringUtils.hasText(mainClass)) {
 			return mainClass;
 		}
-		try {
-			return super.getMainClass();
-		}
-		catch (IllegalStateException e) {
-		}
-		Manifest manifest = getArchive().getManifest();
-		if (manifest != null) {
-			mainClass = manifest.getMainAttributes().getValue("Main-Class");
-		}
-		if (mainClass != null) {
-			return mainClass;
-		}
-		File root = getArchiveRoot();
-		if (getArchive() instanceof ExplodedArchive) {
-			return MainClassFinder.findSingleMainClass(root);
-		}
-		else {
-			return MainClassFinder.findSingleMainClass(new JarFile(root), "");
-		}
+		return ArchiveUtils.findMainClass(getArchive());
 	}
 
-	private File getArchiveRoot() throws URISyntaxException, MalformedURLException {
-		return new File(jarFile(getArchive().getUrl()).toURI());
+	@Override
+	protected List<Archive> getClassPathArchives() throws Exception {
+		String parent = environment
+				.resolvePlaceholders("${" + ThinJarLauncher.THIN_PARENT + ":}");
+		String name = environment
+				.resolvePlaceholders("${" + ThinJarLauncher.THIN_NAME + ":thin}");
+		String[] profiles = environment
+				.resolvePlaceholders("${" + ThinJarLauncher.THIN_PROFILE + ":}")
+				.split(",");
+		Archive parentArchive = null;
+		if (StringUtils.hasText(parent)) {
+			parentArchive = ArchiveUtils.computeArchive(parent);
+		}
+		List<Archive> archives = this.archives.combine(parentArchive, getArchive(), name,
+				profiles);
+		return archives;
+	}
+
+	@Override
+	protected boolean isNestedArchive(Entry entry) {
+		return false;
 	}
 
 	private static Archive computeArchive(String[] args) throws Exception {
@@ -293,7 +239,7 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 				}
 			}
 		}
-		return computeArchive(path);
+		return ArchiveUtils.computeArchive(path);
 	}
 
 	static String getProperty(String key) {
@@ -301,104 +247,6 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 			return System.getProperty(key);
 		}
 		return System.getenv(key.replace(".", "_").toUpperCase());
-	}
-
-	private static Archive computeArchive(String path) throws Exception {
-		File file = new File(findArchive(path));
-		if (file.isDirectory()) {
-			return new ExplodedArchive(file);
-		}
-		return new JarFileArchive(file);
-	}
-
-	private static URI findArchive(String path) throws Exception {
-		URI archive = findPath(path);
-		if (archive != null) {
-			return archive;
-		}
-		File dir = new File("target/classes");
-		if (dir.exists()) {
-			return dir.toURI();
-		}
-		dir = new File("build/classes");
-		if (dir.exists()) {
-			return dir.toURI();
-		}
-		dir = new File(".");
-		return dir.toURI();
-	}
-
-	private static URI findPath(String path) throws Exception {
-		if (path == null) {
-			return null;
-		}
-		if (path.startsWith("maven:")) {
-			// Resolving an explicit external archive
-			String coordinates = path.replaceFirst("maven:\\/*", "");
-			DependencyResolutionContext context = new DependencyResolutionContext();
-			AetherEngine engine = AetherEngine.create(
-					RepositoryConfigurationFactory.createDefaultRepositoryConfiguration(),
-					context);
-			try {
-				List<File> resolved = engine
-						.resolve(
-								Arrays.asList(new Dependency(
-										new DefaultArtifact(coordinates), "runtime")),
-								false);
-				return resolved.get(0).toURI();
-			}
-			catch (ArtifactResolutionException e) {
-				throw new IllegalStateException("Cannot resolve archive: " + coordinates,
-						e);
-			}
-		}
-		URI uri = new URI(path);
-		if (path.startsWith("http:") || path.startsWith("https:")) {
-			File file = File.createTempFile(StringUtils.getFilename(path), "");
-			StreamUtils.copy(uri.toURL().openStream(), new FileOutputStream(file));
-			uri = file.toURI();
-		}
-		else {
-			if (path.startsWith("file:")) {
-				path = path.substring("file:".length());
-				uri = new File(path).toURI();
-			}
-			uri = new File(path).toURI();
-		}
-		return uri;
-	}
-
-	@Override
-	protected List<Archive> getClassPathArchives() throws Exception {
-		String parent = environment
-				.resolvePlaceholders("${" + ThinJarLauncher.THIN_PARENT + ":}");
-		String name = environment
-				.resolvePlaceholders("${" + ThinJarLauncher.THIN_NAME + ":thin}");
-		String[] prefixes = environment
-				.resolvePlaceholders("${" + ThinJarLauncher.THIN_PROFILE + ":}")
-				.split(",");
-		List<Archive> archives = new ArrayList<>();
-		if (!StringUtils.hasText(parent)) {
-			archives.addAll(this.archives.extract(getArchive(), name, prefixes));
-		}
-		else {
-			Archive parentArchive = computeArchive(parent);
-			archives.addAll(this.archives.extract(parentArchive, name, prefixes));
-			archives.addAll(
-					this.archives.subtract(parentArchive, getArchive(), name, prefixes));
-		}
-		if (!archives.isEmpty()) {
-			archives.add(0, getArchive());
-		}
-		else {
-			archives.add(getArchive());
-		}
-		return archives;
-	}
-
-	@Override
-	protected boolean isNestedArchive(Entry entry) {
-		return false;
 	}
 
 }
