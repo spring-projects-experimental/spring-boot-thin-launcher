@@ -169,7 +169,7 @@ public class AetherEngine {
 
 	public List<File> resolve(List<Dependency> dependencies)
 			throws ArtifactResolutionException {
-		return resolve(dependencies);
+		return resolve(dependencies, true);
 	}
 
 	public List<File> resolve(List<Dependency> dependencies, boolean transitive)

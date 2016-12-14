@@ -16,11 +16,14 @@
 
 package org.springframework.boot.loader.thin;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Properties;
 
 import org.apache.maven.model.DependencyManagement;
 import org.apache.maven.model.Model;
@@ -32,7 +35,9 @@ import org.eclipse.aether.artifact.Artifact;
 import org.eclipse.aether.artifact.DefaultArtifact;
 import org.eclipse.aether.graph.Dependency;
 import org.eclipse.aether.graph.Exclusion;
+import org.eclipse.aether.resolution.ArtifactResolutionException;
 
+import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.util.PropertyPlaceholderHelper;
 
@@ -43,6 +48,12 @@ import org.springframework.util.PropertyPlaceholderHelper;
  *
  */
 public class PomLoader {
+
+	private AetherEngine engine;
+
+	public PomLoader(AetherEngine engine) {
+		this.engine = engine;
+	}
 
 	public String getParent(Resource pom) {
 		if (!pom.exists()) {
@@ -86,29 +97,12 @@ public class PomLoader {
 	private void replacePlaceholders(Model model) {
 		PropertyPlaceholderHelper helper = new PropertyPlaceholderHelper("${", "}");
 
-		if (model.getVersion() != null) {
-			model.getProperties().setProperty("project.version", model.getVersion());
-		}
-		else if (model.getParent().getVersion() != null) {
-			model.getProperties().setProperty("project.version",
-					model.getParent().getVersion());
-		}
-		if (model.getGroupId() != null) {
-			model.getProperties().setProperty("project.groupId", model.getGroupId());
-		}
-		else if (model.getParent().getGroupId() != null) {
-			model.getProperties().setProperty("project.groupId",
-					model.getParent().getGroupId());
-		}
-		if (model.getArtifactId() != null) {
-			model.getProperties().setProperty("project.artifactId",
-					model.getArtifactId());
-		}
+		Properties properties = new Properties();
+		loadProperties(model, properties);
 		for (org.apache.maven.model.Dependency dependency : model.getDependencies()) {
 			String version = dependency.getVersion();
 			if (version != null) {
-				dependency.setVersion(
-						helper.replacePlaceholders(version, model.getProperties()));
+				dependency.setVersion(helper.replacePlaceholders(version, properties));
 			}
 		}
 
@@ -119,13 +113,44 @@ public class PomLoader {
 					.getDependencies()) {
 				String version = dependency.getVersion();
 				if (version != null) {
-					dependency.setVersion(
-							helper.replacePlaceholders(version, model.getProperties()));
+					dependency
+							.setVersion(helper.replacePlaceholders(version, properties));
 				}
 			}
 
 		}
 
+	}
+
+	private void loadProperties(Model model, Properties properties) {
+		if (model.getParent() != null) {
+			Artifact artifact = getParentArtifact(model);
+			try {
+				List<File> resolved = engine.resolve(
+						Arrays.asList(new Dependency(artifact, "import")), false);
+				loadProperties(readModel(new FileSystemResource(resolved.get(0))),
+						properties);
+			}
+			catch (ArtifactResolutionException e) {
+				// TODO: log a warning?
+			}
+		}
+		properties.putAll(model.getProperties());
+		if (model.getVersion() != null) {
+			properties.setProperty("project.version", model.getVersion());
+		}
+		else if (model.getParent().getVersion() != null) {
+			properties.setProperty("project.version", model.getParent().getVersion());
+		}
+		if (model.getGroupId() != null) {
+			properties.setProperty("project.groupId", model.getGroupId());
+		}
+		else if (model.getParent().getGroupId() != null) {
+			properties.setProperty("project.groupId", model.getParent().getGroupId());
+		}
+		if (model.getArtifactId() != null) {
+			properties.setProperty("project.artifactId", model.getArtifactId());
+		}
 	}
 
 	private Artifact getParentArtifact(Model model) {

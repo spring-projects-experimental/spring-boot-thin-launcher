@@ -45,6 +45,17 @@ public class ArchiveUtilsTests {
 	}
 
 	@Test
+	public void dependenciesWithParent() throws Exception {
+		Archive child = new ExplodedArchive(
+				new File("src/test/resources/apps/parent-properties"));
+		List<Archive> result = factory.extract(child, "thin");
+		assertThat(result).isNotEmpty();
+		// Weird combo of spring version picked from the wrong property (but it resolves,
+		// which is the test)
+		assertThat(result).areAtLeastOne(UrlContains.value("spring-core/4.1.3.RELEASE"));
+	}
+
+	@Test
 	public void dependenciesWithProjectVariables() throws Exception {
 		Archive child = new ExplodedArchive(
 				new File("src/test/resources/apps/projectvariables"));

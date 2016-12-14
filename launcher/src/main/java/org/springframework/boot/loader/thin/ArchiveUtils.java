@@ -291,13 +291,19 @@ public class ArchiveUtils {
 		private Map<String, Dependency> boms = new LinkedHashMap<>();
 		private Set<Dependency> exclusions = new LinkedHashSet<>();
 		private boolean transitive = true;
-		private PomLoader pomLoader = new PomLoader();
+		private PomLoader pomLoader;
 		private String name;
 		private List<String> profiles;
+		private AetherEngine engine;
 
 		public ArchiveDependencies(Archive root, String name, String... profiles) {
 			this.name = name;
 			this.profiles = new ArrayList<>(Arrays.asList(profiles));
+			DependencyResolutionContext context = new DependencyResolutionContext();
+			List<RepositoryConfiguration> repositories = RepositoryConfigurationFactory
+					.createDefaultRepositoryConfiguration();
+			engine = AetherEngine.create(repositories, context, progress);
+			pomLoader = new PomLoader(engine);
 			compute(root);
 		}
 
@@ -370,10 +376,6 @@ public class ArchiveUtils {
 		}
 
 		public List<File> resolve() {
-			DependencyResolutionContext context = new DependencyResolutionContext();
-			List<RepositoryConfiguration> repositories = RepositoryConfigurationFactory
-					.createDefaultRepositoryConfiguration();
-			AetherEngine engine = AetherEngine.create(repositories, context, progress);
 			engine.addDependencyManagementBoms(new ArrayList<>(boms.values()));
 			List<File> files;
 			try {
