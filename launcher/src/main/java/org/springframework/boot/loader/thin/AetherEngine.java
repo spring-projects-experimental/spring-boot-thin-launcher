@@ -167,6 +167,12 @@ public class AetherEngine {
 		return repository;
 	}
 
+	public List<Dependency> collect(List<Dependency> dependencies)
+			throws ArtifactResolutionException {
+		DependencyResult result = resolveDependencies(dependencies);
+		return getDependencies(result);
+	}
+
 	public List<File> resolve(List<Dependency> dependencies)
 			throws ArtifactResolutionException {
 		return resolve(dependencies, true);
@@ -215,15 +221,14 @@ public class AetherEngine {
 		return list;
 	}
 
-	private List<File> resolveTransitive(List<Dependency> dependencies)
-			throws ArtifactResolutionException {
+	private DependencyResult resolveDependencies(List<Dependency> dependencies) {
 		try {
 			CollectRequest collectRequest = getCollectRequest(dependencies);
 			DependencyRequest dependencyRequest = getDependencyRequest(collectRequest);
 			DependencyResult result = this.repositorySystem
 					.resolveDependencies(this.session, dependencyRequest);
 			addManagedDependencies(result);
-			return getFiles(result);
+			return result;
 		}
 		catch (Exception ex) {
 			throw new DependencyResolutionFailedException(ex);
@@ -231,6 +236,15 @@ public class AetherEngine {
 		finally {
 			this.progressReporter.finished();
 		}
+	}
+
+	private List<File> resolveTransitive(List<Dependency> dependencies)
+			throws ArtifactResolutionException {
+		return getFiles(resolveDependencies(dependencies));
+	}
+
+	public void addDependencyManagement(List<Dependency> dependencies) {
+		resolutionContext.addManagedDependencies(dependencies);
 	}
 
 	public void addDependencyManagementBoms(List<Dependency> boms) {

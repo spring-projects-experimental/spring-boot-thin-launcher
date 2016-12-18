@@ -44,9 +44,10 @@ public class AppMavenIT {
 
 	@Test
 	public void runJar() throws Exception {
-		ProcessBuilder builder = new ProcessBuilder("java", "-Xmx128m", "-noverify",
-				"-XX:TieredStopAtLevel=1", "-Djava.security.egd=file:/dev/./urandom",
-				"-jar", "../app/target/app-0.0.1-SNAPSHOT.jar", "--server.port=0");
+		ProcessBuilder builder = new ProcessBuilder(Utils.javaCommand(), "-Xmx128m",
+				"-noverify", "-XX:TieredStopAtLevel=1",
+				"-Djava.security.egd=file:/dev/./urandom", "-jar",
+				"../app/target/app-0.0.1-SNAPSHOT.jar", "--server.port=0");
 		builder.redirectErrorStream(true);
 		started = builder.start();
 		String output = output(started.getInputStream(), "Started");
@@ -56,10 +57,10 @@ public class AppMavenIT {
 
 	@Test
 	public void runJarCustomProperties() throws Exception {
-		ProcessBuilder builder = new ProcessBuilder("java", "-Xmx128m", "-noverify",
-				"-XX:TieredStopAtLevel=1", "-Djava.security.egd=file:/dev/./urandom",
-				"-jar", "../../../../../app/target/app-0.0.1-SNAPSHOT.jar",
-				"--server.port=0");
+		ProcessBuilder builder = new ProcessBuilder(Utils.javaCommand(), "-Xmx128m",
+				"-noverify", "-XX:TieredStopAtLevel=1",
+				"-Djava.security.egd=file:/dev/./urandom", "-jar",
+				"../../../../../app/target/app-0.0.1-SNAPSHOT.jar", "--server.port=0");
 		builder.redirectErrorStream(true);
 		builder.directory(new File("src/test/resources/app"));
 		started = builder.start();
@@ -70,10 +71,11 @@ public class AppMavenIT {
 
 	@Test
 	public void runJarNamedProperties() throws Exception {
-		ProcessBuilder builder = new ProcessBuilder("java", "-Xmx128m", "-noverify",
-				"-XX:TieredStopAtLevel=1", "-Djava.security.egd=file:/dev/./urandom",
-				"-Ddebug", "-Dthin.name=app", "-jar",
-				"../../../../../app/target/app-0.0.1-SNAPSHOT.jar", "--server.port=0");
+		ProcessBuilder builder = new ProcessBuilder(Utils.javaCommand(), "-Xmx128m",
+				"-noverify", "-XX:TieredStopAtLevel=1",
+				"-Djava.security.egd=file:/dev/./urandom", "-Ddebug", "-Dthin.name=app",
+				"-jar", "../../../../../app/target/app-0.0.1-SNAPSHOT.jar",
+				"--server.port=0");
 		builder.redirectErrorStream(true);
 		builder.directory(new File("src/test/resources/app"));
 		started = builder.start();
@@ -84,10 +86,10 @@ public class AppMavenIT {
 
 	@Test
 	public void runJarNamedPropertiesEnvVar() throws Exception {
-		ProcessBuilder builder = new ProcessBuilder("java", "-Xmx128m", "-noverify",
-				"-XX:TieredStopAtLevel=1", "-Djava.security.egd=file:/dev/./urandom",
-				"-jar", "../../../../../app/target/app-0.0.1-SNAPSHOT.jar",
-				"--server.port=0");
+		ProcessBuilder builder = new ProcessBuilder(Utils.javaCommand(), "-Xmx128m",
+				"-noverify", "-XX:TieredStopAtLevel=1",
+				"-Djava.security.egd=file:/dev/./urandom", "-jar",
+				"../../../../../app/target/app-0.0.1-SNAPSHOT.jar", "--server.port=0");
 		builder.environment().put("THIN_NAME", "app");
 		builder.redirectErrorStream(true);
 		builder.directory(new File("src/test/resources/app"));
@@ -99,8 +101,9 @@ public class AppMavenIT {
 
 	@Test
 	public void runJarExternalArchive() throws Exception {
-		ProcessBuilder builder = new ProcessBuilder("java", "-Xmx128m", "-noverify",
-				"-XX:TieredStopAtLevel=1", "-Djava.security.egd=file:/dev/./urandom",
+		ProcessBuilder builder = new ProcessBuilder(Utils.javaCommand(), "-Xmx128m",
+				"-noverify", "-XX:TieredStopAtLevel=1",
+				"-Djava.security.egd=file:/dev/./urandom",
 				"-Dthin.archive=maven://com.example:simple:0.0.1-SNAPSHOT", "-jar",
 				"../app/target/app-0.0.1-SNAPSHOT.jar", "--server.port=0");
 		builder.redirectErrorStream(true);

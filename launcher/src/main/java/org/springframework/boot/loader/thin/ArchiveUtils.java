@@ -288,6 +288,7 @@ public class ArchiveUtils {
 	class ArchiveDependencies {
 
 		private Map<String, Dependency> dependencies = new LinkedHashMap<>();
+		private Map<String, Dependency> managed = new LinkedHashMap<>();
 		private Map<String, Dependency> boms = new LinkedHashMap<>();
 		private Set<Dependency> exclusions = new LinkedHashSet<>();
 		private boolean transitive = true;
@@ -340,7 +341,12 @@ public class ArchiveUtils {
 
 		public void addBoms(Collection<Dependency> boms) {
 			for (Dependency dependency : boms) {
-				this.boms.put(key(dependency), dependency);
+				if ("pom".equals(dependency.getArtifact().getExtension())) {
+					this.boms.put(key(dependency), dependency);
+				}
+				else {
+					this.managed.put(key(dependency), dependency);
+				}
 			}
 		}
 
@@ -377,6 +383,7 @@ public class ArchiveUtils {
 
 		public List<File> resolve() {
 			engine.addDependencyManagementBoms(new ArrayList<>(boms.values()));
+			engine.addDependencyManagement(new ArrayList<>(managed.values()));
 			List<File> files;
 			try {
 				addParentBoms(engine);
@@ -428,6 +435,16 @@ public class ArchiveUtils {
 			}
 			for (String key : this.dependencies.keySet()) {
 				Dependency target = this.dependencies.get(key);
+				Set<Exclusion> possible = new HashSet<>();
+				try {
+					Set<Dependency> collected = new HashSet<>(
+							engine.collect(Arrays.asList(target)));
+					possible.addAll(exclusions(collected));
+				}
+				catch (ArtifactResolutionException e) {
+					throw new IllegalStateException(
+							"Cannot collect trsansitive dependencies for: " + target, e);
+				}
 				Collection<Exclusion> exclusions = target.getExclusions();
 				if (exclusions == null) {
 					exclusions = new HashSet<>();
@@ -435,7 +452,11 @@ public class ArchiveUtils {
 				else {
 					exclusions = new HashSet<>(exclusions);
 				}
-				exclusions.addAll(exclusions(this.exclusions));
+				for (Exclusion exclusion : exclusions(this.exclusions)) {
+					if (possible.contains(exclusion)) {
+						exclusions.add(exclusion);
+					}
+				}
 				addDependency(target.setExclusions(exclusions));
 			}
 		}
