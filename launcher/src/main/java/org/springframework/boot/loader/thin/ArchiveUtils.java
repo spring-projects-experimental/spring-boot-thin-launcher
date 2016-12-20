@@ -20,7 +20,6 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -96,21 +95,12 @@ public class ArchiveUtils {
 		}
 	}
 
-	public static File getArchiveRoot(Archive archive)
-			throws URISyntaxException, MalformedURLException {
-		return new File(jarFile(archive.getUrl()).toURI());
-	}
-
-	public static Archive computeArchive(String path) {
-		File file = new File(findArchive(path));
-		if (file.isDirectory()) {
-			return new ExplodedArchive(file);
-		}
+	public static File getArchiveRoot(Archive archive) {
 		try {
-			return new JarFileArchive(file);
+			return new File(jarFile(archive.getUrl()).toURI());
 		}
-		catch (IOException e) {
-			throw new IllegalStateException("Cannot create jar archive", e);
+		catch (Exception e) {
+			throw new IllegalStateException("Cannot locate JAR archive: " + archive, e);
 		}
 	}
 
@@ -148,7 +138,12 @@ public class ArchiveUtils {
 	private static URI findArchive(String path) {
 		URI archive = findPath(path);
 		if (archive != null) {
-			return archive;
+			try {
+				return jarFile(archive.toURL()).toURI();
+			}
+			catch (Exception e) {
+				throw new IllegalStateException("Cannot create URI for " + archive);
+			}
 		}
 		File dir = new File("target/classes");
 		if (dir.exists()) {

@@ -212,7 +212,7 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 				.split(",");
 		Archive parentArchive = null;
 		if (StringUtils.hasText(parent)) {
-			parentArchive = ArchiveUtils.computeArchive(parent);
+			parentArchive = ArchiveUtils.getArchive(parent);
 		}
 		List<Archive> archives = this.archives.combine(parentArchive, getArchive(), name,
 				profiles);
@@ -239,7 +239,7 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 				}
 			}
 		}
-		return ArchiveUtils.computeArchive(path);
+		return ArchiveUtils.getArchive(path);
 	}
 
 	static String getProperty(String key) {
