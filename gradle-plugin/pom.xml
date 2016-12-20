@@ -72,28 +72,6 @@
 					<target>${java.version}</target>
 				</configuration>
 			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-shade-plugin</artifactId>
-				<configuration>
-					<shadedArtifactAttached>false</shadedArtifactAttached>
-					<keepDependenciesWithProvidedScope>true</keepDependenciesWithProvidedScope>
-					<filters>
-						<filter>
-							<artifact>org.springframework.boot.experimental:spring-boot-thin-launcher:*</artifact>
-						</filter>
-					</filters>
-				</configuration>
-				<executions>
-					<execution>
-						<id>shade-runtime-dependencies</id>
-						<phase>package</phase>
-						<goals>
-							<goal>shade</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
 		</plugins>
 	</build>
 
