@@ -130,7 +130,7 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 			getClassPathArchives();
 			if (this.debug) {
 				System.out.println("Downloaded dependencies"
-						+ (StringUtils.hasText(root) ? "" : " to " + root));
+						+ (!StringUtils.hasText(root) ? "" : " to " + root));
 			}
 			return;
 		}
