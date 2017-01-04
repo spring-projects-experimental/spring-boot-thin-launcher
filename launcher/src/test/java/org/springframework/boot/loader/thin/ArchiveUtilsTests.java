@@ -20,6 +20,7 @@ import java.net.MalformedURLException;
 import java.util.List;
 
 import org.assertj.core.api.Condition;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import org.springframework.boot.loader.archive.Archive;
@@ -34,13 +35,13 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 public class ArchiveUtilsTests {
 
-	private ArchiveUtils factory = new ArchiveUtils();
+	private ArchiveUtils utils = new ArchiveUtils();
 
 	@Test
 	public void dependenciesWithPlaceholders() throws Exception {
 		Archive child = new ExplodedArchive(
 				new File("src/test/resources/apps/placeholders"));
-		List<Archive> result = factory.extract(child, "thin");
+		List<Archive> result = utils.extract(child, "thin");
 		assertThat(result).isNotEmpty();
 	}
 
@@ -48,7 +49,7 @@ public class ArchiveUtilsTests {
 	public void dependenciesWithParent() throws Exception {
 		Archive child = new ExplodedArchive(
 				new File("src/test/resources/apps/parent-properties"));
-		List<Archive> result = factory.extract(child, "thin");
+		List<Archive> result = utils.extract(child, "thin");
 		assertThat(result).isNotEmpty();
 		// Weird combo of spring version picked from the wrong property (but it resolves,
 		// which is the test)
@@ -59,15 +60,25 @@ public class ArchiveUtilsTests {
 	public void dependenciesWithProjectVariables() throws Exception {
 		Archive child = new ExplodedArchive(
 				new File("src/test/resources/apps/projectvariables"));
-		List<Archive> result = factory.extract(child, "thin");
+		List<Archive> result = utils.extract(child, "thin");
 		assertThat(result).isNotEmpty();
+	}
+
+	@Test
+	@Ignore // TODO: fix this
+	public void dependenciesWithParentOverride() throws Exception {
+		Archive child = new ExplodedArchive(
+				new File("src/test/resources/apps/parent-properties-override"));
+		List<Archive> result = utils.extract(child, "thin");
+		assertThat(result).isNotEmpty();
+		assertThat(result).areAtLeastOne(UrlContains.value("spring-core/4.3.5.RELEASE"));
 	}
 
 	@Test
 	public void dependenciesWithMavenArchiveOldStyle() throws Exception {
 		Archive child = ArchiveUtils.getArchive(
 				"maven://org.springframework.boot:spring-boot-cli:jar:full:1.3.8.RELEASE");
-		List<Archive> result = factory.extract(child, "thin");
+		List<Archive> result = utils.extract(child, "thin");
 		assertThat(result).isNotEmpty();
 		assertThat(result)
 				.areAtLeastOne(UrlContains.value("maven-aether-provider-3.2.1"));
@@ -77,7 +88,7 @@ public class ArchiveUtilsTests {
 	public void dependenciesWithMavenArchiveBootInf() throws Exception {
 		Archive child = ArchiveUtils.getArchive(
 				"maven://org.springframework.boot:spring-boot-cli:jar:full:1.4.2.RELEASE");
-		List<Archive> result = factory.extract(child, "thin");
+		List<Archive> result = utils.extract(child, "thin");
 		assertThat(result).isNotEmpty();
 		assertThat(result)
 				.areAtLeastOne(UrlContains.value("maven-aether-provider-3.2.1"));
@@ -86,7 +97,7 @@ public class ArchiveUtilsTests {
 	@Test
 	public void libsWithProfile() throws Exception {
 		Archive child = new ExplodedArchive(new File("src/test/resources/apps/eureka"));
-		List<Archive> result = factory.extract(child, "thin", "extra");
+		List<Archive> result = utils.extract(child, "thin", "extra");
 		assertThat(result).size().isGreaterThan(3);
 		assertThat(result).areAtLeastOne(UrlContains.value("spring-boot-1.4.1.RELEASE"));
 	}
@@ -97,7 +108,7 @@ public class ArchiveUtilsTests {
 				new File("src/test/resources/app-with-web-and-cloud-config.jar"));
 		Archive child = new JarFileArchive(
 				new File("src/test/resources/app-with-web-in-lib-properties.jar"));
-		List<Archive> result = factory.subtract(parent, child, "thin");
+		List<Archive> result = utils.subtract(parent, child, "thin");
 		assertThat(result).isEmpty();
 	}
 
@@ -106,7 +117,7 @@ public class ArchiveUtilsTests {
 		Archive parent = new JarFileArchive(
 				new File("src/test/resources/app-with-web-and-cloud-config.jar"));
 		Archive child = new ExplodedArchive(new File("src/test/resources/apps/db"));
-		List<Archive> result = factory.subtract(parent, child, "thin");
+		List<Archive> result = utils.subtract(parent, child, "thin");
 		assertThat(result).size().isGreaterThan(3);
 		assertThat(result).areAtLeastOne(UrlContains.value("spring-jdbc"));
 		assertThat(result).doNotHave(UrlContains.value("spring-boot/"));
@@ -117,7 +128,7 @@ public class ArchiveUtilsTests {
 		Archive parent = new ExplodedArchive(
 				new File("src/test/resources/apps/web-and-cloud"));
 		Archive child = new ExplodedArchive(new File("src/test/resources/apps/eureka"));
-		List<Archive> result = factory.subtract(parent, child, "thin");
+		List<Archive> result = utils.subtract(parent, child, "thin");
 		assertThat(result).size().isGreaterThan(3);
 		assertThat(result)
 				.areAtLeastOne(UrlContains.value("spring-cloud-netflix-eureka-client"));
@@ -129,7 +140,7 @@ public class ArchiveUtilsTests {
 		Archive parent = new JarFileArchive(
 				new File("src/test/resources/app-with-web-and-cloud-config.jar"));
 		Archive child = new ExplodedArchive(new File("src/test/resources/apps/eureka"));
-		List<Archive> result = factory.subtract(parent, child, "thin");
+		List<Archive> result = utils.subtract(parent, child, "thin");
 		assertThat(result).size().isGreaterThan(3);
 		assertThat(result)
 				.areAtLeastOne(UrlContains.value("spring-cloud-netflix-eureka-client"));
