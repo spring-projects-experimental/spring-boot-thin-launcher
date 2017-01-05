@@ -51,6 +51,7 @@ import org.springframework.boot.loader.tools.MainClassFinder;
 import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
+import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.io.UrlResource;
 import org.springframework.core.io.support.PropertiesLoaderUtils;
 import org.springframework.core.io.support.ResourcePatternUtils;
@@ -64,6 +65,8 @@ public class ArchiveUtils {
 
 	private static final String DEFAULT_BOM = "org.springframework.boot:spring-boot-dependencies:1.4.2.RELEASE";
 	private ProgressType progress = ProgressType.SUMMARY;
+	private ResourceLoader resources = new DefaultResourceLoader();
+	private String[] locations = new String[] { "classpath:/", "file:." };
 
 	static {
 		LogbackInitializer.initialize();
@@ -75,6 +78,10 @@ public class ArchiveUtils {
 	 */
 	public void setProgress(ProgressType progress) {
 		this.progress = progress;
+	}
+
+	public void setLocations(String... locations) {
+		this.locations = locations;
 	}
 
 	public static Archive getArchive(Class<?> cls) {
@@ -169,11 +176,9 @@ public class ArchiveUtils {
 					RepositoryConfigurationFactory.createDefaultRepositoryConfiguration(),
 					context);
 			try {
-				List<File> resolved = engine
-						.resolve(
-								Arrays.asList(new Dependency(
-										new DefaultArtifact(coordinates), "runtime")),
-								false);
+				List<File> resolved = engine.resolve(Arrays.asList(
+						new Dependency(new DefaultArtifact(coordinates), "runtime")),
+						false);
 				return resolved.get(0).toURI();
 			}
 			catch (ArtifactResolutionException e) {
@@ -472,7 +477,7 @@ public class ArchiveUtils {
 			addBoms(getPomDependencyManagement(root));
 			addDependencies(getPomDependencies(root));
 			loadLibraryProperties(libs, root);
-			loadLibraryProperties(libs, new ExplodedArchive(new File(".")));
+			loadLibraryProperties(libs, ArchiveUtils.this.locations);
 
 			this.transitive = libs.getProperty("transitive.enabled", "true")
 					.equals("true");
@@ -586,18 +591,44 @@ public class ArchiveUtils {
 			return props;
 		}
 
-		private Properties loadProperties(Properties props, Archive archive,
-				String path) {
+		private void loadLibraryProperties(Properties props, String... locations) {
+			for (String profile : profiles) {
+				String path = name + ("".equals(profile) ? "" : "-") + profile
+						+ ".properties";
+				for (String location : locations) {
+					try {
+						if (!location.endsWith("/")) {
+							location = location + "/";
+						}
+						loadProperties(props, location, path);
+					}
+					catch (Exception e) {
+						throw new IllegalStateException("Cannot load properties", e);
+					}
+				}
+			}
+		}
+
+		private void loadProperties(Properties props, Archive archive, String path) {
 			try {
-				Resource resource = new UrlResource(
-						archive.getUrl() + "META-INF/" + path);
+				loadProperties(props, archive.getUrl().toString(), path);
+			}
+			catch (Exception e) {
+				throw new IllegalStateException("Cannot load properties", e);
+			}
+		}
+
+		private Properties loadProperties(Properties props, String url, String path) {
+			try {
+				Resource resource = resources.getResource(url)
+						.createRelative("META-INF/" + path);
 				if (resource.exists()) {
 					if (progress == ProgressType.DETAILED) {
 						System.out.println("Loading properties from archive: " + path);
 					}
 					PropertiesLoaderUtils.fillProperties(props, resource);
 				}
-				resource = new UrlResource(archive.getUrl() + "/" + path);
+				resource = resources.getResource(url).createRelative("/" + path);
 				if (resource.exists()) {
 					if (progress == ProgressType.DETAILED) {
 						System.out.println("Loading properties from archive: " + path);

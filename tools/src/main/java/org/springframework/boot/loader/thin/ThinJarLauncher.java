@@ -75,7 +75,15 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 	public static final String THIN_PARENT = "thin.parent";
 
 	/**
-	 * The name of the launchable (i.e. the properties file name).
+	 * The path to thin properties files (as per thin.name), as a comma-separated list of
+	 * resources (these locations plus relative /META-INF will be searched). Defaults to
+	 * current directory and classpath:/.
+	 */
+	public static final String THIN_LOCATION = "thin.location";
+
+	/**
+	 * The name of the launchable (i.e. the properties file name). Defaults to "thin" (so
+	 * "thin.properties" is the default file name with no profiles).
 	 */
 	public static final String THIN_NAME = "thin.name";
 
@@ -207,12 +215,17 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 				.resolvePlaceholders("${" + ThinJarLauncher.THIN_PARENT + ":}");
 		String name = environment
 				.resolvePlaceholders("${" + ThinJarLauncher.THIN_NAME + ":thin}");
+		String locations = environment
+				.resolvePlaceholders("${" + ThinJarLauncher.THIN_LOCATION + ":}");
 		String[] profiles = environment
 				.resolvePlaceholders("${" + ThinJarLauncher.THIN_PROFILE + ":}")
 				.split(",");
 		Archive parentArchive = null;
 		if (StringUtils.hasText(parent)) {
 			parentArchive = ArchiveUtils.getArchive(parent);
+		}
+		if (StringUtils.hasText(locations)) {
+			this.archives.setLocations(locations.split(","));
 		}
 		List<Archive> archives = this.archives.combine(parentArchive, getArchive(), name,
 				profiles);

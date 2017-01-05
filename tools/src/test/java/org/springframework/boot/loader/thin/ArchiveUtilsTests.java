@@ -124,6 +124,16 @@ public class ArchiveUtilsTests {
 	}
 
 	@Test
+	public void propertiesWithDatabase() throws Exception {
+		Archive parent = new JarFileArchive(
+				new File("src/test/resources/app-with-web-and-cloud-config.jar"));
+		utils.setLocations("classpath:apps/db");
+		List<Archive> result = utils.extract(parent, "thin");
+		assertThat(result).size().isGreaterThan(3);
+		assertThat(result).areAtLeastOne(UrlContains.value("spring-jdbc"));
+	}
+
+	@Test
 	public void childWithEureka() throws Exception {
 		Archive parent = new ExplodedArchive(
 				new File("src/test/resources/apps/web-and-cloud"));
