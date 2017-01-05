@@ -20,38 +20,10 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-loader-tools</artifactId>
+			<groupId>org.springframework.boot.experimental</groupId>
+			<artifactId>spring-boot-thin-tools</artifactId>
+			<version>${project.version}</version>
 			<optional>true</optional>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-loader</artifactId>
-			<optional>true</optional>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-cli</artifactId>
-			<version>${spring-boot.version}</version>
-			<optional>true</optional>
-			<exclusions>
-				<exclusion>
-					<groupId>org.codehaus.groovy</groupId>
-					<artifactId>groovy</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>jline</groupId>
-					<artifactId>jline</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>net.sf.jopt-simple</groupId>
-					<artifactId>jopt-simple</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>org.json</groupId>
-					<artifactId>json</artifactId>
-				</exclusion>
-			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>commons-logging</groupId>
@@ -151,7 +123,8 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-shade-plugin</artifactId>
 				<configuration>
-					<minimizeJar>true</minimizeJar>
+					<!-- TODO: minimize the jar (carefully) -->
+					<!--minimizeJar>true</minimizeJar-->
 					<shadedArtifactAttached>false</shadedArtifactAttached>
 					<keepDependenciesWithProvidedScope>true</keepDependenciesWithProvidedScope>
 					<transformers>
@@ -161,11 +134,23 @@
 					</transformers>
 					<filters>
 						<filter>
+							<artifact>${project.groupId}:spring-boot-thin-tools:*</artifact>
+							<includes>
+								<include>**</include>
+							</includes>
+						</filter>
+						<filter>
 							<artifact>org.springframework.boot:spring-boot-cli:*</artifact>
 							<includes>
 								<include>org/springframework/boot/cli/compiler/**</include>
 								<include>org/springframework/boot/cli/util/**</include>
 								<include>META-INF/services/**</include>
+							</includes>
+						</filter>
+						<filter>
+							<artifact>org.springframework.boot:*:*</artifact>
+							<includes>
+								<include>org/springframework/boot/**</include>
 							</includes>
 						</filter>
 						<filter>

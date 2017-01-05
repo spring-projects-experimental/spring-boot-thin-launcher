@@ -15,9 +15,10 @@
 	<name>Thin Launcher Parent</name>
 
 	<modules>
-		<module>wrapper</module>
-		<module>launcher</module>
 		<module>maven-plugin</module>
+		<module>wrapper</module>
+		<module>tools</module>
+		<module>launcher</module>
 		<module>gradle-plugin</module>
 		<module>samples</module>
 	</modules>
