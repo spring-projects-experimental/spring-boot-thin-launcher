@@ -134,7 +134,7 @@ be executable and thin.
 ```
 
 There is also a Maven plugin which can be used to do the dry run
-(download and cache the depdendencies) for the current project, or for
+(download and cache the dependencies) for the current project, or for
 any project that has an executable thin jar in the same format. The
 "app" sample in this repo declares this plugin and inserts it into
 the "package" lifecycle:
