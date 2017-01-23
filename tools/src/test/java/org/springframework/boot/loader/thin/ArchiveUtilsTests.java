@@ -20,7 +20,6 @@ import java.net.MalformedURLException;
 import java.util.List;
 
 import org.assertj.core.api.Condition;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import org.springframework.boot.loader.archive.Archive;
@@ -65,7 +64,7 @@ public class ArchiveUtilsTests {
 	}
 
 	@Test
-	@Ignore // TODO: fix this
+	// @Ignore // TODO: fix this
 	public void dependenciesWithParentOverride() throws Exception {
 		Archive child = new ExplodedArchive(
 				new File("src/test/resources/apps/parent-properties-override"));
@@ -157,6 +156,15 @@ public class ArchiveUtilsTests {
 		assertThat(result)
 				.areAtLeastOne(UrlContains.value("spring-cloud-netflix-eureka-client"));
 		assertThat(result).doNotHave(UrlContains.value("spring-boot"));
+	}
+
+	@Test
+	public void dependencyManagementPom() throws Exception {
+		Archive parent = new ExplodedArchive(new File("src/test/resources/apps/dep-man"));
+		List<Archive> result = utils.extract(parent, "thin");
+		assertThat(result).size().isGreaterThan(3);
+		// pom changes spring-context
+		assertThat(result).areAtLeastOne(UrlContains.value("spring-context-4.3.5"));
 	}
 
 	private static final class UrlContains extends Condition<Archive> {

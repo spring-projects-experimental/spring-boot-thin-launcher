@@ -302,6 +302,7 @@ public class ArchiveUtils {
 	class ArchiveDependencies {
 
 		private Map<String, Dependency> dependencies = new LinkedHashMap<>();
+		private Map<String, Dependency> managed = new LinkedHashMap<>();
 		private Map<String, Dependency> boms = new LinkedHashMap<>();
 		private Set<Dependency> exclusions = new LinkedHashSet<>();
 		private boolean transitive = true;
@@ -345,6 +346,10 @@ public class ArchiveUtils {
 
 		public void addDependency(Dependency dependency) {
 			this.dependencies.put(key(dependency), dependency);
+		}
+
+		public void addManaged(Dependency dependency) {
+			this.managed.put(key(dependency), dependency);
 		}
 
 		public void removeDependency(Dependency dependency) {
@@ -394,6 +399,7 @@ public class ArchiveUtils {
 		private void prepare() throws ArtifactResolutionException {
 			addParentBoms();
 			engine.addDependencyManagementBoms(new ArrayList<>(boms.values()));
+			engine.addDependencyManagement(new ArrayList<>(this.managed.values()));
 			addExclusions();
 			if (progress == ProgressType.DETAILED) {
 				System.out.println("BOMs:");
@@ -524,6 +530,9 @@ public class ArchiveUtils {
 					}
 					if (key.startsWith("boms")) {
 						addBom(bom(lib));
+					}
+					if (key.startsWith("managed")) {
+						addManaged(dependency(lib));
 					}
 					if (key.startsWith("exclusions")) {
 						removeDependency(dependency(lib));

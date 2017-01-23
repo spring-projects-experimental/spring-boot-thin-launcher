@@ -192,8 +192,18 @@ public class PomLoader {
 						model.getDependencyManagement().getDependencies()));
 			}
 			for (Dependency dependency : list) {
-				props.put("boms." + dependency.getArtifact().getArtifactId(),
-						coordinates(dependency.getArtifact()));
+				if ("jar".equals(dependency.getArtifact().getExtension())) {
+					for (Exclusion exclusion : dependency.getExclusions()) {
+						props.put("exclusions." + exclusion.getArtifactId(),
+								coordinates(exclusion));
+					}
+					props.put("managed." + dependency.getArtifact().getArtifactId(),
+							coordinates(dependency.getArtifact()));
+				}
+				else {
+					props.put("boms." + dependency.getArtifact().getArtifactId(),
+							coordinates(dependency.getArtifact()));
+				}
 			}
 			for (Dependency dependency : convertDependencies(model.getDependencies())) {
 				props.put("dependencies." + dependency.getArtifact().getArtifactId(),
@@ -210,4 +220,9 @@ public class PomLoader {
 				+ ":" + artifact.getVersion();
 	}
 
+	private String coordinates(Exclusion artifact) {
+		return artifact.getGroupId() + ":" + artifact.getArtifactId()
+				+ (StringUtils.hasText(artifact.getClassifier())
+						? artifact.getExtension() + ":" + artifact.getClassifier() : "");
+	}
 }
