@@ -21,7 +21,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
@@ -40,6 +39,7 @@ import org.eclipse.aether.resolution.ArtifactResolutionException;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.util.PropertyPlaceholderHelper;
+import org.springframework.util.StringUtils;
 
 /**
  * Utility class to help with reading and extracting dependencies from a physical pom.
@@ -66,32 +66,6 @@ public class PomLoader {
 					+ parent.getVersion();
 		}
 		return null;
-	}
-
-	public List<Dependency> getDependencies(Resource pom) {
-		if (!pom.exists()) {
-			return Collections.emptyList();
-		}
-		Model model = readModel(pom);
-		replacePlaceholders(model);
-		return convertDependencies(model.getDependencies());
-	}
-
-	public List<Dependency> getDependencyManagement(Resource pom) {
-		if (!pom.exists()) {
-			return Collections.emptyList();
-		}
-		List<Dependency> list = new ArrayList<>();
-		Model model = readModel(pom);
-		replacePlaceholders(model);
-		if (model.getParent() != null) {
-			list.add(new Dependency(getParentArtifact(model), "import"));
-		}
-		if (model.getDependencyManagement() != null) {
-			list.addAll(convertDependencies(
-					model.getDependencyManagement().getDependencies()));
-		}
-		return list;
 	}
 
 	private void replacePlaceholders(Model model) {
@@ -202,6 +176,38 @@ public class PomLoader {
 			throw new IllegalStateException("Failed to build model from effective pom",
 					ex);
 		}
+	}
+
+	public Properties loadThinProperties(Resource pom) {
+		Properties props = new Properties();
+		if (pom.exists()) {
+			List<Dependency> list = new ArrayList<>();
+			Model model = readModel(pom);
+			replacePlaceholders(model);
+			if (model.getParent() != null) {
+				list.add(new Dependency(getParentArtifact(model), "import"));
+			}
+			if (model.getDependencyManagement() != null) {
+				list.addAll(convertDependencies(
+						model.getDependencyManagement().getDependencies()));
+			}
+			for (Dependency dependency : list) {
+				props.put("boms." + dependency.getArtifact().getArtifactId(),
+						coordinates(dependency.getArtifact()));
+			}
+			for (Dependency dependency : convertDependencies(model.getDependencies())) {
+				props.put("dependencies." + dependency.getArtifact().getArtifactId(),
+						coordinates(dependency.getArtifact()));
+			}
+		}
+		return props;
+	}
+
+	private String coordinates(Artifact artifact) {
+		return artifact.getGroupId() + ":" + artifact.getArtifactId()
+				+ (StringUtils.hasText(artifact.getClassifier())
+						? artifact.getExtension() + ":" + artifact.getClassifier() : "")
+				+ ":" + artifact.getVersion();
 	}
 
 }

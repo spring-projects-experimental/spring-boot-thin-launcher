@@ -20,7 +20,6 @@ import java.net.MalformedURLException;
 import java.util.List;
 
 import org.assertj.core.api.Condition;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import org.springframework.boot.loader.archive.Archive;
@@ -65,7 +64,6 @@ public class ArchiveUtilsTests {
 	}
 
 	@Test
-	@Ignore // TODO: fix this
 	public void dependenciesWithParentOverride() throws Exception {
 		Archive child = new ExplodedArchive(
 				new File("src/test/resources/apps/parent-properties-override"));

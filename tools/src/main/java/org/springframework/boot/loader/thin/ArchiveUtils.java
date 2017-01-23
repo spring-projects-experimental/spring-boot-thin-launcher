@@ -24,6 +24,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -241,19 +242,32 @@ public class ArchiveUtils {
 			String... profiles) {
 
 		ArchiveDependencies parents = new ArchiveDependencies(parent, name, profiles);
-		List<File> resolved = parents.resolve();
+		Map<String, Dependency> resolved = map(parents.collect());
 
 		ArchiveDependencies childs = new ArchiveDependencies(child, name, profiles);
 		childs.addBoms(parents.getBoms());
 		childs.mergeExclusions(parents.getDependencies());
 		ArrayList<File> result = new ArrayList<>();
-		for (File file : childs.resolve()) {
-			if (!resolved.contains(file)) {
-				result.add(file);
+		for (Dependency file : childs.collect()) {
+			if (!resolved.containsKey(key(file))) {
+				result.add(file.getArtifact().getFile());
 			}
 		}
 		return archives(result);
 
+	}
+
+	private Map<String, Dependency> map(List<Dependency> collect) {
+		Map<String, Dependency> map = new HashMap<>();
+		for (Dependency dependency : collect) {
+			map.put(key(dependency), dependency);
+		}
+		return map;
+	}
+
+	private String key(Dependency dependency) {
+		return dependency.getArtifact().getGroupId() + ":"
+				+ dependency.getArtifact().getArtifactId();
 	}
 
 	public List<Archive> extract(Archive root, String name, String... profiles) {
@@ -288,7 +302,6 @@ public class ArchiveUtils {
 	class ArchiveDependencies {
 
 		private Map<String, Dependency> dependencies = new LinkedHashMap<>();
-		private Map<String, Dependency> managed = new LinkedHashMap<>();
 		private Map<String, Dependency> boms = new LinkedHashMap<>();
 		private Set<Dependency> exclusions = new LinkedHashSet<>();
 		private boolean transitive = true;
@@ -344,9 +357,6 @@ public class ArchiveUtils {
 				if ("pom".equals(dependency.getArtifact().getExtension())) {
 					this.boms.put(key(dependency), dependency);
 				}
-				else {
-					this.managed.put(key(dependency), dependency);
-				}
 			}
 		}
 
@@ -381,28 +391,44 @@ public class ArchiveUtils {
 			return transitive;
 		}
 
-		public List<File> resolve() {
+		private void prepare() throws ArtifactResolutionException {
+			addParentBoms();
 			engine.addDependencyManagementBoms(new ArrayList<>(boms.values()));
-			engine.addDependencyManagement(new ArrayList<>(managed.values()));
-			List<File> files;
-			try {
-				addParentBoms(engine);
-				addExclusions();
-				if (progress == ProgressType.DETAILED) {
-					System.out.println("BOMs:");
-					for (Dependency dependency : boms.values()) {
-						System.out.println(" " + dependency);
-					}
-					System.out.println("Dependencies:");
-					for (Dependency dependency : dependencies.values()) {
-						System.out.println(" " + dependency);
-						if (dependency.getExclusions() != null) {
-							for (Exclusion exclude : dependency.getExclusions()) {
-								System.out.println(" - " + exclude);
-							}
+			addExclusions();
+			if (progress == ProgressType.DETAILED) {
+				System.out.println("BOMs:");
+				for (Dependency dependency : boms.values()) {
+					System.out.println(" " + dependency);
+				}
+				System.out.println("Dependencies:");
+				for (Dependency dependency : dependencies.values()) {
+					System.out.println(" " + dependency);
+					if (dependency.getExclusions() != null) {
+						for (Exclusion exclude : dependency.getExclusions()) {
+							System.out.println(" - " + exclude);
 						}
 					}
 				}
+			}
+
+		}
+
+		public List<Dependency> collect() {
+			List<Dependency> files;
+			try {
+				prepare();
+				files = engine.collect(new ArrayList<>(dependencies.values()));
+			}
+			catch (ArtifactResolutionException e) {
+				throw new IllegalStateException("Cannot resolve artifacts", e);
+			}
+			return files;
+		}
+
+		public List<File> resolve() {
+			List<File> files;
+			try {
+				prepare();
 				files = engine.resolve(new ArrayList<>(dependencies.values()),
 						transitive);
 			}
@@ -412,14 +438,25 @@ public class ArchiveUtils {
 			return files;
 		}
 
-		private void addParentBoms(AetherEngine engine)
-				throws ArtifactResolutionException {
+		private void addParentBoms() throws ArtifactResolutionException {
+			DependencyResolutionContext context = new DependencyResolutionContext();
+			List<RepositoryConfiguration> repositories = RepositoryConfigurationFactory
+					.createDefaultRepositoryConfiguration();
+			AetherEngine engine = AetherEngine.create(repositories, context,
+					ProgressType.NONE);
 			List<File> poms = engine.resolve(new ArrayList<>(boms.values()), false);
+			for (String bom : new HashSet<>(boms.keySet())) {
+				if (bom.contains("spring-boot-starter-parent")) {
+					boms.remove(bom);
+				}
+			}
 			for (File pom : poms) {
 				String parent = pomLoader.getParent(new FileSystemResource(pom));
 				while (parent != null) {
 					Dependency dependency = dependency(parent, "pom", "import");
-					addBom(dependency);
+					if (!boms.containsKey(key(dependency))) {
+						addBom(dependency);
+					}
 					List<File> parents = engine.resolve(Arrays.asList(dependency), false);
 					if (parents.isEmpty()) {
 						break;
@@ -473,9 +510,7 @@ public class ArchiveUtils {
 		private void compute(Archive root) {
 
 			// TODO: Maybe use something that conserves order?
-			Properties libs = new Properties();
-			addBoms(getPomDependencyManagement(root));
-			addDependencies(getPomDependencies(root));
+			Properties libs = loadPomProperties(root);
 			loadLibraryProperties(libs, root);
 			loadLibraryProperties(libs, ArchiveUtils.this.locations);
 
@@ -502,12 +537,9 @@ public class ArchiveUtils {
 
 		}
 
-		private List<Dependency> getPomDependencies(Archive archive) {
-			return this.pomLoader.getDependencies(getPom(archive));
-		}
-
-		private List<Dependency> getPomDependencyManagement(Archive archive) {
-			return this.pomLoader.getDependencyManagement(getPom(archive));
+		private Properties loadPomProperties(Archive root) {
+			Properties props = this.pomLoader.loadThinProperties(getPom(root));
+			return props;
 		}
 
 		private Resource getPom(Archive archive) {
