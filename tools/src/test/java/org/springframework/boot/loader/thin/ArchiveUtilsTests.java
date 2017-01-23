@@ -131,6 +131,8 @@ public class ArchiveUtilsTests {
 		List<Archive> result = utils.extract(parent, "thin");
 		assertThat(result).size().isGreaterThan(3);
 		assertThat(result).areAtLeastOne(UrlContains.value("spring-jdbc"));
+		// thin.properties changes bom version
+		assertThat(result).areAtLeastOne(UrlContains.value("spring-boot-1.3.8"));
 	}
 
 	@Test
