@@ -80,11 +80,26 @@
 						</goals>
 					</execution>
 					<execution>
+						<id>other</id>
+						<phase>pre-integration-test</phase>
+						<configuration>
+							<workingDirectory>${basedir}/../other</workingDirectory>
+							<executable>./gradlew</executable>
+							<arguments>
+								<argument>build</argument>
+								<argument>thinResolve</argument>
+							</arguments>
+						</configuration>
+						<goals>
+							<goal>exec</goal>
+						</goals>
+					</execution>
+					<execution>
 						<id>simple</id>
 						<phase>pre-integration-test</phase>
 						<configuration>
 							<workingDirectory>${basedir}/../simple</workingDirectory>
-							<executable>./gradlew</executable>
+ 							<executable>./gradlew</executable>
 							<arguments>
 								<argument>build</argument>
 								<argument>thinResolve</argument>
