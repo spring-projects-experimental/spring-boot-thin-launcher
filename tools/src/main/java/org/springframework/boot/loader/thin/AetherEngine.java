@@ -167,10 +167,18 @@ public class AetherEngine {
 		return repository;
 	}
 
+	public List<Dependency> collect(List<Dependency> dependencies, boolean transitive)
+			throws ArtifactResolutionException {
+		if (transitive) {
+			DependencyResult result = resolveDependencies(dependencies);
+			return getDependencies(result);
+		}
+		return getDependencies(collectNonTransitive(dependencies));
+	}
+
 	public List<Dependency> collect(List<Dependency> dependencies)
 			throws ArtifactResolutionException {
-		DependencyResult result = resolveDependencies(dependencies);
-		return getDependencies(result);
+		return collect(dependencies, true);
 	}
 
 	public List<File> resolve(List<Dependency> dependencies)
@@ -183,16 +191,16 @@ public class AetherEngine {
 		if (transitive) {
 			return resolveTransitive(dependencies);
 		}
-		return resolveNonTransitive(dependencies);
+		return getFiles(collectNonTransitive(dependencies));
 	}
 
-	private List<File> resolveNonTransitive(List<Dependency> dependencies) {
+	private List<ArtifactResult> collectNonTransitive(List<Dependency> dependencies) {
 		try {
 			List<ArtifactRequest> artifactRequests = getArtifactRequests(dependencies);
 			List<ArtifactResult> result = this.repositorySystem
 					.resolveArtifacts(this.session, artifactRequests);
 			this.resolutionContext.addManagedDependencies(dependencies);
-			return getFiles(result);
+			return result;
 		}
 		catch (Exception ex) {
 			throw new DependencyResolutionFailedException(ex);
@@ -200,6 +208,16 @@ public class AetherEngine {
 		finally {
 			this.progressReporter.finished();
 		}
+	}
+
+	private List<Dependency> getDependencies(List<ArtifactResult> result) {
+		List<Dependency> list = new ArrayList<>();
+		for (ArtifactResult artifactResult : result) {
+			Artifact artifact = artifactResult.getArtifact();
+			list.add(new Dependency(artifact,
+					"pom".equals(artifact.getExtension()) ? "import" : "compile"));
+		}
+		return list;
 	}
 
 	private List<File> getFiles(List<ArtifactResult> result) {

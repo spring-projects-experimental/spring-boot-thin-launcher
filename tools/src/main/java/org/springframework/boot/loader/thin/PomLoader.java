@@ -68,10 +68,9 @@ public class PomLoader {
 		return null;
 	}
 
-	private void replacePlaceholders(Model model) {
+	private void replacePlaceholders(Model model, Properties properties) {
 		PropertyPlaceholderHelper helper = new PropertyPlaceholderHelper("${", "}");
 
-		Properties properties = new Properties();
 		loadProperties(model, properties);
 		for (org.apache.maven.model.Dependency dependency : model.getDependencies()) {
 			String version = dependency.getVersion();
@@ -102,8 +101,15 @@ public class PomLoader {
 			try {
 				List<File> resolved = engine.resolve(
 						Arrays.asList(new Dependency(artifact, "import")), false);
-				loadProperties(readModel(new FileSystemResource(resolved.get(0))),
-						properties);
+				Model parent = readModel(new FileSystemResource(resolved.get(0)));
+				loadProperties(parent, properties);
+				if (parent.getDependencyManagement() != null) {
+					if (model.getDependencyManagement() == null) {
+						model.setDependencyManagement(new DependencyManagement());
+					}
+					model.getDependencyManagement().getDependencies()
+							.addAll(parent.getDependencyManagement().getDependencies());
+				}
 			}
 			catch (ArtifactResolutionException e) {
 				// TODO: log a warning?
@@ -183,10 +189,7 @@ public class PomLoader {
 		if (pom.exists()) {
 			List<Dependency> list = new ArrayList<>();
 			Model model = readModel(pom);
-			replacePlaceholders(model);
-			if (model.getParent() != null) {
-				list.add(new Dependency(getParentArtifact(model), "import"));
-			}
+			replacePlaceholders(model, props);
 			if (model.getDependencyManagement() != null) {
 				list.addAll(convertDependencies(
 						model.getDependencyManagement().getDependencies()));

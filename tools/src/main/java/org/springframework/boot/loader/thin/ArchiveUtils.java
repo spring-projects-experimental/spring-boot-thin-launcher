@@ -24,6 +24,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -310,6 +311,7 @@ public class ArchiveUtils {
 		private String name;
 		private List<String> profiles;
 		private AetherEngine engine;
+		private Properties properties;
 
 		public ArchiveDependencies(Archive root, String name, String... profiles) {
 			this.name = name;
@@ -319,7 +321,7 @@ public class ArchiveUtils {
 					.createDefaultRepositoryConfiguration();
 			engine = AetherEngine.create(repositories, context, progress);
 			pomLoader = new PomLoader(engine);
-			compute(root);
+			this.properties = computeProperties(root);
 		}
 
 		public void mergeExclusions(Collection<Dependency> dependencies) {
@@ -397,7 +399,7 @@ public class ArchiveUtils {
 		}
 
 		private void prepare() throws ArtifactResolutionException {
-			addParentBoms();
+			// addParentBoms();
 			engine.addDependencyManagementBoms(new ArrayList<>(boms.values()));
 			engine.addDependencyManagement(new ArrayList<>(this.managed.values()));
 			addExclusions();
@@ -450,24 +452,28 @@ public class ArchiveUtils {
 					.createDefaultRepositoryConfiguration();
 			AetherEngine engine = AetherEngine.create(repositories, context,
 					ProgressType.NONE);
-			List<File> poms = engine.resolve(new ArrayList<>(boms.values()), false);
+			List<Dependency> poms = engine.collect(new ArrayList<>(boms.values()), false);
 			for (String bom : new HashSet<>(boms.keySet())) {
+				// TODO: a better job of this maybe (or maybe it doesn't matter?)
 				if (bom.contains("spring-boot-starter-parent")) {
 					boms.remove(bom);
 				}
 			}
-			for (File pom : poms) {
-				String parent = pomLoader.getParent(new FileSystemResource(pom));
+			for (Dependency pom : poms) {
+				String parent = pomLoader
+						.getParent(new FileSystemResource(pom.getArtifact().getFile()));
 				while (parent != null) {
 					Dependency dependency = dependency(parent, "pom", "import");
 					if (!boms.containsKey(key(dependency))) {
 						addBom(dependency);
 					}
-					List<File> parents = engine.resolve(Arrays.asList(dependency), false);
+					List<Dependency> parents = engine.collect(Arrays.asList(dependency),
+							false);
 					if (parents.isEmpty()) {
 						break;
 					}
-					parent = pomLoader.getParent(new FileSystemResource(parents.get(0)));
+					parent = pomLoader.getParent(new FileSystemResource(
+							parents.get(0).getArtifact().getFile()));
 				}
 			}
 		}
@@ -476,31 +482,32 @@ public class ArchiveUtils {
 			if (this.exclusions.isEmpty()) {
 				return;
 			}
-			for (String key : this.dependencies.keySet()) {
-				Dependency target = this.dependencies.get(key);
-				Set<Exclusion> possible = new HashSet<>();
-				try {
-					Set<Dependency> collected = new HashSet<>(
-							engine.collect(Arrays.asList(target)));
-					possible.addAll(exclusions(collected));
-				}
-				catch (ArtifactResolutionException e) {
-					throw new IllegalStateException(
-							"Cannot collect trsansitive dependencies for: " + target, e);
-				}
-				Collection<Exclusion> exclusions = target.getExclusions();
-				if (exclusions == null) {
-					exclusions = new HashSet<>();
-				}
-				else {
-					exclusions = new HashSet<>(exclusions);
-				}
-				for (Exclusion exclusion : exclusions(this.exclusions)) {
-					if (possible.contains(exclusion)) {
-						exclusions.add(exclusion);
+			try {
+				Set<Dependency> collected = new HashSet<>(
+						engine.collect(new ArrayList<>(this.dependencies.values())));
+				for (Dependency target : collected) {
+					Set<Exclusion> possible = new HashSet<>();
+					possible.addAll(exclusions(Collections.singleton(target)));
+					Collection<Exclusion> exclusions = target.getExclusions();
+					if (exclusions == null) {
+						exclusions = new HashSet<>();
 					}
+					else {
+						exclusions = new HashSet<>(exclusions);
+					}
+					for (Exclusion exclusion : exclusions(this.exclusions)) {
+						if (possible.contains(exclusion)) {
+							exclusions.add(exclusion);
+						}
+					}
+					addDependency(target.setExclusions(exclusions));
 				}
-				addDependency(target.setExclusions(exclusions));
+			}
+			catch (ArtifactResolutionException e) {
+				throw new IllegalStateException(
+						"Cannot collect transitive dependencies for: "
+								+ dependencies.values(),
+						e);
 			}
 		}
 
@@ -513,17 +520,18 @@ public class ArchiveUtils {
 			return result;
 		}
 
-		private void compute(Archive root) {
+		private Properties computeProperties(Archive root) {
 
 			// TODO: Maybe use something that conserves order?
-			Properties libs = loadPomProperties(root);
-			loadLibraryProperties(libs, root);
-			loadLibraryProperties(libs, ArchiveUtils.this.locations);
+			Properties props = this.pomLoader.loadThinProperties(getPom(root));
+			Properties properties = props;
+			loadThinProperties(properties, root);
+			loadThinProperties(properties, ArchiveUtils.this.locations);
 
-			this.transitive = libs.getProperty("transitive.enabled", "true")
+			this.transitive = properties.getProperty("transitive.enabled", "true")
 					.equals("true");
-			for (String key : libs.stringPropertyNames()) {
-				String lib = libs.getProperty(key);
+			for (String key : properties.stringPropertyNames()) {
+				String lib = properties.getProperty(key);
 				if (StringUtils.hasText(lib)) {
 					if (key.startsWith("dependencies")) {
 						addDependency(dependency(lib));
@@ -544,11 +552,8 @@ public class ArchiveUtils {
 				addBom(bom(DEFAULT_BOM));
 			}
 
-		}
+			return properties;
 
-		private Properties loadPomProperties(Archive root) {
-			Properties props = this.pomLoader.loadThinProperties(getPom(root));
-			return props;
 		}
 
 		private Resource getPom(Archive archive) {
@@ -620,7 +625,7 @@ public class ArchiveUtils {
 			return dependency(coordinates, "pom", "import");
 		}
 
-		private Properties loadLibraryProperties(Properties props, Archive archive) {
+		private Properties loadThinProperties(Properties props, Archive archive) {
 			if (!profiles.contains("")) {
 				profiles.add(0, "");
 			}
@@ -632,7 +637,7 @@ public class ArchiveUtils {
 			return props;
 		}
 
-		private void loadLibraryProperties(Properties props, String... locations) {
+		private void loadThinProperties(Properties props, String... locations) {
 			for (String profile : profiles) {
 				String path = name + ("".equals(profile) ? "" : "-") + profile
 						+ ".properties";
@@ -714,7 +719,7 @@ public class ArchiveUtils {
 
 			}
 			else if (parts.length > 2) {
-				if (parts[2].contains(".")) {
+				if (parts[2].contains(".") || parts[2].matches("^[0-9].*")) {
 					version = parts[2];
 					classifier = null;
 				}
