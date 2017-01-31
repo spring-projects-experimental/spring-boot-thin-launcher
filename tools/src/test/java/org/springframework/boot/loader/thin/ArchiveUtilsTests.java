@@ -102,6 +102,7 @@ public class ArchiveUtilsTests {
 	}
 
 	@Test
+	// @Ignore
 	public void overlappingJarsWithDifferentVersions() throws Exception {
 		Archive parent = new JarFileArchive(
 				new File("src/test/resources/app-with-web-and-cloud-config.jar"));
@@ -123,6 +124,7 @@ public class ArchiveUtilsTests {
 	}
 
 	@Test
+	// @Ignore
 	public void propertiesWithDatabase() throws Exception {
 		Archive parent = new JarFileArchive(
 				new File("src/test/resources/app-with-web-and-cloud-config.jar"));

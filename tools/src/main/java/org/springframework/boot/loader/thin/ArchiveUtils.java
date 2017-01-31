@@ -311,7 +311,6 @@ public class ArchiveUtils {
 		private String name;
 		private List<String> profiles;
 		private AetherEngine engine;
-		private Properties properties;
 
 		public ArchiveDependencies(Archive root, String name, String... profiles) {
 			this.name = name;
@@ -321,7 +320,7 @@ public class ArchiveUtils {
 					.createDefaultRepositoryConfiguration();
 			engine = AetherEngine.create(repositories, context, progress);
 			pomLoader = new PomLoader(engine);
-			this.properties = computeProperties(root);
+			computeProperties(root);
 		}
 
 		public void mergeExclusions(Collection<Dependency> dependencies) {
@@ -399,7 +398,7 @@ public class ArchiveUtils {
 		}
 
 		private void prepare() throws ArtifactResolutionException {
-			// addParentBoms();
+			addParentBoms();
 			engine.addDependencyManagementBoms(new ArrayList<>(boms.values()));
 			engine.addDependencyManagement(new ArrayList<>(this.managed.values()));
 			addExclusions();
@@ -523,10 +522,10 @@ public class ArchiveUtils {
 		private Properties computeProperties(Archive root) {
 
 			// TODO: Maybe use something that conserves order?
-			Properties props = this.pomLoader.loadThinProperties(getPom(root));
-			Properties properties = props;
+			Properties properties = new Properties();
 			loadThinProperties(properties, root);
 			loadThinProperties(properties, ArchiveUtils.this.locations);
+			this.pomLoader.loadThinProperties(getPom(root), properties);
 
 			this.transitive = properties.getProperty("transitive.enabled", "true")
 					.equals("true");
@@ -719,7 +718,9 @@ public class ArchiveUtils {
 
 			}
 			else if (parts.length > 2) {
-				if (parts[2].contains(".") || parts[2].matches("^[0-9].*")) {
+				if (parts[2].contains(".") || parts[2].contains("-RELEASE")
+						|| parts[2].contains("-RC") || parts[2].contains("-SR")
+						|| parts[2].matches("^[0-9].*")) {
 					version = parts[2];
 					classifier = null;
 				}

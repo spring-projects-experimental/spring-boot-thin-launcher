@@ -184,11 +184,11 @@ public class PomLoader {
 		}
 	}
 
-	public Properties loadThinProperties(Resource pom) {
-		Properties props = new Properties();
+	public void loadThinProperties(Resource pom, Properties props) {
 		if (pom.exists()) {
 			List<Dependency> list = new ArrayList<>();
 			Model model = readModel(pom);
+			replaceBoms(model, props);
 			replacePlaceholders(model, props);
 			if (model.getDependencyManagement() != null) {
 				list.addAll(convertDependencies(
@@ -201,26 +201,58 @@ public class PomLoader {
 								coordinates(exclusion));
 					}
 					props.put("managed." + dependency.getArtifact().getArtifactId(),
-							coordinates(dependency.getArtifact()));
+							coordinates(dependency.getArtifact(), props, "managed."));
 				}
 				else {
 					props.put("boms." + dependency.getArtifact().getArtifactId(),
-							coordinates(dependency.getArtifact()));
+							coordinates(dependency.getArtifact(), props, "boms."));
 				}
 			}
 			for (Dependency dependency : convertDependencies(model.getDependencies())) {
 				props.put("dependencies." + dependency.getArtifact().getArtifactId(),
-						coordinates(dependency.getArtifact()));
+						coordinates(dependency.getArtifact(), props, "dependencies."));
 			}
 		}
-		return props;
 	}
 
-	private String coordinates(Artifact artifact) {
+	private void replaceBoms(Model model, Properties props) {
+		if (model.getParent() != null) {
+			String parentId = model.getParent().getArtifactId();
+			if (parentId.equals("spring-boot-starter-parent")) {
+				parentId = "spring-boot-dependencies";
+			}
+			if (props.containsKey("boms." + parentId)) {
+				String coords = props.getProperty("boms." + parentId);
+				model.getParent().setVersion(version(coords));
+			}
+		}
+		if (model.getDependencyManagement() != null) {
+			for (org.apache.maven.model.Dependency dependency : model
+					.getDependencyManagement().getDependencies()) {
+				String parentId = dependency.getArtifactId();
+				if (props.containsKey("boms." + parentId)) {
+					String coords = props.getProperty("boms." + parentId);
+					dependency.setVersion(version(coords));
+				}
+
+			}
+		}
+	}
+
+	private String version(String coords) {
+		String[] split = coords.split(":");
+		return split[split.length - 1];
+	}
+
+	private String coordinates(Artifact artifact, Properties props, String prefix) {
+		String version = artifact.getVersion();
+		if (props.containsKey(prefix + artifact.getArtifactId())) {
+			version = version(props.getProperty(prefix + artifact.getArtifactId()));
+		}
 		return artifact.getGroupId() + ":" + artifact.getArtifactId()
 				+ (StringUtils.hasText(artifact.getClassifier())
 						? artifact.getExtension() + ":" + artifact.getClassifier() : "")
-				+ ":" + artifact.getVersion();
+				+ ":" + version;
 	}
 
 	private String coordinates(Exclusion artifact) {
