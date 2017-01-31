@@ -64,7 +64,7 @@ public class ThinJarWrapper {
 
 	private static final String DEFAULT_LAUNCHER_CLASS = "org.springframework.boot.loader.thin.ThinJarLauncher";
 
-	private static final String DEFAULT_LIBRARY = "org.springframework.boot.experimental:spring-boot-thin-launcher:0.0.1.BUILD-SNAPSHOT";
+	private static final String DEFAULT_LIBRARY = "org.springframework.boot.experimental:spring-boot-thin-launcher:1.0.0.BUILD-SNAPSHOT";
 
 	private Library library;
 
@@ -172,7 +172,7 @@ public class ThinJarWrapper {
 		}
 
 		public void download(String path, String defaultPath) {
-			if (path==null) {
+			if (path == null) {
 				path = defaultPath;
 			}
 			File target = new File(path + getPath());

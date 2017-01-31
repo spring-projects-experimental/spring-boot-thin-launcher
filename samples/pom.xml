@@ -19,6 +19,7 @@
 		<module>app</module>
 		<module>other</module>
 		<module>simple</module>	
+		<module>petclinic</module>	
 		<module>tests</module>
 	</modules>
 

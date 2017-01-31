@@ -200,8 +200,10 @@ public class PomLoader {
 						props.put("exclusions." + exclusion.getArtifactId(),
 								coordinates(exclusion));
 					}
-					props.put("managed." + dependency.getArtifact().getArtifactId(),
-							coordinates(dependency.getArtifact(), props, "managed."));
+					String prefix = "managed." + dependency.getArtifact().getGroupId()
+							+ ".";
+					props.put(prefix + dependency.getArtifact().getArtifactId(),
+							coordinates(dependency.getArtifact(), props, prefix));
 				}
 				else {
 					props.put("boms." + dependency.getArtifact().getArtifactId(),
