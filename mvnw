@@ -226,8 +226,20 @@ export MAVEN_CMD_LINE_ARGS
 
 WRAPPER_LAUNCHER=org.apache.maven.wrapper.MavenWrapperMain
 
+echo "Running version check"
+VERSION=$( sed '\!<parent!,\!</parent!d' `dirname $0`/pom.xml | grep '<version' | head -1 | sed -e 's/.*<version>//' -e 's!</version>.*$!!' )
+echo "The found version is [${VERSION}]"
+
+if echo $VERSION | egrep -q 'M|RC'; then
+    echo Activating \"milestone\" profile for version=\"$VERSION\"
+    echo $MAVEN_ARGS | grep -q milestone || MAVEN_ARGS="$MAVEN_ARGS -Pmilestone"
+else
+    echo Deactivating \"milestone\" profile for version=\"$VERSION\"
+    echo $MAVEN_ARGS | grep -q milestone && MAVEN_ARGS=$(echo $MAVEN_ARGS | sed -e 's/-Pmilestone//')
+fi
+
 exec "$JAVACMD" \
   $MAVEN_OPTS \
   -classpath "$MAVEN_PROJECTBASEDIR/.mvn/wrapper/maven-wrapper.jar" \
   "-Dmaven.home=${M2_HOME}" "-Dmaven.multiModuleProjectDirectory=${MAVEN_PROJECTBASEDIR}" \
-  ${WRAPPER_LAUNCHER} "$@"
+  ${WRAPPER_LAUNCHER} ${MAVEN_ARGS} "$@"
