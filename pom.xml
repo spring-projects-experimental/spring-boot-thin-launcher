@@ -10,15 +10,15 @@
 
 	<groupId>org.springframework.boot.experimental</groupId>
 	<artifactId>spring-boot-thin-launcher-parent</artifactId>
-	<version>0.0.1.BUILD-SNAPSHOT</version>
+	<version>1.0.0.BUILD-SNAPSHOT</version>
 	<packaging>pom</packaging>
 	<name>Thin Launcher Parent</name>
 
 	<modules>
-		<module>maven-plugin</module>
 		<module>wrapper</module>
 		<module>tools</module>
 		<module>launcher</module>
+		<module>maven-plugin</module>
 		<module>gradle-plugin</module>
 		<module>samples</module>
 	</modules>
