@@ -57,6 +57,7 @@ import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.io.UrlResource;
 import org.springframework.core.io.support.PropertiesLoaderUtils;
 import org.springframework.core.io.support.ResourcePatternUtils;
+import org.springframework.util.AntPathMatcher;
 import org.springframework.util.StringUtils;
 
 /**
@@ -358,6 +359,16 @@ public class ArchiveUtils {
 			this.exclusions.add(dependency);
 		}
 
+		private void excludeDependency(String key, Dependency dependency) {
+			Dependency target = this.dependencies.get(key);
+			if (target != null) {
+				Collection<Exclusion> exclusions = new HashSet<>(target.getExclusions());
+				exclusions.addAll(exclusions(Collections.singleton(dependency)));
+				dependencies.put(key, target.setExclusions(exclusions));
+			}
+			dependencies.remove(key(dependency));
+		}
+
 		public void addBoms(Collection<Dependency> boms) {
 			for (Dependency dependency : boms) {
 				if ("pom".equals(dependency.getArtifact().getExtension())) {
@@ -478,35 +489,47 @@ public class ArchiveUtils {
 		}
 
 		private void addExclusions() {
-			if (this.exclusions.isEmpty()) {
-				return;
-			}
+			AntPathMatcher matcher = new AntPathMatcher();
+			Set<String> excluded = new HashSet<>();
 			try {
 				Set<Dependency> collected = new HashSet<>(
 						engine.collect(new ArrayList<>(this.dependencies.values())));
-				for (Dependency target : collected) {
-					Set<Exclusion> possible = new HashSet<>();
-					possible.addAll(exclusions(Collections.singleton(target)));
-					Collection<Exclusion> exclusions = target.getExclusions();
-					if (exclusions == null) {
-						exclusions = new HashSet<>();
-					}
-					else {
-						exclusions = new HashSet<>(exclusions);
-					}
-					for (Exclusion exclusion : exclusions(this.exclusions)) {
-						if (possible.contains(exclusion)) {
-							exclusions.add(exclusion);
+				for (String key : this.dependencies.keySet()) {
+					Dependency target = this.dependencies.get(key);
+					Set<Dependency> replacements = new HashSet<>();
+					for (Exclusion exclusion : target.getExclusions()) {
+						for (Dependency dependency : collected) {
+							if (matcher.match(exclusion.getGroupId(),
+									dependency.getArtifact().getGroupId())
+									&& matcher.match(exclusion.getArtifactId(),
+											dependency.getArtifact().getArtifactId())) {
+								if (!key.equals(key(dependency))) {
+									replacements.add(dependency);
+								}
+							}
 						}
 					}
-					addDependency(target.setExclusions(exclusions));
+					if (!replacements.isEmpty() || !target.getExclusions().isEmpty()) {
+						target = target
+								.setExclusions(new HashSet<>(exclusions(replacements)));
+						this.dependencies.put(key, target);
+					}
+					for (Exclusion exclusion : exclusions(this.exclusions)) {
+						if (matcher.match(exclusion.getGroupId(),
+								target.getArtifact().getGroupId())
+								&& matcher.match(exclusion.getArtifactId(),
+										target.getArtifact().getArtifactId())) {
+							excluded.add(key(target));
+						}
+					}
+					System.err.println(target + " = " + target.getExclusions());
+				}
+				for (String key : excluded) {
+					dependencies.remove(key);
 				}
 			}
 			catch (ArtifactResolutionException e) {
-				throw new IllegalStateException(
-						"Cannot collect transitive dependencies for: "
-								+ dependencies.values(),
-						e);
+				throw new IllegalStateException("Cannot collect dependencies", e);
 			}
 		}
 
@@ -541,8 +564,22 @@ public class ArchiveUtils {
 					if (key.startsWith("managed")) {
 						addManaged(dependency(lib));
 					}
+				}
+			}
+			for (String key : properties.stringPropertyNames()) {
+				String lib = properties.getProperty(key);
+				if (StringUtils.hasText(lib)) {
 					if (key.startsWith("exclusions")) {
-						removeDependency(dependency(lib));
+						if (key.contains("[") && key.contains("]")) {
+							String dependencyKey = key.substring(0, key.indexOf("["))
+									.substring("exclusions.".length());
+							excludeDependency(keyFor(properties, dependencyKey),
+									dependency(lib));
+						}
+						else {
+							// Global exlcusion
+							removeDependency(dependency(lib));
+						}
 					}
 				}
 			}
@@ -553,6 +590,15 @@ public class ArchiveUtils {
 
 			return properties;
 
+		}
+
+		private String keyFor(Properties properties, String key) {
+			String value = properties.getProperty("dependencies." + key);
+			if (value != null && value.contains(":")) {
+				String[] keys = value.split(":");
+				value = keys[0] + ":" + keys[1];
+			}
+			return value;
 		}
 
 		private Resource getPom(Archive archive) {

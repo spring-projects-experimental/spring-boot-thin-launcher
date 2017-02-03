@@ -197,7 +197,7 @@ public class PomLoader {
 			for (Dependency dependency : list) {
 				if ("jar".equals(dependency.getArtifact().getExtension())) {
 					for (Exclusion exclusion : dependency.getExclusions()) {
-						props.put("exclusions." + exclusion.getArtifactId(),
+						props.put("exclusions." + exclusionKey(dependency, exclusion),
 								coordinates(exclusion));
 					}
 					String prefix = "managed." + dependency.getArtifact().getGroupId()
@@ -213,8 +213,17 @@ public class PomLoader {
 			for (Dependency dependency : convertDependencies(model.getDependencies())) {
 				props.put("dependencies." + dependency.getArtifact().getArtifactId(),
 						coordinates(dependency.getArtifact(), props, "dependencies."));
+				for (Exclusion exclusion : dependency.getExclusions()) {
+					props.put("exclusions." + exclusionKey(dependency, exclusion),
+							coordinates(exclusion));
+				}
 			}
 		}
+	}
+
+	private String exclusionKey(Dependency dependency, Exclusion exclusion) {
+		return dependency.getArtifact().getArtifactId() + "[" + exclusion.getArtifactId()
+				+ "]";
 	}
 
 	private void replaceBoms(Model model, Properties props) {
