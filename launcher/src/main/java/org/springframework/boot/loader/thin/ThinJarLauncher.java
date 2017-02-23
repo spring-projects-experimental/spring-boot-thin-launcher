@@ -239,7 +239,7 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 		if (StringUtils.hasText(root)) {
 			resolver.setRoot(root);
 		}
-		List<Archive> archives = resolver.combine(parentArchive, getArchive(), name,
+		List<Archive> archives = resolver.resolve(parentArchive, getArchive(), name,
 				profiles);
 		return archives;
 	}

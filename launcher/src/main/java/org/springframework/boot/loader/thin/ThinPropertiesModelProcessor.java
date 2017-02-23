@@ -137,14 +137,22 @@ class ThinPropertiesModelProcessor extends DefaultModelProcessor {
 					}
 				}
 			}
-			if (model.getRepositories()==null || model.getRepositories().isEmpty()) {
-				Repository repository = new Repository();
+			Repository repository = new Repository();
+			repository.setLayout("default");
+			repository.setId("central");
+			repository.setUrl("https://repo1.maven.org/maven2");
+			RepositoryPolicy enabled = new RepositoryPolicy();
+			enabled.setEnabled(true);
+			repository.setReleases(enabled);
+			model.addRepository(repository);
+			if (properties.containsKey(ThinJarLauncher.THIN_ROOT)) {
+				repository = new Repository();
 				repository.setLayout("default");
-				repository.setId("central");
-				repository.setUrl("https://repo1.maven.org/maven2");
-				RepositoryPolicy enabled = new RepositoryPolicy();
+				repository.setId("mavenLocal");
+				repository.setUrl("file:///${user.home}/repository");
 				enabled.setEnabled(true);
 				repository.setReleases(enabled);
+				repository.setSnapshots(enabled);
 				model.addRepository(repository);
 			}
 		}

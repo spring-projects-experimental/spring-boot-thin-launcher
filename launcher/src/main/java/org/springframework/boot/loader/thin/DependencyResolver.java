@@ -72,36 +72,6 @@ import com.google.inject.name.Names;
 
 public class DependencyResolver {
 
-	@SuppressWarnings("deprecation")
-	private final class PropertiesModelSource
-			implements org.apache.maven.model.building.ModelSource {
-		private final Properties properties;
-
-		private final Resource resource;
-
-		private PropertiesModelSource(Properties properties, Resource resource) {
-			this.properties = properties;
-			this.resource = resource;
-		}
-
-		@Override
-		public InputStream getInputStream() throws IOException {
-			DependencyResolver.globals = properties;
-			return new BufferedInputStream(resource.getInputStream()) {
-				@Override
-				public void close() throws IOException {
-					DependencyResolver.globals = null;
-					super.close();
-				}
-			};
-		}
-
-		@Override
-		public String getLocation() {
-			return resource.getDescription();
-		}
-	}
-
 	private static DependencyResolver instance = new DependencyResolver();
 
 	private static Properties globals;
@@ -177,6 +147,12 @@ public class DependencyResolver {
 		}
 	}
 
+	public File resolve(Dependency dependency) {
+		initialize();
+		return collectNonTransitive(Arrays.asList(dependency)).iterator().next()
+				.getArtifact().getFile();
+	}
+
 	private List<Dependency> runtime(List<Dependency> dependencies) {
 		List<Dependency> list = new ArrayList<>();
 		for (Dependency dependency : dependencies) {
@@ -198,13 +174,6 @@ public class DependencyResolver {
 		projectBuildingRequest.setUserProperties(properties);
 		projectBuildingRequest.setSystemProperties(System.getProperties());
 		return projectBuildingRequest;
-	}
-
-	private List<RemoteRepository> repositories(Properties properties) {
-		// TODO: why? Maybe it can be set centrally somewhere?
-		RemoteRepository central = new RemoteRepository.Builder("central", "default",
-				"https://repo1.maven.org/maven2").build();
-		return Arrays.asList(central);
 	}
 
 	private DefaultRepositorySystemSession createSession(Properties properties)
@@ -262,12 +231,6 @@ public class DependencyResolver {
 		return new File(System.getProperty("user.home"), ".m2");
 	}
 
-	public File resolve(Dependency dependency) {
-		initialize();
-		return collectNonTransitive(Arrays.asList(dependency)).iterator().next()
-				.getArtifact().getFile();
-	}
-
 	private List<ArtifactResult> collectNonTransitive(List<Dependency> dependencies) {
 		try {
 			List<ArtifactRequest> artifactRequests = getArtifactRequests(dependencies);
@@ -285,15 +248,52 @@ public class DependencyResolver {
 		for (Dependency dependency : dependencies) {
 			ArtifactRequest request = new ArtifactRequest(dependency.getArtifact(), null,
 					null);
-			request.setRepositories(repositories(null));
+			request.setRepositories(repositories(new Properties()));
 			list.add(request);
 		}
 		return list;
 	}
 
+	private List<RemoteRepository> repositories(Properties properties) {
+		// TODO: why? Maybe it can be set centrally somewhere?
+		RemoteRepository central = new RemoteRepository.Builder("central", "default",
+				"https://repo1.maven.org/maven2").build();
+		return Arrays.asList(central);
+	}
+
 	// Package private for model resolution hack in ThinPropertiesModelProcessor
 	static Properties getGlobals() {
 		return globals;
+	}
+
+	@SuppressWarnings("deprecation")
+	private static final class PropertiesModelSource
+			implements org.apache.maven.model.building.ModelSource {
+		private final Properties properties;
+
+		private final Resource resource;
+
+		private PropertiesModelSource(Properties properties, Resource resource) {
+			this.properties = properties;
+			this.resource = resource;
+		}
+
+		@Override
+		public InputStream getInputStream() throws IOException {
+			DependencyResolver.globals = properties;
+			return new BufferedInputStream(resource.getInputStream()) {
+				@Override
+				public void close() throws IOException {
+					DependencyResolver.globals = null;
+					super.close();
+				}
+			};
+		}
+
+		@Override
+		public String getLocation() {
+			return resource.getDescription();
+		}
 	}
 
 }

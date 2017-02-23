@@ -67,22 +67,73 @@ public class PathResolver {
 		this.root = root;
 	}
 
-	public List<Archive> combine(Archive parent, Archive archive, String name,
+	public List<Archive> resolve(Archive archive, String name, String... profiles) {
+		return resolve(null, archive, name, profiles);
+	}
+
+	public List<Archive> resolve(Archive parent, Archive archive, String name,
 			String... profiles) {
 		List<Archive> archives = new ArrayList<>();
-		if (parent == null) {
-			archives.addAll(archives(extract(archive, name, profiles)));
-		}
-		else {
+		if (parent != null) {
 			archives.addAll(archives(extract(parent, archive, name, profiles)));
 		}
+		else {
+			archives.addAll(archives(extract(archive, name, profiles)));
+		}
+		addRootArchive(archives, archive);
+		return archives;
+	}
+
+	public Resource getPom(Archive archive) {
+		Resource pom;
+		String artifactId;
+		try {
+			pom = new UrlResource(archive.getUrl() + "pom.xml");
+			artifactId = extractArtifactId(archive);
+		}
+		catch (MalformedURLException e) {
+			throw new IllegalStateException("Cannot locate archive", e);
+		}
+		if (!pom.exists()) {
+			String pattern = "META-INF/maven/**"
+					+ (artifactId == null ? "" : "/" + artifactId) + "/pom.xml";
+			Resource resource = findResource(archive, pattern);
+			if (resource != null) {
+				return resource;
+			}
+			// Spring Boot fat jar
+			pattern = "BOOT-INF/classes/META-INF/maven/**"
+					+ (artifactId == null ? "" : "/" + artifactId) + "/pom.xml";
+			resource = findResource(archive, pattern);
+			if (resource != null) {
+				return resource;
+			}
+			// Someone renamed the jar, so we don't know the artifactid
+			pattern = "META-INF/maven/**/pom.xml";
+			resource = findResource(archive, pattern);
+			if (resource != null) {
+				return resource;
+			}
+			// Last chance
+			pattern = "**/META-INF/maven/**/pom.xml";
+			resource = findResource(archive, pattern);
+			if (resource != null) {
+				return resource;
+			}
+		}
+		if (!pom.exists()) {
+			pom = new ClassPathResource("META-INF/thin/empty-pom.xml");
+		}
+		return pom;
+	}
+
+	private void addRootArchive(List<Archive> archives, Archive archive) {
 		if (!archives.isEmpty()) {
 			archives.add(0, archive);
 		}
 		else {
 			archives.add(archive);
 		}
-		return archives;
 	}
 
 	private List<Dependency> extract(Archive parent, Archive archive, String name,
@@ -205,49 +256,6 @@ public class PathResolver {
 			}
 		}
 		return list;
-	}
-
-	public Resource getPom(Archive archive) {
-		Resource pom;
-		String artifactId;
-		try {
-			pom = new UrlResource(archive.getUrl() + "pom.xml");
-			artifactId = extractArtifactId(archive);
-		}
-		catch (MalformedURLException e) {
-			throw new IllegalStateException("Cannot locate archive", e);
-		}
-		if (!pom.exists()) {
-			String pattern = "META-INF/maven/**"
-					+ (artifactId == null ? "" : "/" + artifactId) + "/pom.xml";
-			Resource resource = findResource(archive, pattern);
-			if (resource != null) {
-				return resource;
-			}
-			// Spring Boot fat jar
-			pattern = "BOOT-INF/classes/META-INF/maven/**"
-					+ (artifactId == null ? "" : "/" + artifactId) + "/pom.xml";
-			resource = findResource(archive, pattern);
-			if (resource != null) {
-				return resource;
-			}
-			// Someone renamed the jar, so we don't know the artifactid
-			pattern = "META-INF/maven/**/pom.xml";
-			resource = findResource(archive, pattern);
-			if (resource != null) {
-				return resource;
-			}
-			// Last chance
-			pattern = "**/META-INF/maven/**/pom.xml";
-			resource = findResource(archive, pattern);
-			if (resource != null) {
-				return resource;
-			}
-		}
-		if (!pom.exists()) {
-			pom = new ClassPathResource("META-INF/thin/empty-pom.xml");
-		}
-		return pom;
 	}
 
 	private Resource findResource(Archive archive, String pattern) {

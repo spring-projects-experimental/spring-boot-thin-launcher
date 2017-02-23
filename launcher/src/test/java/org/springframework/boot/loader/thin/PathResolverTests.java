@@ -15,6 +15,9 @@
  */
 package org.springframework.boot.loader.thin;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Matchers.any;
+
 import java.io.File;
 import java.util.Arrays;
 import java.util.List;
@@ -25,16 +28,9 @@ import org.eclipse.aether.artifact.DefaultArtifact;
 import org.eclipse.aether.graph.Dependency;
 import org.junit.Test;
 import org.mockito.Mockito;
-
 import org.springframework.boot.loader.archive.Archive;
 import org.springframework.boot.loader.archive.ExplodedArchive;
-import org.springframework.boot.loader.thin.ArchiveUtils;
-import org.springframework.boot.loader.thin.DependencyResolver;
-import org.springframework.boot.loader.thin.PathResolver;
 import org.springframework.core.io.Resource;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Matchers.any;
 
 /**
  * @author Dave Syer
@@ -56,7 +52,7 @@ public class PathResolverTests {
 		Mockito.when(
 				dependencies.dependencies(any(Resource.class), any(Properties.class)))
 				.thenReturn(list);
-		List<Archive> result = resolver.combine(null, parent, "thin");
+		List<Archive> result = resolver.resolve(parent, "thin");
 		assertThat(result.size()).isEqualTo(2);
 		assertThat(result.get(1).getUrl()).isEqualTo(artifact.getFile().toURI().toURL());
 		// Mockito.verify(dependencies);

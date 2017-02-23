@@ -44,7 +44,7 @@ public class PathResolverSubtractTests {
 		Archive parent = new JarFileArchive(
 				new File("src/test/resources/app-with-web-and-cloud-config.jar"));
 		Archive child = new ExplodedArchive(new File("src/test/resources/apps/db"));
-		List<Archive> result = resolver.combine(parent, child, "thin");
+		List<Archive> result = resolver.resolve(parent, child, "thin");
 		assertThat(result).size().isGreaterThan(3);
 		assertThat(result).areAtLeastOne(UrlContains.value("spring-jdbc"));
 		assertThat(result).areExactly(1, UrlContains.value("spring-boot-1.3.8"));
@@ -55,7 +55,7 @@ public class PathResolverSubtractTests {
 		Archive parent = new ExplodedArchive(
 				new File("src/test/resources/apps/web-and-cloud"));
 		Archive child = new ExplodedArchive(new File("src/test/resources/apps/eureka"));
-		List<Archive> result = resolver.combine(parent, child, "thin");
+		List<Archive> result = resolver.resolve(parent, child, "thin");
 		assertThat(result).size().isGreaterThan(3);
 		assertThat(result).areExactly(1,
 				UrlContains.value("spring-cloud-netflix-eureka-client"));
@@ -67,7 +67,7 @@ public class PathResolverSubtractTests {
 		Archive parent = new JarFileArchive(
 				new File("src/test/resources/app-with-web-and-cloud-config.jar"));
 		Archive child = new ExplodedArchive(new File("src/test/resources/apps/eureka"));
-		List<Archive> result = resolver.combine(parent, child, "thin");
+		List<Archive> result = resolver.resolve(parent, child, "thin");
 		assertThat(result).size().isGreaterThan(3);
 		assertThat(result)
 				.areAtLeastOne(UrlContains.value("spring-cloud-netflix-eureka-client"));
@@ -80,9 +80,9 @@ public class PathResolverSubtractTests {
 				new File("src/test/resources/app-with-web-and-cloud-config.jar"));
 		Archive child = new JarFileArchive(
 				new File("src/test/resources/app-with-web-in-lib-properties.jar"));
-		List<Archive> result = resolver.combine(parent, child, "thin");
+		List<Archive> result = resolver.resolve(parent, child, "thin");
 		assertThat(result.toString())
-				.isEqualTo(resolver.combine(null, child, "thin").toString());
+				.isEqualTo(resolver.resolve(null, child, "thin").toString());
 	}
 
 	private static final class UrlContains extends Condition<Archive> {
