@@ -55,7 +55,7 @@ public class ThinJarWrapperTests {
 	public void testDefaultLibrary() throws Exception {
 		ThinJarWrapper wrapper = new ThinJarWrapper();
 		assertThat(wrapper.library().getCoordinates(),
-				containsString("spring-boot-thin-tools"));
+				containsString("spring-boot-thin-launcher"));
 	}
 
 	@Test

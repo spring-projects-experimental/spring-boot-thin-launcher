@@ -9,70 +9,39 @@
 		<version>1.0.0.BUILD-SNAPSHOT</version>
 	</parent>
 
-	<artifactId>spring-boot-thin-tools</artifactId>
+	<artifactId>spring-boot-thin-layout</artifactId>
 	<packaging>jar</packaging>
 
-	<name>tools</name>
+	<name>Spring Boot Thin Layout</name>
 	<description>Demo project for Spring Boot</description>
 
 	<dependencies>
 		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-core</artifactId>
-			<exclusions>
-				<exclusion>
-					<groupId>commons-logging</groupId>
-					<artifactId>commons-logging</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-loader-tools</artifactId>
+			<optional>true</optional>
 		</dependency>
 		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-loader</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.maven</groupId>
-			<artifactId>maven-core</artifactId>
-			<version>3.3.9</version>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.maven</groupId>
-			<artifactId>maven-embedder</artifactId>
-			<version>3.3.9</version>
-		</dependency>
-		<dependency>
-			<groupId>org.eclipse.aether</groupId>
-			<artifactId>aether-transport-file</artifactId>
-			<version>1.0.2.v20150114</version>
-		</dependency>
-		<dependency>
-			<groupId>org.eclipse.aether</groupId>
-			<artifactId>aether-transport-http</artifactId>
-			<version>1.0.2.v20150114</version>
-		</dependency>
-		<dependency>
-			<groupId>org.eclipse.aether</groupId>
-			<artifactId>aether-connector-basic</artifactId>
-			<version>1.0.2.v20150114</version>
-		</dependency>
-		<dependency>
-			<groupId>ch.qos.logback</groupId>
-			<artifactId>logback-classic</artifactId>
+			<groupId>commons-logging</groupId>
+			<artifactId>commons-logging</artifactId>
+			<version>1.2</version>
+			<optional>true</optional>
 		</dependency>
 
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
+			<exclusions>
+				<exclusion>
+					<groupId>org.json</groupId>
+					<artifactId>json</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
-			<groupId>org.assertj</groupId>
-			<artifactId>assertj-core</artifactId>
-			<version>3.5.2</version>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-logging</artifactId>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
@@ -137,15 +106,19 @@
 						<transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
 							<mainClass>org.springframework.boot.loader.thin.ThinJarLauncher</mainClass>
 						</transformer>
-						<transformer
-							implementation="org.apache.maven.plugins.shade.resource.ComponentsXmlResourceTransformer" />
 					</transformers>
 					<filters>
 						<filter>
-							<artifact>*:*</artifact>
-							<excludes>
-								<exclude>META-INF/maven/**</exclude>
-							</excludes>
+							<artifact>org.springframework.boot:*:*</artifact>
+							<includes>
+								<include>org/springframework/boot/**</include>
+							</includes>
+						</filter>
+						<filter>
+							<artifact>commons-logging:commons-logging:*</artifact>
+							<includes>
+								<include>org/apache/**</include>
+							</includes>
 						</filter>
 					</filters>
 				</configuration>

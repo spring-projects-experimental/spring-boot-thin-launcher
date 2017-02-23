@@ -105,7 +105,7 @@ change the local file name (defaults to `thin`). There is also a
 `thin.name`, so additional libraries can be added using
 `thin-{profile}.properties`. Profile-specific properties are loaded
 last so they take precedence. You can exclude and remove dependencies
-by prepending a key in the properties file with `exlcusions.`.
+by prepending a key in the properties file with `exclusions.`.
 
 ## Packaging
 
@@ -126,7 +126,7 @@ be executable and thin.
 				<dependencies>
 					<dependency>
 						<groupId>org.springframework.boot.experimental</groupId>
-						<artifactId>spring-boot-thin-launcher</artifactId>
+						<artifactId>spring-boot-thin-layout</artifactId>
 						<version>${wrapper.version}</version>
 					</dependency>
 				</dependencies>

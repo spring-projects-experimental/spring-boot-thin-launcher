@@ -10,7 +10,7 @@
 
 	<modules>
 		<module>wrapper</module>
-		<module>tools</module>
+		<module>layout</module>
 		<module>launcher</module>
 		<module>maven-plugin</module>
 		<module>gradle-plugin</module>

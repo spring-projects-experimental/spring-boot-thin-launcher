@@ -12,7 +12,7 @@
 	<artifactId>spring-boot-thin-maven-plugin</artifactId>
 	<packaging>maven-plugin</packaging>
 
-	<name>maven-plugin</name>
+	<name>Spring Boot Thin Maven</name>
 	<description>Bootstrap wrapper for launching a thin Boot jar</description>
 
 	<properties>
