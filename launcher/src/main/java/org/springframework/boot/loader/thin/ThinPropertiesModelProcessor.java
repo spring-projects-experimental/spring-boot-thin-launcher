@@ -29,6 +29,8 @@ import org.apache.maven.model.Dependency;
 import org.apache.maven.model.DependencyManagement;
 import org.apache.maven.model.Exclusion;
 import org.apache.maven.model.Model;
+import org.apache.maven.model.Repository;
+import org.apache.maven.model.RepositoryPolicy;
 import org.apache.maven.model.building.DefaultModelProcessor;
 import org.eclipse.aether.artifact.DefaultArtifact;
 
@@ -134,6 +136,16 @@ class ThinPropertiesModelProcessor extends DefaultModelProcessor {
 						dependency.addExclusion(exclusion);
 					}
 				}
+			}
+			if (model.getRepositories()==null || model.getRepositories().isEmpty()) {
+				Repository repository = new Repository();
+				repository.setLayout("default");
+				repository.setId("central");
+				repository.setUrl("https://repo1.maven.org/maven2");
+				RepositoryPolicy enabled = new RepositoryPolicy();
+				enabled.setEnabled(true);
+				repository.setReleases(enabled);
+				model.addRepository(repository);
 			}
 		}
 		return model;

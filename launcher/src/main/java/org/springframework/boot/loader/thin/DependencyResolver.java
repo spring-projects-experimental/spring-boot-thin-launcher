@@ -15,12 +15,6 @@ import java.util.Set;
 
 import javax.inject.Singleton;
 
-import com.google.inject.AbstractModule;
-import com.google.inject.Provides;
-import com.google.inject.name.Named;
-import com.google.inject.name.Names;
-
-import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.model.Model;
 import org.apache.maven.model.building.ModelProcessor;
 import org.apache.maven.model.io.DefaultModelReader;
@@ -58,6 +52,7 @@ import org.eclipse.aether.impl.guice.AetherModule;
 import org.eclipse.aether.repository.LocalRepository;
 import org.eclipse.aether.repository.NoLocalRepositoryManagerException;
 import org.eclipse.aether.repository.ProxySelector;
+import org.eclipse.aether.repository.RemoteRepository;
 import org.eclipse.aether.resolution.ArtifactRequest;
 import org.eclipse.aether.resolution.ArtifactResult;
 import org.eclipse.aether.spi.connector.RepositoryConnectorFactory;
@@ -67,9 +62,13 @@ import org.eclipse.aether.transport.http.HttpTransporterFactory;
 import org.eclipse.aether.util.repository.JreProxySelector;
 import org.eclipse.sisu.inject.DefaultBeanLocator;
 import org.eclipse.sisu.plexus.ClassRealmManager;
-
 import org.springframework.core.io.Resource;
 import org.springframework.util.StringUtils;
+
+import com.google.inject.AbstractModule;
+import com.google.inject.Provides;
+import com.google.inject.name.Named;
+import com.google.inject.name.Names;
 
 public class DependencyResolver {
 
@@ -193,7 +192,6 @@ public class DependencyResolver {
 			throws NoLocalRepositoryManagerException {
 		DefaultProjectBuildingRequest projectBuildingRequest = new DefaultProjectBuildingRequest();
 		DefaultRepositorySystemSession session = createSession(properties);
-		// projectBuildingRequest.setRemoteRepositories(repositories(properties));
 		projectBuildingRequest.setRepositorySession(session);
 		projectBuildingRequest.setProcessPlugins(false);
 		projectBuildingRequest.setBuildStartTime(new Date());
@@ -202,8 +200,11 @@ public class DependencyResolver {
 		return projectBuildingRequest;
 	}
 
-	private List<ArtifactRepository> repositories(Properties properties) {
-		return Arrays.asList();
+	private List<RemoteRepository> repositories(Properties properties) {
+		// TODO: why? Maybe it can be set centrally somewhere?
+		RemoteRepository central = new RemoteRepository.Builder("central", "default",
+				"https://repo1.maven.org/maven2").build();
+		return Arrays.asList(central);
 	}
 
 	private DefaultRepositorySystemSession createSession(Properties properties)
@@ -226,7 +227,8 @@ public class DependencyResolver {
 		if (!properties.containsKey("thin.root")) {
 			return new LocalRepository(getM2RepoDirectory());
 		}
-		return new LocalRepository(properties.getProperty("thin.root"));
+		String root = properties.getProperty("thin.root");
+		return new LocalRepository(StringUtils.cleanPath(root + "/repository"));
 	}
 
 	public Model readModel(Resource resource) {
@@ -283,6 +285,7 @@ public class DependencyResolver {
 		for (Dependency dependency : dependencies) {
 			ArtifactRequest request = new ArtifactRequest(dependency.getArtifact(), null,
 					null);
+			request.setRepositories(repositories(null));
 			list.add(request);
 		}
 		return list;

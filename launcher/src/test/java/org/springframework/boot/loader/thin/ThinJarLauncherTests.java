@@ -38,7 +38,7 @@ public class ThinJarLauncherTests {
 	}
 
 	@Test
-	public void overrideLoaclRepository() throws Exception {
+	public void overrideLocalRepository() throws Exception {
 		FileSystemUtils.deleteRecursively(new File("target/thin/test"));
 		String[] args = new String[] { "--thin.root=target/thin/test",
 				"--thin.dryrun=true", "--thin.archive=src/test/resources/apps/basic",
