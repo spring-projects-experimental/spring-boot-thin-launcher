@@ -169,12 +169,23 @@ public class DependencyResolver {
 				ProjectBuildingResult result = projectBuilder
 						.build(new PropertiesModelSource(properties, resource), request);
 				DependencyResolver.globals = null;
-				return result.getDependencyResolutionResult().getDependencies();
+				return runtime(result.getDependencyResolutionResult().getDependencies());
 			}
 		}
 		catch (Exception e) {
 			throw new IllegalStateException("Cannot build model", e);
 		}
+	}
+
+	private List<Dependency> runtime(List<Dependency> dependencies) {
+		List<Dependency> list = new ArrayList<>();
+		for (Dependency dependency : dependencies) {
+			if (!"test".equals(dependency.getScope())
+					&& !"provided".equals(dependency.getScope())) {
+				list.add(dependency);
+			}
+		}
+		return list;
 	}
 
 	private ProjectBuildingRequest getProjectBuildingRequest(Properties properties)

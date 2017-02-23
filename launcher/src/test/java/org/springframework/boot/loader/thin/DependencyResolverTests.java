@@ -7,8 +7,6 @@ import java.util.Properties;
 import org.eclipse.aether.graph.Dependency;
 import org.junit.Test;
 
-import org.springframework.boot.loader.thin.ArchiveUtils;
-import org.springframework.boot.loader.thin.DependencyResolver;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
@@ -28,6 +26,8 @@ public class DependencyResolverTests {
 		assertThat(dependencies)
 				.filteredOn(d -> d.getArtifact().getArtifactId().equals("maven-settings"))
 				.hasSize(1);
+		assertThat(dependencies).filteredOn("artifact.artifactId", "spring-test")
+				.isEmpty();
 	}
 
 	@Test
@@ -63,6 +63,8 @@ public class DependencyResolverTests {
 				.first()
 				.matches(d -> "1.1.7.RELEASE".equals(d.getArtifact().getVersion()),
 						"correct version");
+		assertThat(dependencies).filteredOn("artifact.artifactId", "spring-test")
+				.isEmpty();
 	}
 
 	@Test
