@@ -51,13 +51,10 @@
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
 				<version>${spring-boot.version}</version>
-				<configuration>
-					<layout>THIN</layout>
-				</configuration>
 				<dependencies>
 					<dependency>
 						<groupId>org.springframework.boot.experimental</groupId>
-						<artifactId>spring-boot-thin-launcher</artifactId>
+						<artifactId>spring-boot-thin-layout</artifactId>
 						<version>${wrapper.version}</version>
 					</dependency>
 				</dependencies>

@@ -130,11 +130,13 @@
 				<artifactId>maven-shade-plugin</artifactId>
 				<configuration>
 					<!-- TODO: minimize the jar (carefully) -->
-					<!--minimizeJar>true</minimizeJar-->
-					<shadedArtifactAttached>false</shadedArtifactAttached>
+					<!--minimizeJar>true</minimizeJar -->
 					<keepDependenciesWithProvidedScope>true</keepDependenciesWithProvidedScope>
+					<shadedClassifierName>exec</shadedClassifierName>
+					<shadedArtifactAttached>true</shadedArtifactAttached>
 					<transformers>
-						<transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+						<transformer
+							implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
 							<mainClass>org.springframework.boot.loader.thin.ThinJarLauncher</mainClass>
 						</transformer>
 						<transformer
@@ -162,7 +164,7 @@
 		</plugins>
 		<pluginManagement>
 			<plugins>
-				<!--This plugin's configuration is used to store Eclipse m2e settings
+				<!--This plugin's configuration is used to store Eclipse m2e settings 
 					only. It has no influence on the Maven build itself. -->
 				<plugin>
 					<groupId>org.eclipse.m2e</groupId>
