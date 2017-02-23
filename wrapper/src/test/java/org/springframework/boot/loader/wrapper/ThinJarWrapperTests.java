@@ -55,7 +55,7 @@ public class ThinJarWrapperTests {
 	public void testDefaultLibrary() throws Exception {
 		ThinJarWrapper wrapper = new ThinJarWrapper();
 		assertThat(wrapper.library().getCoordinates(),
-				containsString("spring-boot-thin-launcher"));
+				containsString("spring-boot-thin-tools"));
 	}
 
 	@Test
@@ -100,7 +100,8 @@ public class ThinJarWrapperTests {
 		if (key != null) {
 			assertEquals(value,
 					ThinJarWrapper.getProperty(key.toLowerCase().replace("_", ".")));
-		} else {
+		}
+		else {
 			System.err.println("WARN: no testable env var");
 		}
 	}

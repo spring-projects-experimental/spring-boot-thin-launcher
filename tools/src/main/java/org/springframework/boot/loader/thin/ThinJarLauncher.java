@@ -21,21 +21,27 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import org.springframework.boot.loader.ExecutableArchiveLauncher;
 import org.springframework.boot.loader.LaunchedURLClassLoader;
 import org.springframework.boot.loader.archive.Archive;
 import org.springframework.boot.loader.archive.Archive.Entry;
-import org.springframework.boot.loader.thin.AetherEngine.ProgressType;
 import org.springframework.core.env.MutablePropertySources;
 import org.springframework.core.env.SimpleCommandLinePropertySource;
 import org.springframework.core.env.StandardEnvironment;
 import org.springframework.util.StringUtils;
+
+import ch.qos.logback.classic.Level;
 
 /**
  *
  * @author Dave Syer
  */
 public class ThinJarLauncher extends ExecutableArchiveLauncher {
+
+	private static final Logger log = LoggerFactory.getLogger(ThinJarLauncher.class);
 
 	/**
 	 * System property key for main class to launch. Defaults to finding it via
@@ -93,11 +99,11 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 	 */
 	public static final String THIN_PROFILE = "thin.profile";
 
-	private ArchiveUtils archives = new ArchiveUtils();
 	private StandardEnvironment environment = new StandardEnvironment();
 	private boolean debug;
 
 	public static void main(String[] args) throws Exception {
+		LogUtils.setLogLevel(Level.OFF);
 		new ThinJarLauncher(args).launch(args);
 	}
 
@@ -112,16 +118,23 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 		String root = environment.resolvePlaceholders("${" + THIN_ROOT + ":}");
 		boolean classpath = !"false".equals(
 				environment.resolvePlaceholders("${" + THIN_CLASSPATH + ":false}"));
+		boolean trace = !"false"
+				.equals(environment.resolvePlaceholders("${trace:false}"));
 		if (classpath) {
 			this.debug = false;
-			this.archives.setProgress(ProgressType.NONE);
+			LogUtils.setLogLevel(Level.OFF);
 		}
 		else {
-			this.debug = !"false"
-					.equals(environment.resolvePlaceholders("${debug:false}"));
+			this.debug = trace
+					|| !"false".equals(environment.resolvePlaceholders("${debug:false}"));
 		}
-		if (debug) {
-			this.archives.setProgress(ProgressType.DETAILED);
+		if (debug || trace) {
+			if (trace) {
+				LogUtils.setLogLevel(Level.TRACE);
+			}
+			else {
+				LogUtils.setLogLevel(Level.INFO);
+			}
 		}
 		if (StringUtils.hasText(root)) {
 			// There is a grape root that is used by the aether engine
@@ -136,10 +149,8 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 		if (!"false".equals(
 				environment.resolvePlaceholders("${" + THIN_DRYRUN + ":false}"))) {
 			getClassPathArchives();
-			if (this.debug) {
-				System.out.println("Downloaded dependencies"
-						+ (!StringUtils.hasText(root) ? "" : " to " + root));
-			}
+			log.info("Downloaded dependencies"
+					+ (!StringUtils.hasText(root) ? "" : " to " + root));
 			return;
 		}
 		super.launch(args);
@@ -173,6 +184,7 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 			if (builder.length() > 0) {
 				builder.append(separator);
 			}
+			log.info("Archive: {}", archive);
 			builder.append(new File(archive.getUrl().toURI()).getCanonicalPath());
 		}
 		return builder.toString();
@@ -224,10 +236,11 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 		if (StringUtils.hasText(parent)) {
 			parentArchive = ArchiveUtils.getArchive(parent);
 		}
+		PathResolver resolver = new PathResolver(DependencyResolver.instance());
 		if (StringUtils.hasText(locations)) {
-			this.archives.setLocations(locations.split(","));
+			resolver.setLocations(locations.split(","));
 		}
-		List<Archive> archives = this.archives.combine(parentArchive, getArchive(), name,
+		List<Archive> archives = resolver.combine(parentArchive, getArchive(), name,
 				profiles);
 		return archives;
 	}
