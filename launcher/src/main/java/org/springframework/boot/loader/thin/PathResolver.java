@@ -53,12 +53,18 @@ public class PathResolver {
 
 	private String[] locations = new String[] { "classpath:/", "file:." };
 
+	private String root;
+
 	public PathResolver(DependencyResolver engine) {
 		this.engine = engine;
 	}
 
 	public void setLocations(String... locations) {
 		this.locations = locations;
+	}
+
+	public void setRoot(String root) {
+		this.root = root;
 	}
 
 	public List<Archive> combine(Archive parent, Archive archive, String name,
@@ -116,6 +122,9 @@ public class PathResolver {
 		Properties properties = new Properties();
 		loadThinProperties(properties, archive, name, profiles);
 		loadThinProperties(properties, this.locations, name, profiles);
+		if (root != null) {
+			properties.setProperty("thin.root", root);
+		}
 		return properties;
 	}
 

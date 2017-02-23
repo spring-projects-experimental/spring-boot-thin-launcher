@@ -20,6 +20,7 @@ import com.google.inject.Provides;
 import com.google.inject.name.Named;
 import com.google.inject.name.Names;
 
+import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.model.Model;
 import org.apache.maven.model.building.ModelProcessor;
 import org.apache.maven.model.io.DefaultModelReader;
@@ -191,7 +192,8 @@ public class DependencyResolver {
 	private ProjectBuildingRequest getProjectBuildingRequest(Properties properties)
 			throws NoLocalRepositoryManagerException {
 		DefaultProjectBuildingRequest projectBuildingRequest = new DefaultProjectBuildingRequest();
-		DefaultRepositorySystemSession session = createSession();
+		DefaultRepositorySystemSession session = createSession(properties);
+		// projectBuildingRequest.setRemoteRepositories(repositories(properties));
 		projectBuildingRequest.setRepositorySession(session);
 		projectBuildingRequest.setProcessPlugins(false);
 		projectBuildingRequest.setBuildStartTime(new Date());
@@ -200,11 +202,16 @@ public class DependencyResolver {
 		return projectBuildingRequest;
 	}
 
-	private DefaultRepositorySystemSession createSession()
+	private List<ArtifactRepository> repositories(Properties properties) {
+		return Arrays.asList();
+	}
+
+	private DefaultRepositorySystemSession createSession(Properties properties)
 			throws NoLocalRepositoryManagerException {
 		DefaultRepositorySystemSession session = MavenRepositorySystemUtils.newSession();
-		session.setLocalRepositoryManager(localRepositoryManagerFactory
-				.newInstance(session, new LocalRepository(getM2RepoDirectory())));
+		LocalRepository repository = localRepository(properties);
+		session.setLocalRepositoryManager(
+				localRepositoryManagerFactory.newInstance(session, repository));
 		ProxySelector existing = session.getProxySelector();
 		if (existing == null || !(existing instanceof CompositeProxySelector)) {
 			JreProxySelector fallback = new JreProxySelector();
@@ -213,6 +220,13 @@ public class DependencyResolver {
 			session.setProxySelector(selector);
 		}
 		return session;
+	}
+
+	private LocalRepository localRepository(Properties properties) {
+		if (!properties.containsKey("thin.root")) {
+			return new LocalRepository(getM2RepoDirectory());
+		}
+		return new LocalRepository(properties.getProperty("thin.root"));
 	}
 
 	public Model readModel(Resource resource) {
@@ -256,7 +270,7 @@ public class DependencyResolver {
 		try {
 			List<ArtifactRequest> artifactRequests = getArtifactRequests(dependencies);
 			List<ArtifactResult> result = this.repositorySystem
-					.resolveArtifacts(createSession(), artifactRequests);
+					.resolveArtifacts(createSession(new Properties()), artifactRequests);
 			return result;
 		}
 		catch (Exception ex) {

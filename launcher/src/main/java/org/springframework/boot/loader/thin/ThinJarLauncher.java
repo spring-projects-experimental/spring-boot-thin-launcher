@@ -136,11 +136,6 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 				LogUtils.setLogLevel(Level.INFO);
 			}
 		}
-		if (StringUtils.hasText(root)) {
-			// There is a grape root that is used by the aether engine
-			// internally
-			System.setProperty("grape.root", root);
-		}
 		if (classpath) {
 			List<Archive> archives = getClassPathArchives();
 			System.out.println(classpath(archives));
@@ -232,6 +227,7 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 		String[] profiles = environment
 				.resolvePlaceholders("${" + ThinJarLauncher.THIN_PROFILE + ":}")
 				.split(",");
+		String root = environment.resolvePlaceholders("${" + THIN_ROOT + ":}");
 		Archive parentArchive = null;
 		if (StringUtils.hasText(parent)) {
 			parentArchive = ArchiveUtils.getArchive(parent);
@@ -239,6 +235,9 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 		PathResolver resolver = new PathResolver(DependencyResolver.instance());
 		if (StringUtils.hasText(locations)) {
 			resolver.setLocations(locations.split(","));
+		}
+		if (StringUtils.hasText(root)) {
+			resolver.setRoot(root);
 		}
 		List<Archive> archives = resolver.combine(parentArchive, getArchive(), name,
 				profiles);
