@@ -56,6 +56,10 @@ public class ThinJarWrapperTests {
 		ThinJarWrapper wrapper = new ThinJarWrapper();
 		assertThat(wrapper.library().getCoordinates(),
 				containsString("spring-boot-thin-launcher"));
+		if (System.getProperty("project.version") != null) {
+			assertThat(wrapper.library().getCoordinates(),
+					containsString(System.getProperty("project.version")));
+		}
 	}
 
 	@Test
