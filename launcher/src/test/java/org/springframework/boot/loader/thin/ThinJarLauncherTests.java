@@ -61,4 +61,16 @@ public class ThinJarLauncherTests {
 				.exists()).isTrue();
 	}
 
+	@Test
+	public void overrideSnapshotRepository() throws Exception {
+		FileSystemUtils.deleteRecursively(new File("target/thin/test/repository/org/springframework/spring-core"));
+		String[] args = new String[] { "--thin.root=target/thin/test",
+				"--thin.dryrun=true", "--thin.archive=src/test/resources/apps/snapshots",
+				"--debug" };
+		ThinJarLauncher.main(args);
+		assertThat(new File("target/thin/test/repository").exists()).isTrue();
+		assertThat(new File("target/thin/test/repository/org/springframework/spring-core")
+				.exists()).isTrue();
+	}
+
 }

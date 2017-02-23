@@ -137,26 +137,41 @@ class ThinPropertiesModelProcessor extends DefaultModelProcessor {
 					}
 				}
 			}
-			Repository repository = new Repository();
-			repository.setLayout("default");
-			repository.setId("central");
-			repository.setUrl("https://repo1.maven.org/maven2");
-			RepositoryPolicy enabled = new RepositoryPolicy();
-			enabled.setEnabled(true);
-			repository.setReleases(enabled);
-			model.addRepository(repository);
+			addRepositoryIfMissing(model, "central", "https://repo1.maven.org/maven2",
+					true, false);
+			addRepositoryIfMissing(model, "spring-snapshots", "https://repo.spring.io/snapshot",
+					true, true);
 			if (properties.containsKey(ThinJarLauncher.THIN_ROOT)) {
-				repository = new Repository();
-				repository.setLayout("default");
-				repository.setId("mavenLocal");
-				repository.setUrl("file:///${user.home}/repository");
-				enabled.setEnabled(true);
-				repository.setReleases(enabled);
-				repository.setSnapshots(enabled);
-				model.addRepository(repository);
+				addRepositoryIfMissing(model, "default",
+						"file:///${user.home}/repository", true, true);
 			}
 		}
 		return model;
+	}
+
+	private void addRepositoryIfMissing(Model model, String id, String url,
+			boolean releases, boolean snapshots) {
+		for (Repository repo : model.getRepositories()) {
+			if (url.equals(repo.getUrl())) {
+				return;
+			}
+			if (id.equals(repo.getId())) {
+				return;
+			}
+		}
+		Repository repository = new Repository();
+		repository.setLayout("default");
+		repository.setId(id);
+		repository.setUrl(url);
+		RepositoryPolicy enabled = new RepositoryPolicy();
+		enabled.setEnabled(true);
+		if (releases) {
+			repository.setReleases(enabled);
+		}
+		if (snapshots) {
+			repository.setSnapshots(enabled);
+		}
+		model.addRepository(repository);
 	}
 
 	private Exclusion exclusion(String pom) {
