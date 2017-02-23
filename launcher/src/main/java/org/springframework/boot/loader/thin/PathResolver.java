@@ -185,6 +185,9 @@ public class PathResolver {
 		List<Archive> list = new ArrayList<>();
 		for (Dependency dependency : dependencies) {
 			File file = dependency.getArtifact().getFile();
+			if (file == null) {
+				continue;
+			}
 			try {
 				list.add(new JarFileArchive(file, file.toURI().toURL()));
 			}
