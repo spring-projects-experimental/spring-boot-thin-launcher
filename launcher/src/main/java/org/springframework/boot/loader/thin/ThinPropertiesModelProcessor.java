@@ -27,6 +27,7 @@ import java.util.regex.Pattern;
 
 import org.apache.maven.model.Dependency;
 import org.apache.maven.model.DependencyManagement;
+import org.apache.maven.model.Exclusion;
 import org.apache.maven.model.Model;
 import org.apache.maven.model.building.DefaultModelProcessor;
 import org.eclipse.aether.artifact.DefaultArtifact;
@@ -106,7 +107,7 @@ class ThinPropertiesModelProcessor extends DefaultModelProcessor {
 						model.getDependencyManagement().addDependency(bom(artifact));
 					}
 				}
-				if (name.startsWith("dependencies.")) {
+				else if (name.startsWith("dependencies.")) {
 					String pom = properties.getProperty(name);
 					DefaultArtifact artifact = artifact(pom);
 					boolean replaced = false;
@@ -126,9 +127,24 @@ class ThinPropertiesModelProcessor extends DefaultModelProcessor {
 						model.getDependencies().add(dependency(artifact));
 					}
 				}
+				else if (name.startsWith("exclusions.")) {
+					String pom = properties.getProperty(name);
+					Exclusion exclusion = exclusion(pom);
+					for (Dependency dependency : model.getDependencies()) {
+						dependency.addExclusion(exclusion);
+					}
+				}
 			}
 		}
 		return model;
+	}
+
+	private Exclusion exclusion(String pom) {
+		Exclusion exclusion = new Exclusion();
+		DefaultArtifact artifact = artifact(pom);
+		exclusion.setGroupId(artifact.getGroupId());
+		exclusion.setArtifactId(artifact.getArtifactId());
+		return exclusion;
 	}
 
 	private Dependency bom(DefaultArtifact artifact) {

@@ -68,6 +68,20 @@ public class DependencyResolverTests {
 	}
 
 	@Test
+	public void exclusions() throws Exception {
+		Resource resource = new ClassPathResource("apps/exclusions/pom.xml");
+		List<Dependency> dependencies = resolver.dependencies(resource,
+				PropertiesLoaderUtils.loadProperties(new ClassPathResource(
+						"apps/exclusions/META-INF/thin.properties")));
+		assertThat(dependencies.size()).isGreaterThan(20);
+		assertThat(dependencies).filteredOn("artifact.artifactId", "jetty-server").first()
+				.matches(d -> "9.3.11.v20160721".equals(d.getArtifact().getVersion()),
+						"correct version");
+		assertThat(dependencies).filteredOn("artifact.artifactId", "tomcat-embed-core")
+				.isEmpty();
+	}
+
+	@Test
 	public void pomInJar() throws Exception {
 		Resource resource = new UrlResource(
 				"jar:file:src/test/resources/app-with-web-in-lib-properties.jar!/META-INF/maven/com.example/app/pom.xml");
