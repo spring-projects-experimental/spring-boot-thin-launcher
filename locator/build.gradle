@@ -1,0 +1,48 @@
+buildscript {
+	ext {
+		springBootVersion = '1.5.1.RELEASE'
+		wrapperVersion = '1.0.4.BUILD-SNAPSHOT'
+	}
+	repositories {
+		mavenLocal()
+		mavenCentral()
+		maven { url "https://repo.spring.io/snapshot" }
+		maven { url "https://repo.spring.io/milestone" }
+	}
+	dependencies {
+		classpath("org.springframework.boot.experimental:spring-boot-thin-layout:${wrapperVersion}")
+		classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+	}
+}
+
+apply plugin: 'java'
+apply plugin: 'maven'
+apply plugin: 'eclipse'
+apply plugin: 'org.springframework.boot'
+
+task createPom {
+	doLast {
+		pom {
+			withXml(dependencyManagement.pomConfigurer)
+		}.writeTo("build/resources/main/META-INF/maven/${project.group}/${project.name}/pom.xml")
+	}
+}
+
+group = 'com.example'
+version = '0.0.1-SNAPSHOT'
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+repositories {
+	mavenLocal()
+	mavenCentral()
+	maven { url "https://repo.spring.io/snapshot" }
+	maven { url "https://repo.spring.io/milestone" }
+}
+
+dependencies {
+	compile('org.springframework.boot:spring-boot-starter')
+	testCompile('org.springframework.boot:spring-boot-starter-test')
+}
+
+jar.dependsOn = [createPom]
