@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.List;
 import java.util.Properties;
 
+import org.assertj.core.api.Condition;
 import org.eclipse.aether.graph.Dependency;
 import org.junit.Test;
 
@@ -23,8 +24,7 @@ public class DependencyResolverTests {
 	public void localPom() throws Exception {
 		Resource resource = new FileSystemResource(new File("pom.xml"));
 		List<Dependency> dependencies = resolver.dependencies(resource);
-		assertThat(dependencies)
-				.filteredOn(d -> d.getArtifact().getArtifactId().equals("maven-settings"))
+		assertThat(dependencies).filteredOn("artifact.artifactId", "maven-settings")
 				.hasSize(1);
 		assertThat(dependencies).filteredOn("artifact.artifactId", "spring-test")
 				.isEmpty();
@@ -45,13 +45,10 @@ public class DependencyResolverTests {
 		assertThat(dependencies.size()).isGreaterThan(20);
 		// Resolved from a placeholder version
 		assertThat(dependencies).filteredOn("artifact.artifactId", "bootstrap").first()
-				.matches(d -> "3.3.6".equals(d.getArtifact().getVersion()),
-						"correct version");
+				.is(version("3.3.6"));
 		// Transitive from a starter
 		assertThat(dependencies).filteredOn("artifact.artifactId", "spring-boot-starter")
-				.first()
-				.matches(d -> "1.4.2.RELEASE".equals(d.getArtifact().getVersion()),
-						"correct version");
+				.first().is(version("1.4.2.RELEASE"));
 	}
 
 	@Test
@@ -60,9 +57,7 @@ public class DependencyResolverTests {
 		List<Dependency> dependencies = resolver.dependencies(resource);
 		assertThat(dependencies.size()).isGreaterThan(20);
 		assertThat(dependencies).filteredOn("artifact.artifactId", "spring-cloud-context")
-				.first()
-				.matches(d -> "1.1.7.RELEASE".equals(d.getArtifact().getVersion()),
-						"correct version");
+				.first().is(version("1.1.7.RELEASE"));
 		assertThat(dependencies).filteredOn("artifact.artifactId", "spring-test")
 				.isEmpty();
 	}
@@ -75,8 +70,7 @@ public class DependencyResolverTests {
 						"apps/exclusions/META-INF/thin.properties")));
 		assertThat(dependencies.size()).isGreaterThan(20);
 		assertThat(dependencies).filteredOn("artifact.artifactId", "jetty-server").first()
-				.matches(d -> "9.3.11.v20160721".equals(d.getArtifact().getVersion()),
-						"correct version");
+				.is(version("9.3.11.v20160721"));
 		assertThat(dependencies).filteredOn("artifact.artifactId", "tomcat-embed-core")
 				.isEmpty();
 	}
@@ -100,12 +94,10 @@ public class DependencyResolverTests {
 						new ClassPathResource("apps/db/META-INF/thin.properties")));
 		assertThat(dependencies).size().isGreaterThan(3);
 		assertThat(dependencies).filteredOn("artifact.artifactId", "spring-jdbc").first()
-				.matches(d -> "4.2.8.RELEASE".equals(d.getArtifact().getVersion()),
-						"correct version");
+				.is(version("4.2.8.RELEASE"));
 		// thin.properties changes bom version
 		assertThat(dependencies).filteredOn("artifact.artifactId", "spring-boot").first()
-				.matches(d -> "1.3.8.RELEASE".equals(d.getArtifact().getVersion()),
-						"correct version");
+				.is(version("1.3.8.RELEASE"));
 		;
 	}
 
@@ -121,8 +113,7 @@ public class DependencyResolverTests {
 		List<Dependency> dependencies = resolver.dependencies(resource, properties);
 		assertThat(dependencies).size().isGreaterThan(3);
 		assertThat(dependencies).filteredOn("artifact.artifactId", "spring-boot").first()
-				.matches(d -> "1.4.1.RELEASE".equals(d.getArtifact().getVersion()),
-						"correct version");
+				.is(version("1.4.1.RELEASE"));
 	}
 
 	@Test
@@ -131,8 +122,7 @@ public class DependencyResolverTests {
 		List<Dependency> dependencies = resolver.dependencies(resource);
 		assertThat(dependencies.size()).isGreaterThan(10);
 		assertThat(dependencies).filteredOn("artifact.artifactId", "spring-boot").first()
-				.matches(d -> "1.3.8.RELEASE".equals(d.getArtifact().getVersion()),
-						"correct version");
+				.is(version("1.3.8.RELEASE"));
 	}
 
 	@Test
@@ -143,8 +133,7 @@ public class DependencyResolverTests {
 		// Weird combo of spring version picked from the wrong property (but it resolves,
 		// which is the test)
 		assertThat(dependencies).filteredOn("artifact.artifactId", "spring-core").first()
-				.matches(d -> "4.1.3.RELEASE".equals(d.getArtifact().getVersion()),
-						"correct version");
+				.is(version("4.1.3.RELEASE"));
 	}
 
 	@Test
@@ -153,8 +142,7 @@ public class DependencyResolverTests {
 		List<Dependency> dependencies = resolver.dependencies(resource);
 		assertThat(dependencies.size()).isGreaterThan(10);
 		assertThat(dependencies).filteredOn("artifact.artifactId", "spring-boot").first()
-				.matches(d -> "1.3.8.RELEASE".equals(d.getArtifact().getVersion()),
-						"correct version");
+				.is(version("1.3.8.RELEASE"));
 	}
 
 	@Test
@@ -164,8 +152,7 @@ public class DependencyResolverTests {
 		List<Dependency> dependencies = resolver.dependencies(resource);
 		assertThat(dependencies.size()).isGreaterThan(10);
 		assertThat(dependencies).filteredOn("artifact.artifactId", "spring-core").first()
-				.matches(d -> "4.3.5.RELEASE".equals(d.getArtifact().getVersion()),
-						"correct version");
+				.is(version("4.3.5.RELEASE"));
 	}
 
 	@Test
@@ -175,9 +162,16 @@ public class DependencyResolverTests {
 		assertThat(dependencies.size()).isGreaterThan(3);
 		// pom changes spring-context
 		assertThat(dependencies).filteredOn("artifact.artifactId", "spring-context")
-				.first()
-				.matches(d -> "4.3.5.RELEASE".equals(d.getArtifact().getVersion()),
-						"correct version");
+				.first().is(version("4.3.5.RELEASE"));
+	}
+
+	static Condition<Dependency> version(final String version) {
+		return new Condition<Dependency>("artifact matches " + version) {
+			@Override
+			public boolean matches(Dependency value) {
+				return value.getArtifact().getVersion().equals(version);
+			}
+		};
 	}
 
 }

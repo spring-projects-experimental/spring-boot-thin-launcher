@@ -17,10 +17,12 @@
 package com.example;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
+import org.assertj.core.api.Condition;
 import org.junit.After;
 import org.junit.Test;
 
@@ -39,6 +41,18 @@ public class AppGradleIT {
 		if (started != null && started.isAlive()) {
 			started.destroy();
 		}
+	}
+
+	@Test
+	public void thinJar() {
+		File jar = new File("../app/build/libs/app-0.0.1-SNAPSHOT.jar");
+		assertThat(jar).exists();
+		assertThat(jar).is(new Condition<File>("thin") {
+			@Override
+			public boolean matches(File value) {
+				return value.length() < 1024 * 1024;
+			}
+		});
 	}
 
 	@Test

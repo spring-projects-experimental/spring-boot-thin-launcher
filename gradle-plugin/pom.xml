@@ -12,13 +12,18 @@
 	<artifactId>spring-boot-thin-gradle-plugin</artifactId>
 	<packaging>jar</packaging>
 
-	<name>Spring Boot Thin Launcher Gradle</name>
+	<name>Spring Boot Thin Gradle</name>
 	<description>Grade plugin for Spring Boot Thin Launcher</description>
 
 	<dependencies>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-loader-tools</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot.experimental</groupId>
+			<artifactId>spring-boot-thin-layout</artifactId>
+			<version>${project.version}</version>
 		</dependency>
 		<!-- Provided -->
 		<dependency>
