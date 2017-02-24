@@ -176,7 +176,12 @@ public class ThinJarWrapper {
 				path = defaultPath;
 			}
 			File target = new File(path + getPath());
-			if (!target.exists() && target.getParentFile().mkdirs()) {
+			if (!target.exists()) {
+				if (!target.getParentFile().exists()
+						&& !target.getParentFile().mkdirs()) {
+					throw new IllegalStateException(
+							"Cannot create directory launcher at " + target);
+				}
 				boolean result = false;
 				if (!defaultPath.equals(path)) {
 					// Try local repo first
