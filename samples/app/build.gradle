@@ -3,7 +3,7 @@ import org.gradle.internal.jvm.Jvm;
 buildscript {
 	ext {
 		springBootVersion = '1.5.1.RELEASE'
-		wrapperVersion = '1.0.0.M2'
+		wrapperVersion = '1.0.0.BUILD-SNAPSHOT'
 	}
 	repositories {
 		mavenLocal()
