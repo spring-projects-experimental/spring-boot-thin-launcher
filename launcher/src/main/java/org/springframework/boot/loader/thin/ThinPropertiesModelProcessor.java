@@ -139,8 +139,8 @@ class ThinPropertiesModelProcessor extends DefaultModelProcessor {
 			}
 			addRepositoryIfMissing(model, "central", "https://repo1.maven.org/maven2",
 					true, false);
-			addRepositoryIfMissing(model, "spring-snapshots", "https://repo.spring.io/snapshot",
-					true, true);
+			addRepositoryIfMissing(model, "spring-snapshots",
+					"https://repo.spring.io/snapshot", true, true);
 			if (properties.containsKey(ThinJarLauncher.THIN_ROOT)) {
 				addRepositoryIfMissing(model, "default",
 						"file:///${user.home}/repository", true, true);
@@ -165,12 +165,10 @@ class ThinPropertiesModelProcessor extends DefaultModelProcessor {
 		repository.setUrl(url);
 		RepositoryPolicy enabled = new RepositoryPolicy();
 		enabled.setEnabled(true);
-		if (releases) {
-			repository.setReleases(enabled);
-		}
-		if (snapshots) {
-			repository.setSnapshots(enabled);
-		}
+		RepositoryPolicy disabled = new RepositoryPolicy();
+		disabled.setEnabled(false);
+		repository.setReleases(releases ? enabled : disabled);
+		repository.setSnapshots(snapshots ? enabled : disabled);
 		model.addRepository(repository);
 	}
 
