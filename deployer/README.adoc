@@ -1,0 +1,22 @@
+This project contains an implementation of the Spring Cloud `AppDeployer` SPI, which launches an executable thin jar as a Spring Application in the current JVM, but with an isolated class loader. It is roughly 4 times faster than the canonical "local" `AppDeployer` that launches the same jars as separate processes. (There are integration tests that you can run to verify this.)
+
+Usage:
+
+* Create a https://github.com/dsyer/spring-boot-thin-launcher[thin jar] with a `Start-Class` or unique main class (a class with a main method that is a `@SpringBootApplication`).
+
+* Create a `ThinJarAppDeployer` and use it to deploy the jar.
+
+Example:
+
+```java
+ThinJarAppDeployer deployer = new ThinJarAppDeployer();
+Resource resource = new FileSystemResource("<path_to>/mythin.jar" + jarName);
+AppDefinition definition = new AppDefinition("mythin", Collections.emptyMap());
+AppDeploymentRequest request = new AppDeploymentRequest(definition, resource,
+		Collections.emptyMap(), Collections.emptyList());
+String id = deployer.deploy(request);
+```
+
+== License
+This project is Open Source software released under the
+http://www.apache.org/licenses/LICENSE-2.0.html[Apache 2.0 license].

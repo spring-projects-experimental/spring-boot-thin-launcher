@@ -1,0 +1,3 @@
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+org.springframework.cloud.deployer.thin.ThinJarAppDeployerAutoConfiguration,\
+org.springframework.cloud.deployer.thin.ThinJarTomcatAutoConfiguration
