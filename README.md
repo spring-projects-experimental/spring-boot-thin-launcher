@@ -18,10 +18,10 @@ TODO:
 * [ ] Support for configuring launcher via manifest and/or properties file
 * [X] Support for configuring wrapper via env vars  and/or properties file
 * [X] Generate `thin.properties` during build (e.g. to support Gradle)
-* [ ] Experiment with "container" apps and multi-tenant/ephemeral child contexts
+* [X] Experiment with "container" apps and multi-tenant/ephemeral child contexts
 * [X] Deployment time support for the dry run to assist with CI pipelines
 
-(*) Implemented in Spring Boot, not in this project.
+(*) Implemented in Spring Boot, not in this project. Subsequently ripped out anyway and replaced with `maven-core`.
 
 ## Getting Started
 
@@ -45,7 +45,7 @@ Inspect the "app" jar. It is just a regular jar file with the app
 classes in it and two extra features:
 
 1. The `ThinJarWrapper` class has been added.
-2. A `META-INF/thin.properties` which lists the dependencies of the app.
+2. Either a `pom.xml` or a `META-INF/thin.properties` which lists the dependencies of the app.
 
 When the app runs the main method is in the `ThinJarWrapper`. Its job
 is to download another jar file that you just built (the "launcher"),
@@ -53,13 +53,12 @@ or locate it in your local Maven repo if it can. The wrapper downloads
 the launcher (if it needs to), or else uses the cached version in your
 local Maven repository.
 
-The launcher then takes over and reads the `thin.properties`,
-downloading the dependencies (and all transitives) as necessary, and
-setting up a new class loader with them all on the classpath. It then
-runs the application's own main method with that class loader. If the
-`thin.properties` is not there then the `pom.xml` is used instead (it
-can be in the root of the jar or in the standard `META-INF/maven`
-location).
+The launcher then takes over and reads the `pom.xml` (if present) and
+the `thin.properties`, downloading the dependencies (and all
+transitives) as necessary, and setting up a new class loader with them
+all on the classpath. It then runs the application's own main method
+with that class loader. The `pom.xml` can be in the root of the jar or
+in the standard `META-INF/maven` location.
 
 The app jar in the demo is build using the Spring Boot plugin and a
 custom `Layout` (so it only builds with Spring Boot 1.5.x),
@@ -120,9 +119,6 @@ be executable and thin.
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
 				<version>${spring-boot.version}</version>
-				<configuration>
-					<layout>THIN</layout>
-				</configuration>
 				<dependencies>
 					<dependency>
 						<groupId>org.springframework.boot.experimental</groupId>
@@ -217,7 +213,7 @@ thinResolvePrepare {
 }
 ```
 
-## Creating the Metadata
+## APPENDIX: Creating the Metadata
 
 ### Maven
 
