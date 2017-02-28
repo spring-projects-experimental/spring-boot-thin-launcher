@@ -140,7 +140,7 @@ class ThinPropertiesModelProcessor extends DefaultModelProcessor {
 			addRepositoryIfMissing(model, "central", "https://repo1.maven.org/maven2",
 					true, false);
 			addRepositoryIfMissing(model, "spring-snapshots",
-					"https://repo.spring.io/snapshot", true, true);
+					"https://repo.spring.io/libs-snapshot", true, true);
 			if (properties.containsKey(ThinJarLauncher.THIN_ROOT)) {
 				addRepositoryIfMissing(model, "default",
 						"file:///${user.home}/repository", true, true);
