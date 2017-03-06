@@ -57,7 +57,6 @@ import org.apache.maven.repository.internal.DefaultVersionResolver;
 import org.apache.maven.repository.internal.MavenRepositorySystemUtils;
 import org.apache.maven.repository.internal.SnapshotMetadataGeneratorFactory;
 import org.apache.maven.repository.internal.VersionsMetadataGeneratorFactory;
-import org.apache.maven.settings.io.SettingsReader;
 import org.codehaus.plexus.ContainerConfiguration;
 import org.codehaus.plexus.DefaultContainerConfiguration;
 import org.codehaus.plexus.DefaultPlexusContainer;
@@ -107,8 +106,6 @@ public class DependencyResolver {
 
 	private RepositorySystem repositorySystem;
 
-	private SettingsReader settingsReader;
-
 	public static DependencyResolver instance() {
 		return instance;
 	}
@@ -139,7 +136,6 @@ public class DependencyResolver {
 								ClassRealmManager.class.getName());
 						projectBuilder = container.lookup(ProjectBuilder.class);
 						repositorySystem = container.lookup(RepositorySystem.class);
-						settingsReader = container.lookup(SettingsReader.class);
 					}
 					catch (Exception e) {
 						throw new IllegalStateException("Cannot create container", e);
@@ -193,7 +189,7 @@ public class DependencyResolver {
 			throws NoLocalRepositoryManagerException {
 		DefaultProjectBuildingRequest projectBuildingRequest = new DefaultProjectBuildingRequest();
 		DefaultRepositorySystemSession session = createSession(properties);
-		projectBuildingRequest.setRemoteRepositories(snapshots(properties));
+		projectBuildingRequest.setRemoteRepositories(mavenRepositories(properties));
 		projectBuildingRequest.getRemoteRepositories();
 		projectBuildingRequest.setRepositorySession(session);
 		projectBuildingRequest.setProcessPlugins(false);
@@ -203,7 +199,7 @@ public class DependencyResolver {
 		return projectBuildingRequest;
 	}
 
-	private List<ArtifactRepository> snapshots(Properties properties) {
+	private List<ArtifactRepository> mavenRepositories(Properties properties) {
 		List<ArtifactRepository> list = new ArrayList<>();
 		addRepositoryIfMissing(list, "spring-snapshots",
 				"https://repo.spring.io/libs-snapshot", true, true);
@@ -216,9 +212,9 @@ public class DependencyResolver {
 		return list;
 	}
 
-	private List<RemoteRepository> repositories(Properties properties) {
+	private List<RemoteRepository> aetherRepositories(Properties properties) {
 		List<RemoteRepository> list = new ArrayList<>();
-		for (ArtifactRepository input : snapshots(properties)) {
+		for (ArtifactRepository input : mavenRepositories(properties)) {
 			list.add(remote(input));
 		}
 		return list;
@@ -271,6 +267,7 @@ public class DependencyResolver {
 		LocalRepository repository = localRepository(properties);
 		session.setLocalRepositoryManager(
 				localRepositoryManagerFactory.newInstance(session, repository));
+		applySettings(session);
 		ProxySelector existing = session.getProxySelector();
 		if (existing == null || !(existing instanceof CompositeProxySelector)) {
 			JreProxySelector fallback = new JreProxySelector();
@@ -279,6 +276,11 @@ public class DependencyResolver {
 			session.setProxySelector(selector);
 		}
 		return session;
+	}
+
+	private void applySettings(DefaultRepositorySystemSession session) {
+		MavenSettingsReader.applySettings(new MavenSettingsReader().readSettings(),
+				session);
 	}
 
 	private LocalRepository localRepository(Properties properties) {
@@ -337,7 +339,7 @@ public class DependencyResolver {
 		for (Dependency dependency : dependencies) {
 			ArtifactRequest request = new ArtifactRequest(dependency.getArtifact(), null,
 					null);
-			request.setRepositories(repositories(new Properties()));
+			request.setRepositories(aetherRepositories(new Properties()));
 			list.add(request);
 		}
 		return list;
