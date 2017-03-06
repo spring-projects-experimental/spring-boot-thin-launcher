@@ -29,8 +29,6 @@ import org.apache.maven.model.Dependency;
 import org.apache.maven.model.DependencyManagement;
 import org.apache.maven.model.Exclusion;
 import org.apache.maven.model.Model;
-import org.apache.maven.model.Repository;
-import org.apache.maven.model.RepositoryPolicy;
 import org.apache.maven.model.building.DefaultModelProcessor;
 import org.eclipse.aether.artifact.DefaultArtifact;
 
@@ -137,39 +135,8 @@ class ThinPropertiesModelProcessor extends DefaultModelProcessor {
 					}
 				}
 			}
-			addRepositoryIfMissing(model, "central", "https://repo1.maven.org/maven2",
-					true, false);
-			addRepositoryIfMissing(model, "spring-snapshots",
-					"https://repo.spring.io/libs-snapshot", true, true);
-			if (properties.containsKey(ThinJarLauncher.THIN_ROOT)) {
-				addRepositoryIfMissing(model, "default",
-						"file:///${user.home}/repository", true, true);
-			}
 		}
 		return model;
-	}
-
-	private void addRepositoryIfMissing(Model model, String id, String url,
-			boolean releases, boolean snapshots) {
-		for (Repository repo : model.getRepositories()) {
-			if (url.equals(repo.getUrl())) {
-				return;
-			}
-			if (id.equals(repo.getId())) {
-				return;
-			}
-		}
-		Repository repository = new Repository();
-		repository.setLayout("default");
-		repository.setId(id);
-		repository.setUrl(url);
-		RepositoryPolicy enabled = new RepositoryPolicy();
-		enabled.setEnabled(true);
-		RepositoryPolicy disabled = new RepositoryPolicy();
-		disabled.setEnabled(false);
-		repository.setReleases(releases ? enabled : disabled);
-		repository.setSnapshots(snapshots ? enabled : disabled);
-		model.addRepository(repository);
 	}
 
 	private Exclusion exclusion(String pom) {

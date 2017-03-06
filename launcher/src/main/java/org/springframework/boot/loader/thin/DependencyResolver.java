@@ -1,3 +1,18 @@
+/*
+ * Copyright 2016-2017 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.springframework.boot.loader.thin;
 
 import java.io.BufferedInputStream;
@@ -15,6 +30,15 @@ import java.util.Set;
 
 import javax.inject.Singleton;
 
+import com.google.inject.AbstractModule;
+import com.google.inject.Provides;
+import com.google.inject.name.Named;
+import com.google.inject.name.Names;
+
+import org.apache.maven.artifact.repository.ArtifactRepository;
+import org.apache.maven.artifact.repository.ArtifactRepositoryPolicy;
+import org.apache.maven.artifact.repository.MavenArtifactRepository;
+import org.apache.maven.artifact.repository.layout.DefaultRepositoryLayout;
 import org.apache.maven.model.Model;
 import org.apache.maven.model.building.ModelProcessor;
 import org.apache.maven.model.io.DefaultModelReader;
@@ -33,6 +57,7 @@ import org.apache.maven.repository.internal.DefaultVersionResolver;
 import org.apache.maven.repository.internal.MavenRepositorySystemUtils;
 import org.apache.maven.repository.internal.SnapshotMetadataGeneratorFactory;
 import org.apache.maven.repository.internal.VersionsMetadataGeneratorFactory;
+import org.apache.maven.settings.io.SettingsReader;
 import org.codehaus.plexus.ContainerConfiguration;
 import org.codehaus.plexus.DefaultContainerConfiguration;
 import org.codehaus.plexus.DefaultPlexusContainer;
@@ -53,6 +78,7 @@ import org.eclipse.aether.repository.LocalRepository;
 import org.eclipse.aether.repository.NoLocalRepositoryManagerException;
 import org.eclipse.aether.repository.ProxySelector;
 import org.eclipse.aether.repository.RemoteRepository;
+import org.eclipse.aether.repository.RepositoryPolicy;
 import org.eclipse.aether.resolution.ArtifactRequest;
 import org.eclipse.aether.resolution.ArtifactResult;
 import org.eclipse.aether.spi.connector.RepositoryConnectorFactory;
@@ -62,13 +88,9 @@ import org.eclipse.aether.transport.http.HttpTransporterFactory;
 import org.eclipse.aether.util.repository.JreProxySelector;
 import org.eclipse.sisu.inject.DefaultBeanLocator;
 import org.eclipse.sisu.plexus.ClassRealmManager;
+
 import org.springframework.core.io.Resource;
 import org.springframework.util.StringUtils;
-
-import com.google.inject.AbstractModule;
-import com.google.inject.Provides;
-import com.google.inject.name.Named;
-import com.google.inject.name.Names;
 
 public class DependencyResolver {
 
@@ -84,6 +106,8 @@ public class DependencyResolver {
 	private ProjectBuilder projectBuilder;
 
 	private RepositorySystem repositorySystem;
+
+	private SettingsReader settingsReader;
 
 	public static DependencyResolver instance() {
 		return instance;
@@ -115,6 +139,7 @@ public class DependencyResolver {
 								ClassRealmManager.class.getName());
 						projectBuilder = container.lookup(ProjectBuilder.class);
 						repositorySystem = container.lookup(RepositorySystem.class);
+						settingsReader = container.lookup(SettingsReader.class);
 					}
 					catch (Exception e) {
 						throw new IllegalStateException("Cannot create container", e);
@@ -168,12 +193,76 @@ public class DependencyResolver {
 			throws NoLocalRepositoryManagerException {
 		DefaultProjectBuildingRequest projectBuildingRequest = new DefaultProjectBuildingRequest();
 		DefaultRepositorySystemSession session = createSession(properties);
+		projectBuildingRequest.setRemoteRepositories(snapshots(properties));
+		projectBuildingRequest.getRemoteRepositories();
 		projectBuildingRequest.setRepositorySession(session);
 		projectBuildingRequest.setProcessPlugins(false);
 		projectBuildingRequest.setBuildStartTime(new Date());
 		projectBuildingRequest.setUserProperties(properties);
 		projectBuildingRequest.setSystemProperties(System.getProperties());
 		return projectBuildingRequest;
+	}
+
+	private List<ArtifactRepository> snapshots(Properties properties) {
+		List<ArtifactRepository> list = new ArrayList<>();
+		addRepositoryIfMissing(list, "spring-snapshots",
+				"https://repo.spring.io/libs-snapshot", true, true);
+		addRepositoryIfMissing(list, "central", "https://repo1.maven.org/maven2", true,
+				false);
+		if (properties.containsKey(ThinJarLauncher.THIN_ROOT)) {
+			addRepositoryIfMissing(list, "local", "file:///${user.home}/repository", true,
+					true);
+		}
+		return list;
+	}
+
+	private List<RemoteRepository> repositories(Properties properties) {
+		List<RemoteRepository> list = new ArrayList<>();
+		for (ArtifactRepository input : snapshots(properties)) {
+			list.add(remote(input));
+		}
+		return list;
+	}
+
+	private RemoteRepository remote(ArtifactRepository input) {
+		return new RemoteRepository.Builder(input.getId(), input.getLayout().getId(),
+				input.getUrl()).setSnapshotPolicy(policy(input.getSnapshots()))
+						.setReleasePolicy(policy(input.getReleases())).build();
+	}
+
+	private RepositoryPolicy policy(ArtifactRepositoryPolicy input) {
+		RepositoryPolicy policy = new RepositoryPolicy(input.isEnabled(),
+				RepositoryPolicy.UPDATE_POLICY_DAILY,
+				RepositoryPolicy.CHECKSUM_POLICY_WARN);
+		return policy;
+	}
+
+	private void addRepositoryIfMissing(List<ArtifactRepository> list, String id,
+			String url, boolean releases, boolean snapshots) {
+		for (ArtifactRepository repo : list) {
+			if (url.equals(repo.getUrl())) {
+				return;
+			}
+			if (id.equals(repo.getId())) {
+				return;
+			}
+		}
+		list.add(repo(id, url, releases, snapshots));
+	}
+
+	private ArtifactRepository repo(String id, String url, boolean releases,
+			boolean snapshots) {
+		MavenArtifactRepository repository = new MavenArtifactRepository();
+		repository.setLayout(new DefaultRepositoryLayout());
+		repository.setId(id);
+		repository.setUrl(url);
+		ArtifactRepositoryPolicy enabled = new ArtifactRepositoryPolicy();
+		enabled.setEnabled(true);
+		ArtifactRepositoryPolicy disabled = new ArtifactRepositoryPolicy();
+		disabled.setEnabled(false);
+		repository.setReleaseUpdatePolicy(releases ? enabled : disabled);
+		repository.setSnapshotUpdatePolicy(snapshots ? enabled : disabled);
+		return repository;
 	}
 
 	private DefaultRepositorySystemSession createSession(Properties properties)
@@ -252,13 +341,6 @@ public class DependencyResolver {
 			list.add(request);
 		}
 		return list;
-	}
-
-	private List<RemoteRepository> repositories(Properties properties) {
-		// TODO: why? Maybe it can be set centrally somewhere?
-		RemoteRepository central = new RemoteRepository.Builder("central", "default",
-				"https://repo1.maven.org/maven2").build();
-		return Arrays.asList(central);
 	}
 
 	// Package private for model resolution hack in ThinPropertiesModelProcessor

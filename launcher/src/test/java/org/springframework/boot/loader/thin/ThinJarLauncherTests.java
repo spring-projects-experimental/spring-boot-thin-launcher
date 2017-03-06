@@ -31,7 +31,8 @@ public class ThinJarLauncherTests {
 
 	@Test
 	public void dryrun() throws Exception {
-		FileSystemUtils.deleteRecursively(new File("target/thin/test/repository/org/springframework/spring-core"));
+		FileSystemUtils.deleteRecursively(
+				new File("target/thin/test/repository/org/springframework/spring-core"));
 		String[] args = new String[] { "--thin.dryrun=true",
 				"--thin.archive=src/test/resources/apps/basic", "--debug" };
 		ThinJarLauncher.main(args);
@@ -39,7 +40,8 @@ public class ThinJarLauncherTests {
 
 	@Test
 	public void overrideLocalRepository() throws Exception {
-		FileSystemUtils.deleteRecursively(new File("target/thin/test/repository/org/springframework/spring-core"));
+		FileSystemUtils.deleteRecursively(
+				new File("target/thin/test/repository/org/springframework/spring-core"));
 		String[] args = new String[] { "--thin.root=target/thin/test",
 				"--thin.dryrun=true", "--thin.archive=src/test/resources/apps/basic",
 				"--debug" };
@@ -51,9 +53,25 @@ public class ThinJarLauncherTests {
 
 	@Test
 	public void overrideExistingRepository() throws Exception {
-		FileSystemUtils.deleteRecursively(new File("target/thin/test/repository/org/springframework/spring-core"));
+		FileSystemUtils.deleteRecursively(
+				new File("target/thin/test/repository/org/springframework/spring-core"));
 		String[] args = new String[] { "--thin.root=target/thin/test",
-				"--thin.dryrun=true", "--thin.archive=src/test/resources/apps/repositories",
+				"--thin.dryrun=true",
+				"--thin.archive=src/test/resources/apps/repositories", "--debug" };
+		ThinJarLauncher.main(args);
+		assertThat(new File("target/thin/test/repository").exists()).isTrue();
+		assertThat(new File("target/thin/test/repository/org/springframework/spring-core")
+				.exists()).isTrue();
+	}
+
+	@Test
+	public void overrideSnapshotVersion() throws Exception {
+		FileSystemUtils.deleteRecursively(
+				new File("target/thin/test/repository/org/springframework/spring-core"));
+		FileSystemUtils.deleteRecursively(new File(
+				"target/thin/test/repository/org/springframework/boot/spring-boot-starter-parent"));
+		String[] args = new String[] { "--thin.root=target/thin/test",
+				"--thin.dryrun=true", "--thin.archive=src/test/resources/apps/snapshots",
 				"--debug" };
 		ThinJarLauncher.main(args);
 		assertThat(new File("target/thin/test/repository").exists()).isTrue();
@@ -62,10 +80,12 @@ public class ThinJarLauncherTests {
 	}
 
 	@Test
-	public void overrideSnapshotRepository() throws Exception {
-		FileSystemUtils.deleteRecursively(new File("target/thin/test/repository/org/springframework/spring-core"));
+	public void declareSnapshotRepository() throws Exception {
+		FileSystemUtils.deleteRecursively(
+				new File("target/thin/test/repository/org/springframework/spring-core"));
 		String[] args = new String[] { "--thin.root=target/thin/test",
-				"--thin.dryrun=true", "--thin.archive=src/test/resources/apps/snapshots",
+				"--thin.dryrun=true",
+				"--thin.archive=src/test/resources/apps/snapshots-with-repos",
 				"--debug" };
 		ThinJarLauncher.main(args);
 		assertThat(new File("target/thin/test/repository").exists()).isTrue();
