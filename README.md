@@ -213,7 +213,25 @@ thinResolvePrepare {
 }
 ```
 
-## APPENDIX: Creating the Metadata
+## Command Line Options
+
+You can set a variety of options on the command line with system properties (`-D...`).
+
+| Option | Default | Description |
+|--------|---------|-------------|
+| thin.main | Start-Class in MANIFEST.MF| The main class to launch (for a Spring Boot app, usually the one with `@SpringBootApplication`)|
+| thin.dryrun | false | Only resolve and download the dependencies. Don't run any main class. N.B. any value other than "false" (even empty) is true. |
+| thin.classpath | false | Only print the classpath. Don't run and main class.  N.B. any value other than "false" (even empty) is true. |
+| thin.root | `${user.home}/.m2/repository` | The location of the local jar cache, laid out as a maven repository. |
+| thin.archive | the same as the target archive | The archive to launch. Can be used to launch a JAR file that was build with a different version of the thin launcher, for instance, or a fat jar built by Spring Boot without the thin launcher. |
+| thin.parent | `<empty>` | A parent archive to use for dependency management and common classpath entries. If you run two apps with the same parent, they will have a classpath that is the same, reading from left to right, until they actually differ. |
+| thin.location | `file:.,classpath:/` | The path to thin properties files (as per `thin.name`), as a comma-separated list of resource locations (directories). These locations plus relative /META-INF will be searched. |
+| thin.name | "thin" | The name of the properties file to search for dependency specifications and overrides. |
+| thin.profile |<empty> | Comma-separated list of profiles to use to locate thin properties. E.g. if `thin.profile=foo` the launcher searches for `thin.properties` and `thin-foo.properties`. |
+| thin.parentLast | true | Flag to say that the class loader is "parent last" (i.e. the system class loader will be used as a fallback, instead of the default). This is the opposite of a "standard" JDK class laoder, but similar to what is normally used in web containers and application servers. |
+| thin.useBootLoader | false | Flag to say that the parent class loader should be the boot class loader not the "system" class loader. The boot loader normally includes the JDK classes, but not the target archive, nor any agent jars added on the command line. |
+
+## APPENDIX: Alternatives for Creating the Metadata
 
 ### Maven
 

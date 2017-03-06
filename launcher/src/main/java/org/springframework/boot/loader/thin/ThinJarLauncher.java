@@ -99,6 +99,20 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 	 */
 	public static final String THIN_PROFILE = "thin.profile";
 
+	/**
+	 * Flag to say that classloader should be parent last (default true). You need it to
+	 * be parent last if the target archive contains classes in the root, and you want to
+	 * also use a Java agent (because the agent and the app classes have to be all on the
+	 * classpath).
+	 */
+	public static final String THIN_PARENT_LAST = "thin.parentLast";
+
+	/**
+	 * Flag to say that classloader parent shoudl be the boot loader, not the system class
+	 * loader.
+	 */
+	public static final String THIN_USE_BOOT_LOADER = "thin.useBootLoader";
+
 	private StandardEnvironment environment = new StandardEnvironment();
 	private boolean debug;
 
@@ -202,9 +216,20 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 
 	@Override
 	protected ClassLoader createClassLoader(URL[] urls) throws Exception {
-		return new LaunchedURLClassLoader(
+		ClassLoader parent = getClass().getClassLoader();
+		if (!"false".equals(environment
+				.resolvePlaceholders("${" + THIN_USE_BOOT_LOADER + ":false}"))) {
+			parent = parent.getParent();
+		}
+		ThinJarClassLoader loader = new ThinJarClassLoader(
 				ArchiveUtils.addNestedClasses(getArchive(), urls, "BOOT-INF/classes/"),
-				getClass().getClassLoader().getParent());
+				parent);
+		if (!"true".equals(
+				environment.resolvePlaceholders("${" + THIN_PARENT_LAST + ":true}"))) {
+			// Use a traditional parent first class loader
+			loader.setParentLast(false);
+		}
+		return loader;
 	}
 
 	@Override
@@ -272,6 +297,48 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 			return System.getProperty(key);
 		}
 		return System.getenv(key.replace(".", "_").toUpperCase());
+	}
+
+	private static class ThinJarClassLoader extends LaunchedURLClassLoader {
+
+		private boolean parentLast = true;
+
+		public ThinJarClassLoader(URL[] urls, ClassLoader parent) {
+			super(urls, parent);
+		}
+
+		public void setParentLast(boolean parentLast) {
+			this.parentLast = parentLast;
+		}
+
+		@Override
+		public URL getResource(String name) {
+
+			URL url = null;
+
+			if (!parentLast) {
+				url = getParent().getResource(name);
+				if (url != null) {
+					return (url);
+				}
+			}
+
+			url = findResource(name);
+			if (url != null) {
+				return (url);
+			}
+
+			if (parentLast) {
+				url = getParent().getResource(name);
+				if (url != null) {
+					return (url);
+				}
+			}
+
+			return (null);
+
+		}
+
 	}
 
 }
