@@ -100,16 +100,16 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 	public static final String THIN_PROFILE = "thin.profile";
 
 	/**
-	 * Flag to say that classloader should be parent last (default true). You need it to
-	 * be parent last if the target archive contains classes in the root, and you want to
-	 * also use a Java agent (because the agent and the app classes have to be all on the
-	 * classpath).
+	 * Flag to say that classloader should be parent last (default false). You may need it
+	 * to be true if the target archive contains classes in the root, and you want to also
+	 * use a Java agent (because the agent and the app classes have to be all on the
+	 * classpath). Some agents work with the default settngs though.
 	 */
 	public static final String THIN_PARENT_LAST = "thin.parentLast";
 
 	/**
-	 * Flag to say that classloader parent shoudl be the boot loader, not the system class
-	 * loader.
+	 * Flag to say that classloader parent should be the boot loader, not the system class
+	 * loader. Default true;
 	 */
 	public static final String THIN_USE_BOOT_LOADER = "thin.useBootLoader";
 
@@ -217,17 +217,17 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 	@Override
 	protected ClassLoader createClassLoader(URL[] urls) throws Exception {
 		ClassLoader parent = getClass().getClassLoader();
-		if (!"false".equals(environment
-				.resolvePlaceholders("${" + THIN_USE_BOOT_LOADER + ":false}"))) {
+		if (!"true".equals(environment
+				.resolvePlaceholders("${" + THIN_USE_BOOT_LOADER + ":true}"))) {
 			parent = parent.getParent();
 		}
 		ThinJarClassLoader loader = new ThinJarClassLoader(
 				ArchiveUtils.addNestedClasses(getArchive(), urls, "BOOT-INF/classes/"),
 				parent);
-		if (!"true".equals(
-				environment.resolvePlaceholders("${" + THIN_PARENT_LAST + ":true}"))) {
-			// Use a traditional parent first class loader
-			loader.setParentLast(false);
+		if (!"false".equals(
+				environment.resolvePlaceholders("${" + THIN_PARENT_LAST + ":false}"))) {
+			// Use a (non-traditional) parent last class loader
+			loader.setParentLast(true);
 		}
 		return loader;
 	}
@@ -301,7 +301,7 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 
 	private static class ThinJarClassLoader extends LaunchedURLClassLoader {
 
-		private boolean parentLast = true;
+		private boolean parentLast = false;
 
 		public ThinJarClassLoader(URL[] urls, ClassLoader parent) {
 			super(urls, parent);
