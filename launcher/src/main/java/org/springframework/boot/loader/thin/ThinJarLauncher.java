@@ -216,7 +216,9 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 
 	@Override
 	protected ClassLoader createClassLoader(URL[] urls) throws Exception {
-		ClassLoader parent = getClass().getClassLoader();
+		// Use the system classloader (the one that the JVM started with), not the one
+		// from this class:
+		ClassLoader parent = ClassLoader.getSystemClassLoader();
 		if ("true".equals(
 				environment.resolvePlaceholders("${" + THIN_PARENT_BOOT + ":true}"))) {
 			parent = parent.getParent();
@@ -312,6 +314,26 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 
 		public void setParentFirst(boolean parentFirst) {
 			this.parentFirst = parentFirst;
+		}
+
+		@Override
+		protected Class<?> loadClass(String name, boolean resolve)
+				throws ClassNotFoundException {
+			synchronized (getClassLoadingLock(name)) {
+				// First, check if the class has already been loaded
+				Class<?> c = findLoadedClass(name);
+				if (c == null) {
+					try {
+						if (!parentFirst) {
+							return findClass(name);
+						}
+					}
+					catch (ClassNotFoundException e) {
+					}
+					return super.loadClass(name, resolve);
+				}
+				return c;
+			}
 		}
 
 		@Override

@@ -24,6 +24,8 @@ import java.io.InputStreamReader;
 
 import org.assertj.core.api.Condition;
 import org.junit.After;
+import org.junit.Assume;
+import org.junit.Before;
 import org.junit.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -35,6 +37,22 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class OtherMavenIT {
 
 	private Process started;
+
+	private String launcherJar;
+
+	@Before
+	public void init() {
+		File dir = new File("../../launcher/target/");
+		if (!dir.exists()) {
+			return;
+		}
+		for (File build : dir.listFiles()) {
+			if (build.getName().startsWith("spring-boot-thin-launcher")
+					&& build.getName().endsWith(".jar")) {
+				launcherJar = build.getAbsolutePath();
+			}
+		}
+	}
 
 	@After
 	public void after() {
@@ -61,6 +79,20 @@ public class OtherMavenIT {
 				"-noverify", "-XX:TieredStopAtLevel=1",
 				"-Djava.security.egd=file:/dev/./urandom", "-jar",
 				"../other/target/other-0.0.1-SNAPSHOT.jar", "--server.port=0");
+		builder.redirectErrorStream(true);
+		started = builder.start();
+		String output = output(started.getInputStream(), "Started LauncherApplication");
+		assertThat(output).contains("Started LauncherApplication");
+	}
+
+	@Test
+	public void runOtherJar() throws Exception {
+		Assume.assumeTrue("Launcher jar not found", launcherJar != null);
+		ProcessBuilder builder = new ProcessBuilder(Utils.javaCommand(), "-Xmx128m",
+				"-noverify", "-XX:TieredStopAtLevel=1",
+				"-Djava.security.egd=file:/dev/./urandom", "-jar",
+				"-Dthin.archive=../other/target/other-0.0.1-SNAPSHOT.jar", launcherJar,
+				"--server.port=0");
 		builder.redirectErrorStream(true);
 		started = builder.start();
 		String output = output(started.getInputStream(), "Started LauncherApplication");
