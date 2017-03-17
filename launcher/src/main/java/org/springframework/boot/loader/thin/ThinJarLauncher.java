@@ -292,13 +292,15 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 		catch (AccessControlException e) {
 			// ignore
 		}
-		SimpleCommandLinePropertySource commandArgs = (SimpleCommandLinePropertySource) environment
-				.getPropertySources().get("commandArgs");
-		for (String key : commandArgs.getPropertyNames()) {
-			String name = key.toString();
-			if (name.startsWith("thin.properties.")) {
-				name = name.substring("thin.properties.".length());
-				properties.setProperty(name, commandArgs.getProperty(key.toString()));
+		if (environment.getPropertySources().contains("commandArgs")) {
+			SimpleCommandLinePropertySource commandArgs = (SimpleCommandLinePropertySource) environment
+					.getPropertySources().get("commandArgs");
+			for (String key : commandArgs.getPropertyNames()) {
+				String name = key.toString();
+				if (name.startsWith("thin.properties.")) {
+					name = name.substring("thin.properties.".length());
+					properties.setProperty(name, commandArgs.getProperty(key.toString()));
+				}
 			}
 		}
 		return properties;
