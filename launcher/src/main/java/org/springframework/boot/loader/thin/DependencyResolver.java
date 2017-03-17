@@ -48,7 +48,9 @@ import org.apache.maven.model.locator.ModelLocator;
 import org.apache.maven.model.validation.DefaultModelValidator;
 import org.apache.maven.model.validation.ModelValidator;
 import org.apache.maven.project.DefaultProjectBuildingRequest;
+import org.apache.maven.project.DependencyResolutionResult;
 import org.apache.maven.project.ProjectBuilder;
+import org.apache.maven.project.ProjectBuildingException;
 import org.apache.maven.project.ProjectBuildingRequest;
 import org.apache.maven.project.ProjectBuildingResult;
 import org.apache.maven.repository.internal.DefaultArtifactDescriptorReader;
@@ -160,10 +162,27 @@ public class DependencyResolver {
 				ProjectBuildingResult result = projectBuilder
 						.build(new PropertiesModelSource(properties, resource), request);
 				DependencyResolver.globals = null;
-				return runtime(result.getDependencyResolutionResult().getDependencies());
+				DependencyResolutionResult dependencies = result
+						.getDependencyResolutionResult();
+				if (!dependencies.getUnresolvedDependencies().isEmpty()) {
+					StringBuilder builder = new StringBuilder();
+					for (Dependency dependency : dependencies
+							.getUnresolvedDependencies()) {
+						List<Exception> errors = dependencies
+								.getResolutionErrors(dependency);
+						for (Exception exception : errors) {
+							if (builder.length() > 0) {
+								builder.append("\n");
+							}
+							builder.append(exception.getMessage());
+						}
+					}
+					throw new RuntimeException(builder.toString());
+				}
+				return runtime(dependencies.getDependencies());
 			}
 		}
-		catch (Exception e) {
+		catch (ProjectBuildingException | NoLocalRepositoryManagerException e) {
 			throw new IllegalStateException("Cannot build model", e);
 		}
 	}

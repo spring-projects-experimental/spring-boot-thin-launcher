@@ -6,7 +6,9 @@ import java.util.Properties;
 
 import org.assertj.core.api.Condition;
 import org.eclipse.aether.graph.Dependency;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.FileSystemResource;
@@ -17,6 +19,9 @@ import org.springframework.core.io.support.PropertiesLoaderUtils;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class DependencyResolverTests {
+
+	@Rule
+	public ExpectedException expected = ExpectedException.none();
 
 	private DependencyResolver resolver = DependencyResolver.instance();
 
@@ -163,6 +168,16 @@ public class DependencyResolverTests {
 		// pom changes spring-context
 		assertThat(dependencies).filteredOn("artifact.artifactId", "spring-context")
 				.first().is(version("4.3.5.RELEASE"));
+	}
+
+	@Test
+	public void missing() throws Exception {
+		// LogUtils.setLogLevel(Level.DEBUG);
+		Resource resource = new ClassPathResource("apps/missing/pom.xml");
+		expected.expect(RuntimeException.class);
+		expected.expectMessage("spring-web:jar:X.X.X");
+		List<Dependency> dependencies = resolver.dependencies(resource);
+		assertThat(dependencies.size()).isGreaterThan(20);
 	}
 
 	static Condition<Dependency> version(final String version) {
