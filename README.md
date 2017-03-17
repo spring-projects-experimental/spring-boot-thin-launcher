@@ -1,57 +1,66 @@
-Prototype "thin" jar launcher for java apps. See https://github.com/spring-projects/spring-boot/issues/1813 for more discussion and ideas.
-
-TODO:
-
-* [X] Support the wrapper as a layout in Spring Boot build plugins
-* [X] Extract `AetherEngine` and re-use it in Spring Boot CLI(*)
-* [X] Close old PR and send a new one for custom layouts in build plugin
-* [X] Deploy jars to snapshot repo at repo.spring.io
-* [X] Make it easy to override the dependencies at runtime (e.g. rolling upgrades of library jars for security patches)
-* [X] Add a "dry run" or "download only" feature so grab the dependencies and warm up the local cache, but not run the app
-* [X] Hone the dependencies in the launcher a bit (some optional stuff probably still there)
-* [X] Either autogenerate the `thin.properties` or find a way to model the pom without a lot of extra machinery
-* [X] Worry about the other stuff on the classpath of the launcher (e.g. spring-core)
-* [X] Make it work in Cloud Foundry
-* [ ] Work with Ben to make it a nice experience in Cloud Foundry
-* [X] Support for boms
-* [X] Support for exclusions
-* [ ] Support for configuring launcher via manifest and/or properties file
-* [X] Support for configuring wrapper via env vars  and/or properties file
-* [X] Generate `thin.properties` during build (e.g. to support Gradle)
-* [X] Experiment with "container" apps and multi-tenant/ephemeral child contexts
-* [X] Deployment time support for the dry run to assist with CI pipelines
-
-(*) Implemented in Spring Boot, not in this project. Subsequently ripped out anyway and replaced with `maven-core`.
+A "thin" jar launcher for java apps. See https://github.com/spring-projects/spring-boot/issues/1813 for more discussion and ideas.
 
 ## Getting Started
 
-Build this project locally:
+The thin-launcher provides its own custom layout for the Spring Boot
+plugins. If this layout is used then the jar built by Spring Boot will
+be executable and thin.
 
-```
-$ ./mvnw clean install
+Build a Spring Boot application and add the layout. In Maven this
+means adding it to the Spring Boot plugin declaration:
+
+```xml
+<plugin>
+	<groupId>org.springframework.boot</groupId>
+	<artifactId>spring-boot-maven-plugin</artifactId>
+	<version>${spring-boot.version}</version>
+	<dependencies>
+		<dependency>
+			<groupId>org.springframework.boot.experimental</groupId>
+			<artifactId>spring-boot-thin-layout</artifactId>
+			<version>${wrapper.version}</version>
+		</dependency>
+	</dependencies>
+</plugin>
 ```
 
-Then run the "app" jar:
+and in Gradle there is a plugin as well as the layout:
 
-```
-$ java -jar ./app/target/*.jar
+```groovy
+buildscript {
+	ext {
+		springBootVersion = '1.5.2.RELEASE'
+		wrapperVersion = '1.0.0.BUILD-SNAPSHOT'
+	}
+	repositories {
+		mavenLocal()
+		mavenCentral()
+	}
+	dependencies {
+		classpath("org.springframework.boot.experimental:spring-boot-thin-gradle-plugin:${wrapperVersion}")
+		classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+	}
+}
+apply plugin: 'org.springframework.boot.experimental.thin-launcher'
 ```
 
-(It starts an empty Spring Boot app with Tomcat.)
+If you look at the jar file produced by the build you will see that it
+is "thin" (a few KB), but executable with `java -jar ...`.
+
 
 ## How does it Work?
 
-Inspect the "app" jar. It is just a regular jar file with the app
-classes in it and two extra features:
+Inspect the app jar that you built (or one of the samples in this
+project) and notice that it is only a few KB. It is just a regular jar
+file with the app classes in it and two extra features:
 
 1. The `ThinJarWrapper` class has been added.
-2. Either a `pom.xml` or a `META-INF/thin.properties` which lists the dependencies of the app.
+2. Either a `pom.xml` and/or a `META-INF/thin.properties` which lists the dependencies of the app.
 
-When the app runs the main method is in the `ThinJarWrapper`. Its job
-is to download another jar file that you just built (the "launcher"),
-or locate it in your local Maven repo if it can. The wrapper downloads
-the launcher (if it needs to), or else uses the cached version in your
-local Maven repository.
+When the app runs the main method per the manifest is the
+`ThinJarWrapper`. Its job is to download another jar file (the
+"launcher"). The wrapper downloads the launcher (if it needs to), or
+else uses the cached version in your local Maven repository.
 
 The launcher then takes over and reads the `pom.xml` (if present) and
 the `thin.properties`, downloading the dependencies (and all
@@ -80,11 +89,13 @@ This will download all the dependencies to `${thin.root}/repository`,
 and look for Maven settings in `${thin.root}/settings.xml`.
 
 You can also do a "dry run", just to warm up the cache and not run the
-app, by setting a System property "thin.dryrun" (to any value). In
-fact, since you don't need the application code for this (except the
+app, by setting a System property or command line argument
+"thin.dryrun" (to any value except "false"). In fact, since you don't
+need the application code for this (except the
 `META-INF/thin.properties`), you could run only the launcher, or the
-wrapper, which might be a useful trick for laying down a file system
-layer in a container image, for example.
+wrapper whioch is contained in the launcher for convenience. This is a
+useful trick for laying down a file system layer in a container image,
+for example.
 
 > NOTE: options for the `ThinJarLauncher` that are listed as
 > `-Dthin.*` can also be provided as command line arguments
@@ -106,34 +117,19 @@ change the local file name (defaults to `thin`). There is also a
 last so they take precedence. You can exclude and remove dependencies
 by prepending a key in the properties file with `exclusions.`.
 
-## Packaging
+NOTE: You can add or override `thin.properties` entries on the command
+line or with System properties using key names in `thin.properties.*`
+(the prefix `thin.properties.` is stripped).
 
-The thin-launcher provides its own custom layout for the Spring Boot
-plugins. If this layout is used then the jar built by Spring Boot will
-be executable and thin.
+## Build Tools
 
 ### Maven
 
-```xml
-			<plugin>
-				<groupId>org.springframework.boot</groupId>
-				<artifactId>spring-boot-maven-plugin</artifactId>
-				<version>${spring-boot.version}</version>
-				<dependencies>
-					<dependency>
-						<groupId>org.springframework.boot.experimental</groupId>
-						<artifactId>spring-boot-thin-layout</artifactId>
-						<version>${wrapper.version}</version>
-					</dependency>
-				</dependencies>
-			</plugin>
-```
-
-There is also a Maven plugin which can be used to do the dry run
-(download and cache the dependencies) for the current project, or for
-any project that has an executable thin jar in the same format. The
-"app" sample in this repo declares this plugin and inserts it into
-the "package" lifecycle:
+In addition to the Spring Boot layout there is an optional Maven
+plugin which can be used to do the dry run (download and cache the
+dependencies) for the current project, or for any project that has an
+executable thin jar in the same format. The "app" sample in this repo
+declares this plugin and inserts it into the "package" lifecycle:
 
 ```xml
 <plugin>
@@ -168,25 +164,7 @@ build to run both apps if you felt like it.
 
 ### Gradle
 
-```groovy
-buildscript {
-	ext {
-		springBootVersion = '1.5.0.BUILD-SNAPSHOT'
-		wrapperVersion = '0.0.1.BUILD-SNAPSHOT'
-	}
-	repositories {
-		mavenLocal()
-		mavenCentral()
-	}
-	dependencies {
-		classpath("org.springframework.boot.experimental:spring-boot-thin-gradle-plugin:${wrapperVersion}")
-		classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
-	}
-}
-apply plugin: 'org.springframework.boot.experimental.thin-launcher'
-```
-
-With this plugin in place to generate the thin jar, the result is an executable jar with a footprint of about 8kb:
+With the plugin in place to generate the thin jar, the result is an executable jar with a footprint of about 8kb:
 
 ```
 $ cd samples/simple
@@ -234,6 +212,25 @@ You can set a variety of options on the command line with system properties (`-D
 | `trace` | false | Super verbose logging of all activity during the dependency resolution and launch process. |
 
 Any other `thin.*` properties are used by the launcher to override or supplement the ones from `thin.properties`, so you can add additional individual dependencies on the command line using `thin.dependencies.*`.
+
+## Building
+
+To build this project locally, use the maven wrapper in the top level
+
+```
+$ ./mvnw clean install
+```
+
+Then run the "app" jar:
+
+```
+$ java -jar ./app/target/*.jar
+```
+
+(It starts an empty Spring Boot app with Tomcat.)
+
+You can also build the samples independently.
+
 
 ## APPENDIX: Alternatives for Creating the Metadata
 

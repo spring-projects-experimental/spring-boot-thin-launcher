@@ -18,8 +18,10 @@ package org.springframework.boot.loader.thin;
 
 import java.io.File;
 import java.net.URL;
+import java.security.AccessControlException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -269,9 +271,37 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 		if (StringUtils.hasText(root)) {
 			resolver.setRoot(root);
 		}
+		resolver.setOverrides(getSystemProperties());
 		List<Archive> archives = resolver.resolve(parentArchive, getArchive(), name,
 				profiles);
 		return archives;
+	}
+
+	private Properties getSystemProperties() {
+		Properties properties = new Properties();
+		try {
+			Properties system = System.getProperties();
+			for (Object key : system.keySet()) {
+				String name = key.toString();
+				if (name.startsWith("thin.properties.")) {
+					name = name.substring("thin.properties.".length());
+					properties.setProperty(name, system.getProperty(key.toString()));
+				}
+			}
+		}
+		catch (AccessControlException e) {
+			// ignore
+		}
+		SimpleCommandLinePropertySource commandArgs = (SimpleCommandLinePropertySource) environment
+				.getPropertySources().get("commandArgs");
+		for (String key : commandArgs.getPropertyNames()) {
+			String name = key.toString();
+			if (name.startsWith("thin.properties.")) {
+				name = name.substring("thin.properties.".length());
+				properties.setProperty(name, commandArgs.getProperty(key.toString()));
+			}
+		}
+		return properties;
 	}
 
 	@Override

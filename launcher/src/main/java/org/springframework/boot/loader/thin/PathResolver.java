@@ -55,6 +55,8 @@ public class PathResolver {
 
 	private String root;
 
+	private Properties overrides = new Properties();
+
 	public PathResolver(DependencyResolver engine) {
 		this.engine = engine;
 	}
@@ -65,6 +67,11 @@ public class PathResolver {
 
 	public void setRoot(String root) {
 		this.root = root;
+	}
+
+	public void setOverrides(Properties overrides) {
+		this.overrides = overrides;
+
 	}
 
 	public List<Archive> resolve(Archive archive, String name, String... profiles) {
@@ -176,7 +183,12 @@ public class PathResolver {
 		if (root != null) {
 			properties.setProperty("thin.root", root);
 		}
+		addOverrideProperties(properties);
 		return properties;
+	}
+
+	private void addOverrideProperties(Properties properties) {
+		properties.putAll(overrides);
 	}
 
 	private Properties loadThinProperties(Properties props, Archive archive, String name,
