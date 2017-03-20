@@ -48,7 +48,7 @@ public class OtherMavenIT {
 		}
 		for (File build : dir.listFiles()) {
 			if (build.getName().startsWith("spring-boot-thin-launcher")
-					&& build.getName().endsWith(".jar")) {
+					&& build.getName().endsWith("-exec.jar")) {
 				launcherJar = build.getAbsolutePath();
 			}
 		}

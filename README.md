@@ -30,7 +30,7 @@ and in Gradle there is a plugin as well as the layout:
 buildscript {
 	ext {
 		springBootVersion = '1.5.2.RELEASE'
-		wrapperVersion = '1.0.0.BUILD-SNAPSHOT'
+		wrapperVersion = '1.0.0.RC1'
 	}
 	repositories {
 		mavenLocal()
