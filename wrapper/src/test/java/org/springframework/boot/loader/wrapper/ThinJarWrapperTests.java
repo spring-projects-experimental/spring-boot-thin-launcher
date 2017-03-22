@@ -96,14 +96,19 @@ public class ThinJarWrapperTests {
 		String value = null;
 		for (Entry<String, String> entry : System.getenv().entrySet()) {
 			if (entry.getKey().contains("_")) {
-				key = entry.getKey();
-				value = entry.getValue();
+				String relaxedKey = entry.getKey().toLowerCase().replace("_", ".");
+				// since ThinJarWrapper gives system properties precedence, we only want
+				// an env var whose key is not also in relaxed form as a system property
+				if (System.getProperty(relaxedKey) == null) {
+					key = relaxedKey;
+					value = entry.getValue();
+				}
 				break;
 			}
 		}
 		if (key != null) {
 			assertEquals(value,
-					ThinJarWrapper.getProperty(key.toLowerCase().replace("_", ".")));
+					ThinJarWrapper.getProperty(key));
 		}
 		else {
 			System.err.println("WARN: no testable env var");
