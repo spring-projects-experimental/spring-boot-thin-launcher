@@ -1,5 +1,3 @@
-import org.gradle.internal.jvm.Jvm;
-
 buildscript {
 	ext {
 		springBootVersion = '1.5.1.RELEASE'
@@ -18,34 +16,20 @@ buildscript {
 }
 
 apply plugin: 'java'
+apply plugin: 'maven'
 apply plugin: 'eclipse'
 apply plugin: 'org.springframework.boot'
 
-task libs << {
-	def file = new File('build/resources/main/META-INF/dependencies.properties')
-	file.text=''
-	configurations.runtime.dependencies.each { def version = it.version ? ":${it.version}" : ""; file << "dependencies.${it.name}=${it.group}:${it.name}${version}\n" }
-	configurations.compile.dependencies.each { def version = it.version ? ":${it.version}" : "";file << "dependencies.${it.name}=${it.group}:${it.name}${version}\n" }
+task createPom {
+	doLast {
+		pom {
+			withXml(dependencyManagement.pomConfigurer)
+		}.writeTo("build/resources/main/META-INF/maven/${project.group}/${project.name}/pom.xml")
+	}
 }
 
-jar {
-	baseName = 'app'
-	version = '0.0.1-SNAPSHOT'
-}
-
-task(prepareResolve, type: Copy) {
-	dependsOn = [bootRepackage]
-	from jar.archivePath
-	into "${buildDir}/thin/root"
-}
-
-task(resolve, type: Exec) {
-	dependsOn = [prepareResolve]
-	workingDir "${buildDir}/thin/root"
-	commandLine Jvm.current().javaExecutable
-	args "-Dthin.root=.", "-Dthin.dryrun", "-jar", jar.archiveName
-}
-
+group = 'com.example'
+version = '0.0.1-SNAPSHOT'
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
@@ -61,4 +45,4 @@ dependencies {
 	testCompile('org.springframework.boot:spring-boot-starter-test')
 }
 
-jar.dependsOn = [libs]
+jar.dependsOn = [createPom]

@@ -24,7 +24,7 @@ means adding it to the Spring Boot plugin declaration:
 </plugin>
 ```
 
-and in Gradle there is a plugin as well as the layout:
+and in Gradle
 
 ```groovy
 buildscript {
@@ -37,12 +37,30 @@ buildscript {
 		mavenCentral()
 	}
 	dependencies {
-		classpath("org.springframework.boot.experimental:spring-boot-thin-gradle-plugin:${wrapperVersion}")
+		classpath("org.springframework.boot.experimental:spring-boot-thin-gradle-layout:${wrapperVersion}")
 		classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
 	}
 }
-apply plugin: 'org.springframework.boot.experimental.thin-launcher'
 ```
+
+In Gradle you also need to generate a `pom.xml` (unless you want to maintain it by hand). You can do that with the "maven" plugin, for example:
+
+```groovy
+apply plugin: 'maven'
+
+task createPom {
+	doLast {
+		pom {
+			withXml(dependencyManagement.pomConfigurer)
+		}.writeTo("build/resources/main/META-INF/maven/${project.group}/${project.name}/pom.xml")
+	}
+}
+group = 'com.example'
+version = '0.0.1-SNAPSHOT'
+jar.dependsOn = [createPom]
+```
+
+The generated pom can go in the root of the jar, or in the normal maven place (which is what is configured in the sample above).
 
 If you look at the jar file produced by the build you will see that it
 is "thin" (a few KB), but executable with `java -jar ...`.
@@ -164,16 +182,24 @@ build to run both apps if you felt like it.
 
 ### Gradle
 
-With the plugin in place to generate the thin jar, the result is an executable jar with a footprint of about 8kb:
+The same features are available to Gradle users by adding a plugin:
 
-```
-$ cd samples/simple
-$ gradle build
-$ java -jar build/libs/simple-0.0.1-SNAPSHOT.jar
+```groovy
+buildscript {
+    ...
+    dependencies {
+        classpath("org.springframework.boot.experimental:spring-boot-thin-gradle-plugin:${wrapperVersion}")
+        ...
+    }
+}
+
+...
+apply plugin: 'org.springframework.boot.experimental.thin-launcher'
+
 ```
 
 A "dry run" can be executed in Gradle by calling the "thinResolve"
-task (defined by the plugin above), e.g.
+task defined by the plugin, e.g.
 
 ```
 $ cd samples/simple
@@ -231,80 +257,6 @@ $ java -jar ./app/target/*.jar
 
 You can also build the samples independently.
 
-
-## APPENDIX: Alternatives for Creating the Metadata
-
-### Maven
-
-A `pom.xml` works just fine to drive the dependency resolution, so
-Maven projects can just rely on that. If you want to generate a
-properties file there are a few options.
-
-There's an existing maven plugin that can list dependencies into a
-properties file. We could support it's format as well as or instead of
-thin.properties. Example:
-
-```xml
-			<plugin>
-				<groupId>org.apache.servicemix.tooling</groupId>
-				<artifactId>depends-maven-plugin</artifactId>
-				<executions>
-					<execution>
-						<id></id>
-						<phase>prepare-package</phase>
-						<goals>
-							<goal>generate-depends-file</goal>
-						</goals>
-						<inherited>false</inherited>
-						<configuration>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-```
-
-Also there is the `effective-pom`, which is easy to generate and can be transformed using XSLT (for example).
-
-### Gradle
-
-There doesn't seem to be an equivalent plugin in Gradle land, so the
-thin launcher plugin creates the `thin.properties` file. It is
-activated just by putting it in the classpath and then applying the
-plugin (as in the example above).
-
-### Generating a POM
-
-Instead of the `thin.properties` you can generate a pom in Gradle:
-
-```groovy
-apply plugin: 'maven'
-
-task writePom << {
-	pom {}.withXml{ 
-		dependencyManagement.pomConfigurer.configurePom (it.asNode())
-	}.writeTo("$buildDir/resources/main/pom.xml")
-}
-
-jar.dependsOn = [writePom]
-```
-
-There are some problems with the generated poms (e.g. exclusions are
-not generated correctly). Using the dependency management section of
-the build config works a little better, e.g instead of this:
-
-```groovy
-configurations { compile.exclude module: 'spring-boot-starter-tomcat' }
-```
-
-(per the Spring Boot user guide), use this:
-
-```groovy
-dependencyManagement {
-	dependencies {
-		dependency("org.springframework.boot:spring-boot-starter-web:${springBootVersion}") { exclude 'org.springframework.boot:spring-boot-starter-tomcat' }
-	}
-}
-```
 
 ## Classpath Computation
 

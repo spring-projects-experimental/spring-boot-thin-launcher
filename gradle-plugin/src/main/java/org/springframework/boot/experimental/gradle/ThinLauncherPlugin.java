@@ -23,12 +23,8 @@ import org.gradle.api.Action;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 import org.gradle.api.Task;
-import org.gradle.api.plugins.JavaPlugin;
-import org.gradle.api.plugins.JavaPluginConvention;
 import org.gradle.api.tasks.Copy;
 import org.gradle.api.tasks.Exec;
-import org.gradle.api.tasks.SourceSetContainer;
-import org.gradle.api.tasks.TaskContainer;
 import org.gradle.internal.jvm.Jvm;
 import org.gradle.jvm.tasks.Jar;
 
@@ -44,15 +40,8 @@ import org.gradle.jvm.tasks.Jar;
  */
 public class ThinLauncherPlugin implements Plugin<Project> {
 
+	@Override
 	public void apply(final Project project) {
-		project.getPlugins().withType(JavaPlugin.class, new Action<JavaPlugin>() {
-
-			@Override
-			public void execute(JavaPlugin plugin) {
-				createLibPropertiesTask(project);
-			}
-
-		});
 		project.getTasks().withType(Jar.class, new Action<Jar>() {
 
 			@Override
@@ -85,34 +74,6 @@ public class ThinLauncherPlugin implements Plugin<Project> {
 						jar.getArchiveName()));
 			}
 		});
-	}
-
-	private void createLibPropertiesTask(final Project project) {
-		TaskContainer taskContainer = project.getTasks();
-		taskContainer.create("generateLibProperties",
-				GenerateLauncherPropertiesTask.class,
-				new Action<GenerateLauncherPropertiesTask>() {
-
-					@Override
-					public void execute(
-							GenerateLauncherPropertiesTask libPropertiesTask) {
-						configureLibPropertiesTask(libPropertiesTask, project);
-					}
-
-				});
-
-	}
-
-	private void configureLibPropertiesTask(
-			GenerateLauncherPropertiesTask libPropertiesTask, Project project) {
-		libPropertiesTask.setConfiguration(project.getConfigurations()
-				.getByName(JavaPlugin.RUNTIME_CONFIGURATION_NAME));
-		SourceSetContainer sourceSets = project.getConvention()
-				.getPlugin(JavaPluginConvention.class).getSourceSets();
-		File resourcesDir = sourceSets.getByName("main").getOutput().getResourcesDir();
-		libPropertiesTask.setOutput(new File(resourcesDir, "META-INF/thin.properties"));
-		project.getTasks().getByName(JavaPlugin.JAR_TASK_NAME)
-				.dependsOn(libPropertiesTask);
 	}
 
 }

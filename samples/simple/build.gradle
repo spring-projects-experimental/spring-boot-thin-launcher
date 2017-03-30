@@ -21,10 +21,16 @@ apply plugin: 'spring-boot'
 apply plugin: 'org.springframework.boot.experimental.thin-launcher'
 apply plugin: 'maven'
 
-jar {
-	baseName = 'simple'
-	version = '0.0.1-SNAPSHOT'
+task createPom {
+	doLast {
+		pom {
+			withXml(dependencyManagement.pomConfigurer)
+		}.writeTo("build/resources/main/META-INF/maven/${project.group}/${project.name}/pom.xml")
+	}
 }
+
+group = 'com.example'
+version = '0.0.1-SNAPSHOT'
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
@@ -54,3 +60,5 @@ dependencyManagement {
 		mavenBom "org.springframework.cloud:spring-cloud-dependencies:Camden.RELEASE"
 	}
 }
+
+jar.dependsOn = [createPom]
