@@ -4,7 +4,7 @@
 
 	<groupId>org.springframework.boot.experimental</groupId>
 	<artifactId>spring-boot-thin-launcher-parent</artifactId>
-	<version>1.0.0.RELEASE</version>
+	<version>1.0.1.BUILD-SNAPSHOT</version>
 	<packaging>pom</packaging>
 	<name>Thin Launcher Parent</name>
 	<description>Tools for working with "thin" executable jars that can download their own dependendies, either at runtime or build time</description>

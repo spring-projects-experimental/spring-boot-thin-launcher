@@ -1,4 +1,4 @@
-A "thin" jar launcher for java apps. See https://github.com/spring-projects/spring-boot/issues/1813 for more discussion and ideas.
+A "thin" jar launcher for java apps. Version 1.0.0.RELEASE is in Maven Central. See https://github.com/spring-projects/spring-boot/issues/1813 for more discussion and ideas.
 
 ## Getting Started
 
@@ -30,7 +30,7 @@ and in Gradle
 buildscript {
 	ext {
 		springBootVersion = '1.5.2.RELEASE'
-		wrapperVersion = '1.0.0.RELEASE'
+		wrapperVersion = '1.0.1.BUILD-SNAPSHOT'
 	}
 	repositories {
 		mavenLocal()
