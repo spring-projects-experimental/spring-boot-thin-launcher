@@ -16,7 +16,6 @@
 	</parent>
 
 	<modules>
-		<module>capsule-app</module>
 		<module>app</module>
 		<module>other</module>
 		<module>simple</module>	

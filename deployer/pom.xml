@@ -5,7 +5,7 @@
 
 	<groupId>org.springframework.cloud</groupId>
 	<artifactId>spring-cloud-deployer-thin</artifactId>
-	<version>1.0.0.BUILD-SNAPSHOT</version>
+	<version>1.0.0.RELEASE</version>
 	<packaging>jar</packaging>
 
 	<name>Spring Cloud Deployer Thin</name>
@@ -14,13 +14,13 @@
 	<parent>
 		<groupId>org.springframework.boot.experimental</groupId>
 		<artifactId>spring-boot-thin-launcher-parent</artifactId>
-		<version>1.0.0.BUILD-SNAPSHOT</version>
+		<version>1.0.0.RELEASE</version>
 	</parent>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-		<wrapper.version>1.0.0.BUILD-SNAPSHOT</wrapper.version>
+		<wrapper.version>1.0.0.RELEASE</wrapper.version>
 		<spring-boot.version>1.5.2.RELEASE</spring-boot.version>
 		<deployer.version>1.1.1.RELEASE</deployer.version>
 	</properties>
