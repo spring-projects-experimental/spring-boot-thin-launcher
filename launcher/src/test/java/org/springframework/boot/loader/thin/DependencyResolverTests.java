@@ -81,6 +81,16 @@ public class DependencyResolverTests {
 	}
 
 	@Test
+	public void excluded() throws Exception {
+		Resource resource = new ClassPathResource("apps/excluded/pom.xml");
+		List<Dependency> dependencies = resolver.dependencies(resource,
+				PropertiesLoaderUtils.loadProperties(new ClassPathResource(
+						"apps/excluded/META-INF/thin.properties")));
+		assertThat(dependencies).filteredOn("artifact.artifactId", "tomcat-embed-core")
+				.isEmpty();
+	}
+
+	@Test
 	public void pomInJar() throws Exception {
 		Resource resource = new UrlResource(
 				"jar:file:src/test/resources/app-with-web-in-lib-properties.jar!/META-INF/maven/com.example/app/pom.xml");

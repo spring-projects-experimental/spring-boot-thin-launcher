@@ -130,8 +130,18 @@ class ThinPropertiesModelProcessor extends DefaultModelProcessor {
 				else if (name.startsWith("exclusions.")) {
 					String pom = properties.getProperty(name);
 					Exclusion exclusion = exclusion(pom);
+					Dependency target = dependency(artifact(pom));
+					Dependency excluded = null;
 					for (Dependency dependency : model.getDependencies()) {
 						dependency.addExclusion(exclusion);
+						if (dependency.getGroupId().equals(target.getGroupId())
+								&& dependency.getArtifactId()
+										.equals(target.getArtifactId())) {
+							excluded = dependency;
+						}
+					}
+					if (excluded != null) {
+						model.getDependencies().remove(excluded);
 					}
 				}
 			}

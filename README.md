@@ -217,6 +217,18 @@ thinResolvePrepare {
 }
 ```
 
+## Deploying to Cloud Foundry (or Heroku)
+
+An app with the thin launcher doesn't match the requirements for Cloud Foundry to run it automatically successfully. It detects the main method just fine, but then fails because there is no identifiable "lilb" directory. You can work around that by adding a "lib" directory to your jar.
+
+Or you can use a custom buildpack:
+
+```
+$ cf push myapp -p target/demo-0.0.1.jar -b https://github.com/dsyer/java-buildpack.git
+```
+
+This fork of the `java-buildpack` not only fixes the missing lib directory, it also downloads and caches the dependencies during staging (in the "compile" step of the buildpack), so you don't incur that cost on startup.
+
 ## Command Line Options
 
 You can set a variety of options on the command line with system properties (`-D...`). The `thin.*` properties are all removed from the command line before calling the main class, so the main class doesn't have to know how it was launched.
