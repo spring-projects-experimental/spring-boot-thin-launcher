@@ -35,6 +35,7 @@ public class ContextRunner {
 	private Thread runThread;
 	private boolean running = false;
 	private Throwable error;
+	private long timeout = 120000;
 
 	public void run(final String source, final Map<String, Object> properties,
 			final String... args) {
@@ -54,7 +55,7 @@ public class ContextRunner {
 		});
 		this.runThread.start();
 		try {
-			this.runThread.join();
+			this.runThread.join(timeout);
 			this.running = context != null && context.isRunning();
 		}
 		catch (InterruptedException e) {

@@ -196,7 +196,17 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 				builder.append(separator);
 			}
 			log.info("Archive: {}", archive);
-			builder.append(new File(archive.getUrl().toURI()).getCanonicalPath());
+			String uri = archive.getUrl().toURI().toString();
+			if (uri.startsWith("jar:")) {
+				uri = uri.substring("jar:".length());
+			}
+			if (uri.startsWith("file:")) {
+				uri = uri.substring("file:".length());
+			}
+			if (uri.endsWith("!/")) {
+				uri = uri.substring(0, uri.length()-"!/".length());
+			}
+			builder.append(new File(uri).getCanonicalPath());
 		}
 		return builder.toString();
 	}
