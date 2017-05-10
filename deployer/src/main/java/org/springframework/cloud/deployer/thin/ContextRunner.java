@@ -21,6 +21,8 @@ import java.util.Map;
 
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.core.env.MapPropertySource;
+import org.springframework.core.env.StandardEnvironment;
 
 /**
  * Utility class for starting a Spring Boot application in a separate thread. Best used
@@ -44,8 +46,12 @@ public class ContextRunner {
 			@Override
 			public void run() {
 				try {
-					context = new SpringApplicationBuilder(source).properties(properties)
-							.run(args);
+					StandardEnvironment environment = new StandardEnvironment();
+					environment.getPropertySources().addAfter(
+							StandardEnvironment.SYSTEM_ENVIRONMENT_PROPERTY_SOURCE_NAME,
+							new MapPropertySource("appDeployer", properties));
+					context = new SpringApplicationBuilder(source)
+							.environment(environment).run(args);
 				}
 				catch (Throwable ex) {
 					error = ex;
