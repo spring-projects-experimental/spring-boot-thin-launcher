@@ -1,4 +1,4 @@
-A "thin" jar launcher for java apps. Version 1.0.0.RELEASE is in Maven Central. See https://github.com/spring-projects/spring-boot/issues/1813 for more discussion and ideas.
+A "thin" jar launcher for java apps. Version 1.0.2.RELEASE is in Maven Central. See https://github.com/spring-projects/spring-boot/issues/1813 for more discussion and ideas.
 
 ## Getting Started
 
@@ -76,7 +76,7 @@ file with the app classes in it and two extra features:
 2. Either a `pom.xml` and/or a `META-INF/thin.properties` which lists the dependencies of the app.
 
 When the app runs the main method per the manifest is the
-`ThinJarWrapper`. Its job is to download another jar file (the
+`ThinJarWrapper`. Its job is to locate another jar file (the
 "launcher"). The wrapper downloads the launcher (if it needs to), or
 else uses the cached version in your local Maven repository.
 
@@ -87,8 +87,8 @@ all on the classpath. It then runs the application's own main method
 with that class loader. The `pom.xml` can be in the root of the jar or
 in the standard `META-INF/maven` location.
 
-The app jar in the demo is build using the Spring Boot plugin and a
-custom `Layout` (so it only builds with Spring Boot 1.5.x),
+The app jar in the demo is built using the Spring Boot plugin and a
+custom `Layout` (so it only builds with Spring Boot 1.5.x and above).
 
 ## Caching
 
@@ -219,7 +219,7 @@ thinResolvePrepare {
 
 ## Deploying to Cloud Foundry (or Heroku)
 
-An app with the thin launcher doesn't match the requirements for Cloud Foundry to run it automatically successfully. It detects the main method just fine, but then fails because there is no identifiable "lilb" directory. You can work around that by adding a "lib" directory to your jar.
+An app with the thin launcher doesn't match the requirements for Cloud Foundry to run it automatically successfully. It detects the main method just fine, but then fails because there is no identifiable "lib" directory. You can work around that by adding a "lib" directory to your jar.
 
 Or you can use a custom buildpack:
 
@@ -249,7 +249,7 @@ You can set a variety of options on the command line with system properties (`-D
 | `debug` | false | Flag to switch on some slightly verbose logging during the dependency resolution. |
 | `trace` | false | Super verbose logging of all activity during the dependency resolution and launch process. |
 
-Any other `thin.*` properties are used by the launcher to override or supplement the ones from `thin.properties`, so you can add additional individual dependencies on the command line using `thin.dependencies.*`.
+Any other `thin.properties.*` properties are used by the launcher to override or supplement the ones from `thin.properties`, so you can add additional individual dependencies on the command line using `thin.properties.dependencies.*` (for instance).
 
 ## Building
 
