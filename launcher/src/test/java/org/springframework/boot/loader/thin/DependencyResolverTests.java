@@ -81,6 +81,17 @@ public class DependencyResolverTests {
 	}
 
 	@Test
+	public void provided() throws Exception {
+		Resource resource = new ClassPathResource("apps/provided/pom.xml");
+		List<Dependency> dependencies = resolver.dependencies(resource,
+				PropertiesLoaderUtils.loadProperties(new ClassPathResource(
+						"apps/provided/META-INF/thin.properties")));
+		assertThat(dependencies.size()).isGreaterThan(15);
+		assertThat(dependencies).filteredOn("artifact.artifactId", "tomcat-embed-core").first()
+				.is(version("8.5.5"));
+	}
+
+	@Test
 	public void excluded() throws Exception {
 		Resource resource = new ClassPathResource("apps/excluded/pom.xml");
 		List<Dependency> dependencies = resolver.dependencies(resource,

@@ -120,6 +120,7 @@ class ThinPropertiesModelProcessor extends DefaultModelProcessor {
 							dependency.setVersion(
 									StringUtils.hasLength(artifact.getVersion())
 											? artifact.getVersion() : null);
+							dependency.setScope("runtime");
 							replaced = true;
 						}
 					}
