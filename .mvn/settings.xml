@@ -1,6 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <settings>
-  <servers>
+   <profiles>
+	   <profile>
+		   <id>release</id>
+		   <activation><activeByDefault>true</activeByDefault></activation>
+		   <properties>
+			   <gpg.passphrase>${env.passphrase}</gpg.passphrase>
+		   </properties>
+	   </profile>
+   </profiles>
+   <servers>
     <server>
       <id>sonatype-nexus-staging</id>
       <username>${env.sonatype_username}</username>

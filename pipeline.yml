@@ -34,7 +34,7 @@ jobs:
       run:
         dir: source
         path: ./mvnw
-        args: [deploy, "-s", ".mvn/settings.xml", "-Dgpg.passphrase=${passphrase}"]
+        args: [deploy, "-s", ".mvn/settings.xml"]
     params:
       TERM: -dumb
       passphrase: {{passphrase}}
