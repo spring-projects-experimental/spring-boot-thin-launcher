@@ -238,10 +238,10 @@ You can set a variety of options on the command line with system properties (`-D
 | `thin.main` | Start-Class in MANIFEST.MF| The main class to launch (for a Spring Boot app, usually the one with `@SpringBootApplication`)|
 | `thin.dryrun` | false | Only resolve and download the dependencies. Don't run any main class. N.B. any value other than "false" (even empty) is true. |
 | `thin.classpath` | false | Only print the classpath. Don't run and main class.  N.B. any value other than "false" (even empty) is true. |
-| `thin.root | `${user.home}/.m2/repository` | The location of the local jar cache, laid out as a maven repository. |
+| `thin.root | `${user.home}/.m2` | The location of the local jar cache, laid out as a maven repository. The launcher creates a new directory here called "repository" if it doesn't exist. |
 | `thin.archive` | the same as the target archive | The archive to launch. Can be used to launch a JAR file that was build with a different version of the thin launcher, for instance, or a fat jar built by Spring Boot without the thin launcher. |
 | `thin.parent` | `<empty>` | A parent archive to use for dependency management and common classpath entries. If you run two apps with the same parent, they will have a classpath that is the same, reading from left to right, until they actually differ. |
-| `thin.location` | `file:.,classpath:/` | The path to thin properties files (as per `thin.name`), as a comma-separated list of resource locations (directories). These locations plus relative /META-INF will be searched. |
+| `thin.location` | `file:.,classpath:/` | The path to directory containing thin properties files (as per `thin.name`), as a comma-separated list of resource locations (directories). These locations plus relative /META-INF will be searched. |
 | `thin.name` | "thin" | The name of the properties file to search for dependency specifications and overrides. |
 | `thin.profile` |<empty> | Comma-separated list of profiles to use to locate thin properties. E.g. if `thin.profile=foo` the launcher searches for files called `thin.properties` and `thin-foo.properties`. |
 | `thin.parent.first` | true | Flag to say that the class loader is "parent first" (i.e. the system class loader will be used as the default). This is the "standard" JDK class loader strategy. Setting it to false is similar to what is normally used in web containers and application servers. |
@@ -250,6 +250,33 @@ You can set a variety of options on the command line with system properties (`-D
 | `trace` | false | Super verbose logging of all activity during the dependency resolution and launch process. |
 
 Any other `thin.properties.*` properties are used by the launcher to override or supplement the ones from `thin.properties`, so you can add additional individual dependencies on the command line using `thin.properties.dependencies.*` (for instance).
+
+## HOWTO Guides
+
+### How to Externalize the Properties File
+
+Example command line showing to pick up an external properties file:
+
+```
+$ cat config/thin.properties
+dependencies.spring-boot-starter-web: org.springframework.boot:spring-boot-starter-web
+$ java -jar app.jar --thin.location=file:./config
+```
+
+### How to Create a Docker File System Layer
+
+```
+FROM openjdk:8
+
+ADD app.jar app.jar
+ADD thin.properties thin.properties
+
+RUN java -jar app.jar --thin.root=/m2 --thin.dryrun
+
+ENTRYPOINT [ "sh", "-c", "java -Djava.security.egd=file:/dev/./urandom -jar app.jar --thin.root=/m2" ]
+
+EXPOSE 8080
+```
 
 ## Building
 

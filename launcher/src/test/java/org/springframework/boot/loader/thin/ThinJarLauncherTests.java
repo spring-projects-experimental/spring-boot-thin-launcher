@@ -39,6 +39,19 @@ public class ThinJarLauncherTests {
 	}
 
 	@Test
+	public void thinRoot() throws Exception {
+		FileSystemUtils.deleteRecursively(
+				new File("target/thin/test/repository/org/springframework/spring-core"));
+		String[] args = new String[] { "--thin.dryrun=true",
+				"--thin.root=target/thin/test",
+				"--thin.location=file:src/test/resources/apps/db/META-INF",
+				"--thin.archive=src/test/resources/apps", "--debug" };
+		ThinJarLauncher.main(args);
+		assertThat(new File("target/thin/test/repository/org/springframework/spring-core")
+				.exists()).isTrue();
+	}
+
+	@Test
 	public void overrideLocalRepository() throws Exception {
 		FileSystemUtils.deleteRecursively(
 				new File("target/thin/test/repository/org/springframework/spring-core"));

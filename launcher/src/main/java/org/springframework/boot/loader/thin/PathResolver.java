@@ -238,12 +238,12 @@ public class PathResolver {
 			Resource resource = resources.getResource(url)
 					.createRelative("META-INF/" + path);
 			if (resource.exists()) {
-				log.info("Loading properties from archive: " + path);
+				log.info("Loading properties from: " + resource);
 				PropertiesLoaderUtils.fillProperties(props, resource);
 			}
 			resource = resources.getResource(url).createRelative("/" + path);
 			if (resource.exists()) {
-				log.info("Loading properties from archive: " + path);
+				log.info("Loading properties from: " + resource);
 				PropertiesLoaderUtils.fillProperties(props, resource);
 			}
 			return props;
