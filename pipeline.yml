@@ -1,0 +1,35 @@
+# fly --target team login --concourse-url https://ci.spring.io --team-name "Spring Team"
+# fly --target team set-pipeline --config pipeline.yml --pipeline spring-guice --load-vars-from credentials.yml
+---
+resources:
+- name: source
+  type: git
+  source:
+    uri: https://github.com/dsyer/spring-boot-thin-launcher.git
+  
+jobs:
+- name: build
+  plan:
+  - get: source
+    trigger: true
+  - task: maven
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source: 
+          repository: springio/maven-base
+      inputs:
+        - name: source
+      run:
+        dir: source
+        path: ./mvnw
+        args: [deploy, "-s", ".mvn/settings.xml", "-Dgpg.passphrase=${passphrase}"]
+    params:
+      TERM: -dumb
+      passphrase: {{passphrase}}
+      sonatype_username: {{sonatype-username}}
+      sonatype_password: {{sonatype-password}}
+      spring_username: {{spring-username}}
+      spring_password: {{spring-password}}
+    
