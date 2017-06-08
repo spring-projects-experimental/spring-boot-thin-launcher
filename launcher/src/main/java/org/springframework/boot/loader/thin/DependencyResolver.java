@@ -24,6 +24,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
@@ -85,6 +86,7 @@ import org.eclipse.aether.resolution.ArtifactResult;
 import org.eclipse.aether.spi.connector.RepositoryConnectorFactory;
 import org.eclipse.aether.spi.connector.transport.TransporterFactory;
 import org.eclipse.aether.spi.localrepo.LocalRepositoryManagerFactory;
+import org.eclipse.aether.transport.file.FileTransporterFactory;
 import org.eclipse.aether.transport.http.HttpTransporterFactory;
 import org.eclipse.aether.util.repository.JreProxySelector;
 import org.eclipse.sisu.inject.DefaultBeanLocator;
@@ -225,7 +227,7 @@ public class DependencyResolver {
 		addRepositoryIfMissing(list, "central", "https://repo1.maven.org/maven2", true,
 				false);
 		if (properties.containsKey(ThinJarLauncher.THIN_ROOT)) {
-			addRepositoryIfMissing(list, "local", "file:///${user.home}/repository", true,
+			addRepositoryIfMissing(list, "local", "file://" + getM2RepoDirectory(), true,
 					true);
 		}
 		return list;
@@ -407,16 +409,11 @@ class DependencyResolutionModule extends AbstractModule {
 	protected void configure() {
 		bind(ModelProcessor.class).to(ThinPropertiesModelProcessor.class)
 				.in(Singleton.class);
-		// bind(ModelProcessor.class).to(DefaultModelProcessor.class).in(Singleton.class);
 		bind(ModelLocator.class).to(DefaultModelLocator.class).in(Singleton.class);
 		bind(ModelReader.class).to(DefaultModelReader.class).in(Singleton.class);
 		bind(ModelValidator.class).to(DefaultModelValidator.class).in(Singleton.class);
 		bind(RepositoryConnectorFactory.class).to(BasicRepositoryConnectorFactory.class)
 				.in(Singleton.class);
-		bind(TransporterFactory.class).annotatedWith(Names.named("http"))
-				.to(HttpTransporterFactory.class).in(Singleton.class);
-		bind(TransporterFactory.class).annotatedWith(Names.named("file"))
-				.to(HttpTransporterFactory.class).in(Singleton.class);
 		bind(ArtifactDescriptorReader.class) //
 				.to(DefaultArtifactDescriptorReader.class).in(Singleton.class);
 		bind(VersionResolver.class) //
@@ -427,6 +424,10 @@ class DependencyResolutionModule extends AbstractModule {
 				.to(SnapshotMetadataGeneratorFactory.class).in(Singleton.class);
 		bind(MetadataGeneratorFactory.class).annotatedWith(Names.named("versions")) //
 				.to(VersionsMetadataGeneratorFactory.class).in(Singleton.class);
+		bind(TransporterFactory.class).annotatedWith(Names.named("http"))
+				.to(HttpTransporterFactory.class).in(Singleton.class);
+		bind(TransporterFactory.class).annotatedWith(Names.named("file"))
+				.to(FileTransporterFactory.class).in(Singleton.class);
 	}
 
 	@Provides
@@ -450,11 +451,11 @@ class DependencyResolutionModule extends AbstractModule {
 	@Provides
 	@Singleton
 	Set<TransporterFactory> provideTransporterFactories(
-			@Named("http") TransporterFactory file,
-			@Named("file") TransporterFactory http) {
-		Set<TransporterFactory> factories = new HashSet<TransporterFactory>();
+			@Named("file") TransporterFactory file,
+			@Named("http") TransporterFactory http) {
+		Set<TransporterFactory> factories = new LinkedHashSet<TransporterFactory>();
 		factories.add(file);
-		factories.add(file);
+		factories.add(http);
 		return Collections.unmodifiableSet(factories);
 	}
 
