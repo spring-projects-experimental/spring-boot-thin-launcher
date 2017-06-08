@@ -235,6 +235,7 @@ public class PathResolver {
 
 	private Properties loadProperties(Properties props, String url, String path) {
 		try {
+			log.info("Searching for properties in: " + url);
 			Resource resource = resources.getResource(url)
 					.createRelative("META-INF/" + path);
 			if (resource.exists()) {
