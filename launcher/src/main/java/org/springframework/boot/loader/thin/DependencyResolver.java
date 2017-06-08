@@ -24,7 +24,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
@@ -53,6 +52,7 @@ import org.apache.maven.project.DependencyResolutionResult;
 import org.apache.maven.project.ProjectBuilder;
 import org.apache.maven.project.ProjectBuildingException;
 import org.apache.maven.project.ProjectBuildingRequest;
+import org.apache.maven.project.ProjectBuildingRequest.RepositoryMerging;
 import org.apache.maven.project.ProjectBuildingResult;
 import org.apache.maven.repository.internal.DefaultArtifactDescriptorReader;
 import org.apache.maven.repository.internal.DefaultVersionRangeResolver;
@@ -210,8 +210,8 @@ public class DependencyResolver {
 			throws NoLocalRepositoryManagerException {
 		DefaultProjectBuildingRequest projectBuildingRequest = new DefaultProjectBuildingRequest();
 		DefaultRepositorySystemSession session = createSession(properties);
+		projectBuildingRequest.setRepositoryMerging(RepositoryMerging.REQUEST_DOMINANT);
 		projectBuildingRequest.setRemoteRepositories(mavenRepositories(properties));
-		projectBuildingRequest.getRemoteRepositories();
 		projectBuildingRequest.setRepositorySession(session);
 		projectBuildingRequest.setProcessPlugins(false);
 		projectBuildingRequest.setBuildStartTime(new Date());
@@ -222,14 +222,14 @@ public class DependencyResolver {
 
 	private List<ArtifactRepository> mavenRepositories(Properties properties) {
 		List<ArtifactRepository> list = new ArrayList<>();
-		addRepositoryIfMissing(list, "spring-snapshots",
-				"https://repo.spring.io/libs-snapshot", true, true);
-		addRepositoryIfMissing(list, "central", "https://repo1.maven.org/maven2", true,
-				false);
 		if (properties.containsKey(ThinJarLauncher.THIN_ROOT)) {
 			addRepositoryIfMissing(list, "local", "file://" + getM2RepoDirectory(), true,
 					true);
 		}
+		addRepositoryIfMissing(list, "spring-snapshots",
+				"https://repo.spring.io/libs-snapshot", true, true);
+		addRepositoryIfMissing(list, "central", "https://repo1.maven.org/maven2", true,
+				false);
 		return list;
 	}
 
@@ -453,7 +453,8 @@ class DependencyResolutionModule extends AbstractModule {
 	Set<TransporterFactory> provideTransporterFactories(
 			@Named("file") TransporterFactory file,
 			@Named("http") TransporterFactory http) {
-		Set<TransporterFactory> factories = new LinkedHashSet<TransporterFactory>();
+		// Order is decided elsewhere (by priority)
+		Set<TransporterFactory> factories = new HashSet<TransporterFactory>();
 		factories.add(file);
 		factories.add(http);
 		return Collections.unmodifiableSet(factories);

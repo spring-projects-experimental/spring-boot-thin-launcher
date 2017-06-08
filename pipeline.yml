@@ -28,7 +28,7 @@ jobs:
       image_resource:
         type: docker-image
         source: 
-          repository: springio/maven-base
+          repository: springio/spring-ci-base
       inputs:
         - name: source
       run:
