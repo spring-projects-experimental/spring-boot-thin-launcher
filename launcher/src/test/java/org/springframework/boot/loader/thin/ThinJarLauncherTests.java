@@ -17,7 +17,9 @@ package org.springframework.boot.loader.thin;
 
 import java.io.File;
 
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 import org.springframework.util.FileSystemUtils;
 
@@ -28,6 +30,9 @@ import static org.assertj.core.api.Assertions.assertThat;
  *
  */
 public class ThinJarLauncherTests {
+
+	@Rule
+	public ExpectedException expected = ExpectedException.none();
 
 	@Test
 	public void dryrun() throws Exception {
@@ -58,6 +63,36 @@ public class ThinJarLauncherTests {
 		String[] args = new String[] { "--thin.root=target/thin/test",
 				"--thin.dryrun=true", "--thin.archive=src/test/resources/apps/basic",
 				"--debug" };
+		ThinJarLauncher.main(args);
+		assertThat(new File("target/thin/test/repository").exists()).isTrue();
+		assertThat(new File("target/thin/test/repository/org/springframework/spring-core")
+				.exists()).isTrue();
+	}
+
+	@Test
+	public void missingThinRootWithPom() throws Exception {
+		FileSystemUtils.deleteRecursively(
+				new File("target/thin/test/repository/org/springframework/spring-core"));
+		expected.expect(RuntimeException.class);
+		expected.expectMessage("spring-web:jar:X.X.X");
+		String[] args = new String[] { "--thin.root=target/thin/test",
+				"--thin.dryrun=true", "--thin.archive=src/test/resources/apps/missing",
+				"--debug" };
+		ThinJarLauncher.main(args);
+		assertThat(new File("target/thin/test/repository").exists()).isTrue();
+		assertThat(new File("target/thin/test/repository/org/springframework/spring-core")
+				.exists()).isTrue();
+	}
+
+	@Test
+	public void missingThinRootWithoutPom() throws Exception {
+		FileSystemUtils.deleteRecursively(
+				new File("target/thin/test/repository/org/springframework/spring-core"));
+		expected.expect(RuntimeException.class);
+		expected.expectMessage("nonexistent:jar:0.0.1");
+		String[] args = new String[] { "--thin.root=target/thin/test",
+				"--thin.dryrun=true",
+				"--thin.archive=src/test/resources/apps/missingthin", "--debug" };
 		ThinJarLauncher.main(args);
 		assertThat(new File("target/thin/test/repository").exists()).isTrue();
 		assertThat(new File("target/thin/test/repository/org/springframework/spring-core")
