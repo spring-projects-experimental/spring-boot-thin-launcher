@@ -141,4 +141,25 @@ public class ThinJarLauncherTests {
 				.exists()).isTrue();
 	}
 
+	@Test
+	public void settingsReadFromRoot() throws Exception {
+		String home = System.getProperty("user.home");
+		System.setProperty("user.home",
+				new File("src/test/resources/settings/local").getAbsolutePath());
+		FileSystemUtils.deleteRecursively(
+				new File("target/thin/test/repository/org/springframework/spring-core"));
+		String[] args = new String[] { "--thin.dryrun=true",
+				"--thin.archive=src/test/resources/apps/snapshots-with-repos",
+				"--debug" };
+		try {
+			ThinJarLauncher.main(args);
+		}
+		finally {
+			System.setProperty("user.home", home);
+		}
+		assertThat(new File("target/thin/test/repository").exists()).isTrue();
+		assertThat(new File("target/thin/test/repository/org/springframework/spring-core")
+				.exists()).isTrue();
+	}
+
 }

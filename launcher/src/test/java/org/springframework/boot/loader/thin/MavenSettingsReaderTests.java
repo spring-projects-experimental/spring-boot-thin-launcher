@@ -30,7 +30,8 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 public class MavenSettingsReaderTests {
 
-	private MavenSettingsReader reader = new MavenSettingsReader("src/test/resources");
+	private MavenSettingsReader reader = new MavenSettingsReader(
+			"src/test/resources/settings/proxy");
 
 	@Test
 	public void canReadSettings() {

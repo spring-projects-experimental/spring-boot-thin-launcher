@@ -29,6 +29,9 @@ import org.apache.maven.settings.crypto.DefaultSettingsDecryptionRequest;
 import org.apache.maven.settings.crypto.SettingsDecrypter;
 import org.apache.maven.settings.crypto.SettingsDecryptionResult;
 import org.eclipse.aether.DefaultRepositorySystemSession;
+import org.eclipse.aether.internal.impl.SimpleLocalRepositoryManagerFactory;
+import org.eclipse.aether.repository.LocalRepository;
+import org.eclipse.aether.repository.NoLocalRepositoryManagerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.sonatype.plexus.components.cipher.DefaultPlexusCipher;
@@ -128,6 +131,18 @@ public class MavenSettingsReader {
 
 	public static void applySettings(MavenSettings settings,
 			DefaultRepositorySystemSession session) {
+		if (settings.getLocalRepository() != null) {
+			try {
+				session.setLocalRepositoryManager(
+						new SimpleLocalRepositoryManagerFactory().newInstance(session,
+								new LocalRepository(settings.getLocalRepository())));
+			}
+			catch (NoLocalRepositoryManagerException e) {
+				throw new IllegalStateException(
+						"Cannot set local repository to " + settings.getLocalRepository(),
+						e);
+			}
+		}
 		session.setOffline(settings.getOffline());
 		session.setMirrorSelector(settings.getMirrorSelector());
 		session.setAuthenticationSelector(settings.getAuthenticationSelector());
