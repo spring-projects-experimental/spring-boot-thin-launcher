@@ -36,8 +36,6 @@ public class ThinJarLauncherTests {
 
 	@Test
 	public void dryrun() throws Exception {
-		FileSystemUtils.deleteRecursively(
-				new File("target/thin/test/repository/org/springframework/spring-core"));
 		String[] args = new String[] { "--thin.dryrun=true",
 				"--thin.archive=src/test/resources/apps/basic", "--debug" };
 		ThinJarLauncher.main(args);
