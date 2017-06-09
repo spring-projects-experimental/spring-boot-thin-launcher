@@ -1,4 +1,4 @@
-A "thin" jar launcher for java apps. Version 1.0.2.RELEASE is in Maven Central. See https://github.com/spring-projects/spring-boot/issues/1813 for more discussion and ideas.
+A "thin" jar launcher for java apps. Version 1.0.3.RELEASE is in Maven Central. See https://github.com/spring-projects/spring-boot/issues/1813 for more discussion and ideas.
 
 ## Getting Started
 
@@ -166,8 +166,8 @@ declares this plugin and inserts it into the "package" lifecycle:
 </plugin>
 ```
 
-After running the build, there is a deployable warm-cache at
-`target/thin/root` (by default):
+After running the build, there is a deployable warm-cache and a copy
+of the executable jar at `target/thin/root` (by default):
 
 ```
 $ cd samples/app
