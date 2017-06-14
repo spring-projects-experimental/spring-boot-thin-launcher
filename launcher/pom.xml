@@ -168,6 +168,10 @@
 							<pattern>com.google</pattern>
 							<shadedPattern>hidden.com.google</shadedPattern>
 						</relocation>
+						<relocation>
+							<pattern>org.apache.maven</pattern>
+							<shadedPattern>hidden.org.apache.maven</shadedPattern>
+						</relocation>
 					</relocations>
 					<filters>
 						<filter>
