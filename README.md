@@ -30,7 +30,7 @@ and in Gradle
 buildscript {
 	ext {
 		springBootVersion = '1.5.2.RELEASE'
-		wrapperVersion = '1.0.4.BUILD-SNAPSHOT'
+		wrapperVersion = '1.0.4.RELEASE'
 	}
 	repositories {
 		mavenLocal()
