@@ -257,8 +257,8 @@ You can set a variety of options on the command line with system properties (`-D
 | `thin.profile` |<empty> | Comma-separated list of profiles to use to locate thin properties. E.g. if `thin.profile=foo` the launcher searches for files called `thin.properties` and `thin-foo.properties`. |
 | `thin.parent.first` | true | Flag to say that the class loader is "parent first" (i.e. the system class loader will be used as the default). This is the "standard" JDK class loader strategy. Setting it to false is similar to what is normally used in web containers and application servers. |
 | `thin.parent.boot` | true | Flag to say that the parent class loader should be the boot class loader not the "system" class loader. The boot loader normally includes the JDK classes, but not the target archive, nor any agent jars added on the command line. |
-| `debug` | false | Flag to switch on some slightly verbose logging during the dependency resolution. |
-| `trace` | false | Super verbose logging of all activity during the dependency resolution and launch process. |
+| `thin.debug` | false | Flag to switch on some slightly verbose logging during the dependency resolution. Can also be switched on with `debug` (like in Spring Boot).|
+| `thin.trace` | false | Super verbose logging of all activity during the dependency resolution and launch process. Can also be switched on with `trace`.|
 
 Any other `thin.properties.*` properties are used by the launcher to override or supplement the ones from `thin.properties`, so you can add additional individual dependencies on the command line using `thin.properties.dependencies.*` (for instance).
 

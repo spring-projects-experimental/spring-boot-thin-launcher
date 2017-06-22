@@ -135,14 +135,14 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 		boolean classpath = !"false".equals(
 				environment.resolvePlaceholders("${" + THIN_CLASSPATH + ":false}"));
 		boolean trace = !"false"
-				.equals(environment.resolvePlaceholders("${trace:false}"));
+				.equals(environment.resolvePlaceholders("${thin.trace:${trace:false}}"));
 		if (classpath) {
 			this.debug = false;
 			LogUtils.setLogLevel(Level.OFF);
 		}
 		else {
-			this.debug = trace
-					|| !"false".equals(environment.resolvePlaceholders("${debug:false}"));
+			this.debug = trace || !"false".equals(
+					environment.resolvePlaceholders("${thin.debug:${debug:false}}"));
 		}
 		if (debug || trace) {
 			if (trace) {
@@ -204,7 +204,7 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 				uri = uri.substring("file:".length());
 			}
 			if (uri.endsWith("!/")) {
-				uri = uri.substring(0, uri.length()-"!/".length());
+				uri = uri.substring(0, uri.length() - "!/".length());
 			}
 			builder.append(new File(uri).getCanonicalPath());
 		}
