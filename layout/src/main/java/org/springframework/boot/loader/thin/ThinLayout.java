@@ -16,6 +16,7 @@
 
 package org.springframework.boot.loader.thin;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 
 import org.springframework.boot.loader.tools.CustomLoaderLayout;
@@ -52,6 +53,7 @@ public class ThinLayout implements Layout, CustomLoaderLayout {
 	@Override
 	public void writeLoadedClasses(LoaderClassesWriter writer) throws IOException {
 		writer.writeLoaderClasses("META-INF/loader/spring-boot-thin-wrapper.jar");
+		writer.writeEntry("lib/.empty", new ByteArrayInputStream(new byte[0]));
 	}
 
 }

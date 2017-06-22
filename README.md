@@ -219,7 +219,7 @@ thinResolvePrepare {
 
 ## Deploying to Cloud Foundry (or Heroku)
 
-An app with the thin launcher doesn't match the requirements for Cloud Foundry to run it automatically successfully. It detects the main method just fine, but then fails because there is no identifiable "lib" directory. You can work around that by adding a "lib" directory to your jar.
+The thin launcher (1.0.4 and above) adds an empty "lib" entry to the jar so that it matches the default detection algorithm for a Java application with the standard Java buildpack.
 
 Or you can use a custom buildpack:
 
@@ -227,7 +227,18 @@ Or you can use a custom buildpack:
 $ cf push myapp -p target/demo-0.0.1.jar -b https://github.com/dsyer/java-buildpack.git
 ```
 
-This fork of the `java-buildpack` not only fixes the missing lib directory, it also downloads and caches the dependencies during staging (in the "compile" step of the buildpack), so you don't incur that cost on startup.
+This fork of the `java-buildpack` not only adds the missing lib directory if it isn't there, it also downloads and caches the dependencies during staging (in the "compile" step of the buildpack), so you don't incur that cost on startup.
+
+You can also save the staging cost, and resolve the dependencies locally before you push the app.
+
+```
+$ java -jar target/demo-0.0.1.jar --thin.dryrun --thin.root=target/thin/.m2
+$ (cd target/thin; jar -xf ../demo-0.0.1,jar)
+$ cf push myapp -p target/thin
+```
+
+(Note the use of a subdirectory `.m2` to hold the local repository cache - this works because the root is the default `HOME` directory in a Cloud Foundry app.)
+
 
 ## Command Line Options
 
