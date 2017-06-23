@@ -56,4 +56,14 @@ public class MavenSettingsReaderTests {
 				.isEqualTo("password");
 	}
 
+	@Test
+	public void repositoryConfiguration() {
+		reader = new MavenSettingsReader("src/test/resources/settings/profile");
+		DefaultRepositorySystemSession session = MavenRepositorySystemUtils.newSession();
+		MavenSettings settings = reader.readSettings();
+		assertThat(settings.getActiveProfiles().get(0).getRepositories().get(0))
+				.isNotNull();
+		MavenSettingsReader.applySettings(settings, session);
+	}
+
 }

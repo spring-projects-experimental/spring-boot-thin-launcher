@@ -70,8 +70,34 @@ public class MavenSettingsReader {
 		return new MavenSettings(settings, decrypted);
 	}
 
+	public static void applySettings(MavenSettings settings,
+			DefaultRepositorySystemSession session) {
+		if (settings.getLocalRepository() != null) {
+			try {
+				session.setLocalRepositoryManager(
+						new SimpleLocalRepositoryManagerFactory().newInstance(session,
+								new LocalRepository(settings.getLocalRepository())));
+			}
+			catch (NoLocalRepositoryManagerException e) {
+				throw new IllegalStateException(
+						"Cannot set local repository to " + settings.getLocalRepository(),
+						e);
+			}
+		}
+		session.setOffline(settings.getOffline());
+		session.setMirrorSelector(settings.getMirrorSelector());
+		session.setAuthenticationSelector(settings.getAuthenticationSelector());
+		session.setProxySelector(settings.getProxySelector());
+	}
+
 	private Settings loadSettings() {
 		File settingsFile = new File(this.homeDir, ".m2/settings.xml");
+		if (settingsFile.exists()) {
+			log.info("Reading settings from: " + settingsFile);
+		}
+		else {
+			log.info("No settings found at: " + settingsFile);
+		}
 		SettingsBuildingRequest request = new DefaultSettingsBuildingRequest();
 		request.setUserSettingsFile(settingsFile);
 		request.setSystemProperties(System.getProperties());
@@ -127,26 +153,6 @@ public class MavenSettingsReader {
 			}
 		}
 
-	}
-
-	public static void applySettings(MavenSettings settings,
-			DefaultRepositorySystemSession session) {
-		if (settings.getLocalRepository() != null) {
-			try {
-				session.setLocalRepositoryManager(
-						new SimpleLocalRepositoryManagerFactory().newInstance(session,
-								new LocalRepository(settings.getLocalRepository())));
-			}
-			catch (NoLocalRepositoryManagerException e) {
-				throw new IllegalStateException(
-						"Cannot set local repository to " + settings.getLocalRepository(),
-						e);
-			}
-		}
-		session.setOffline(settings.getOffline());
-		session.setMirrorSelector(settings.getMirrorSelector());
-		session.setAuthenticationSelector(settings.getAuthenticationSelector());
-		session.setProxySelector(settings.getProxySelector());
 	}
 
 }

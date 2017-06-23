@@ -141,15 +141,16 @@ public class ThinJarLauncherTests {
 
 	@Test
 	public void settingsReadFromRoot() throws Exception {
+		DependencyResolver.close();
 		String home = System.getProperty("user.home");
 		System.setProperty("user.home",
 				new File("src/test/resources/settings/local").getAbsolutePath());
-		FileSystemUtils.deleteRecursively(
-				new File("target/thin/test/repository/org/springframework/spring-core"));
-		String[] args = new String[] { "--thin.dryrun=true",
-				"--thin.archive=src/test/resources/apps/snapshots-with-repos",
-				"--debug" };
 		try {
+			FileSystemUtils.deleteRecursively(new File(
+					"target/thin/test/repository/org/springframework/spring-core"));
+			String[] args = new String[] { "--thin.dryrun=true",
+					"--thin.archive=src/test/resources/apps/snapshots-with-repos",
+					"--debug" };
 			ThinJarLauncher.main(args);
 		}
 		finally {
@@ -157,6 +158,43 @@ public class ThinJarLauncherTests {
 		}
 		assertThat(new File("target/thin/test/repository").exists()).isTrue();
 		assertThat(new File("target/thin/test/repository/org/springframework/spring-core")
+				.exists()).isTrue();
+	}
+
+	@Test
+	public void repositorySettingsMissing() throws Exception {
+		DependencyResolver.close();
+		FileSystemUtils.deleteRecursively(
+				new File("target/thin/test/repository/com/github/jitpack"));
+		String[] args = new String[] { "--thin.root=target/thin/test",
+				"--thin.dryrun=true", "--thin.archive=src/test/resources/apps/jitpack",
+				"--debug" };
+		expected.expect(RuntimeException.class);
+		expected.expectMessage("maven-simple:jar:1.1");
+		ThinJarLauncher.main(args);
+		assertThat(new File("target/thin/test/repository/com/github/jitpack/maven-simple")
+				.exists()).isFalse();
+	}
+
+	@Test
+	public void repositorySettingsPresent() throws Exception {
+		DependencyResolver.close();
+		String home = System.getProperty("user.home");
+		System.setProperty("user.home",
+				new File("src/test/resources/settings/profile").getAbsolutePath());
+		try {
+			FileSystemUtils.deleteRecursively(
+					new File("target/thin/test/repository/com/github/jitpack"));
+			String[] args = new String[] { "--thin.root=target/thin/test",
+					"--thin.dryrun=true",
+					"--thin.archive=src/test/resources/apps/jitpack", "--debug" };
+			ThinJarLauncher.main(args);
+		}
+		finally {
+			System.setProperty("user.home", home);
+		}
+		assertThat(new File("target/thin/test/repository").exists()).isTrue();
+		assertThat(new File("target/thin/test/repository/com/github/jitpack/maven-simple")
 				.exists()).isTrue();
 	}
 

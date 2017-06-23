@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
@@ -60,6 +61,8 @@ import org.apache.maven.repository.internal.DefaultVersionResolver;
 import org.apache.maven.repository.internal.MavenRepositorySystemUtils;
 import org.apache.maven.repository.internal.SnapshotMetadataGeneratorFactory;
 import org.apache.maven.repository.internal.VersionsMetadataGeneratorFactory;
+import org.apache.maven.settings.Profile;
+import org.apache.maven.settings.Repository;
 import org.codehaus.plexus.ContainerConfiguration;
 import org.codehaus.plexus.DefaultContainerConfiguration;
 import org.codehaus.plexus.DefaultPlexusContainer;
@@ -110,8 +113,14 @@ public class DependencyResolver {
 
 	private RepositorySystem repositorySystem;
 
+	private MavenSettings settings;
+
 	public static DependencyResolver instance() {
 		return instance;
+	}
+
+	public static void close() {
+		instance = new DependencyResolver();
 	}
 
 	private DependencyResolver() {
@@ -145,6 +154,7 @@ public class DependencyResolver {
 						throw new IllegalStateException("Cannot create container", e);
 					}
 					this.container = container;
+					this.settings = new MavenSettingsReader().readSettings();
 				}
 			}
 		}
@@ -212,12 +222,29 @@ public class DependencyResolver {
 		DefaultRepositorySystemSession session = createSession(properties);
 		projectBuildingRequest.setRepositoryMerging(RepositoryMerging.REQUEST_DOMINANT);
 		projectBuildingRequest.setRemoteRepositories(mavenRepositories(properties));
+		projectBuildingRequest.getRemoteRepositories()
+				.addAll(mavenRepositories(settings));
 		projectBuildingRequest.setRepositorySession(session);
 		projectBuildingRequest.setProcessPlugins(false);
 		projectBuildingRequest.setBuildStartTime(new Date());
 		projectBuildingRequest.setUserProperties(properties);
 		projectBuildingRequest.setSystemProperties(System.getProperties());
 		return projectBuildingRequest;
+	}
+
+	private Collection<? extends ArtifactRepository> mavenRepositories(
+			MavenSettings settings) {
+		List<ArtifactRepository> list = new ArrayList<>();
+		for (Profile profile : settings.getActiveProfiles()) {
+			for (Repository repository : profile.getRepositories()) {
+				addRepositoryIfMissing(list, repository.getId(), repository.getUrl(),
+						repository.getReleases() != null
+								? repository.getReleases().isEnabled() : true,
+						repository.getSnapshots() != null
+								? repository.getSnapshots().isEnabled() : false);
+			}
+		}
+		return list;
 	}
 
 	private List<ArtifactRepository> mavenRepositories(Properties properties) {
@@ -300,8 +327,7 @@ public class DependencyResolver {
 	}
 
 	private void applySettings(DefaultRepositorySystemSession session) {
-		MavenSettingsReader.applySettings(new MavenSettingsReader().readSettings(),
-				session);
+		MavenSettingsReader.applySettings(settings, session);
 	}
 
 	private LocalRepository localRepository(Properties properties) {
