@@ -70,6 +70,7 @@
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>exec-maven-plugin</artifactId>
+				<configuration><skip>${skipExec}</skip></configuration>
 				<executions>
 					<execution>
 						<id>app</id>
@@ -119,5 +120,19 @@
 			</plugin>
 		</plugins>
 	</build>
+
+	<profiles>
+		<profile>
+			<id>skipTestRun</id>
+			<activation>
+				<property>
+					<name>skipTests</name>
+				</property>
+			</activation>
+			<properties>
+				<skipExec>true</skipExec>
+			</properties>
+		</profile>
+	</profiles>
 
 </project>
