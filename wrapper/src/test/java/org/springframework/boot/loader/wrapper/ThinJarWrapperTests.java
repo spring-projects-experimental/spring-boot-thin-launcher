@@ -25,6 +25,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import org.springframework.util.FileSystemUtils;
+
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
@@ -40,6 +42,7 @@ public class ThinJarWrapperTests {
 	@Before
 	public void open() {
 		out = System.out;
+		FileSystemUtils.deleteRecursively(new File("target/repository"));
 	}
 
 	@After
@@ -77,6 +80,12 @@ public class ThinJarWrapperTests {
 	}
 
 	@Test
+	public void testMavenLocalOverrideOnCommandLine() throws Exception {
+		ThinJarWrapper wrapper = new ThinJarWrapper("--thin.root=target");
+		assertEquals("target/repository", wrapper.mavenLocal());
+	}
+
+	@Test
 	public void testLaunch() throws Exception {
 		System.setProperty("thin.root", "target");
 		System.setProperty("thin.repo", new File("./src/test/resources/repository")
@@ -110,7 +119,7 @@ public class ThinJarWrapperTests {
 		}
 		if (key != null) {
 			assertEquals("Wrong value for key=" + key, value,
-					ThinJarWrapper.getProperty(key));
+					new ThinJarWrapper().getProperty(key));
 		}
 		else {
 			System.err.println("WARN: no testable env var");

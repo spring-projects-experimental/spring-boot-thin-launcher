@@ -120,8 +120,9 @@ for example.
 > (`--thin.*` per Spring Boot conventions), or as environment
 > variables (`THIN_*` capitalized and underscored). The command line
 > options are removed before passing down to the Boot app. The
-> `ThinJarWrapper` accepts system properties or environment variables
-> for its (smaller) set of optional arguments.
+> `ThinJarWrapper` also accepts system properties, environment
+> variables or command line flags for its (smaller) set of optional
+> arguments.
 
 ## Upgrades and Profiles
 

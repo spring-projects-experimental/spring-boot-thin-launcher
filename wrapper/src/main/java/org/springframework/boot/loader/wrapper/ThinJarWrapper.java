@@ -23,6 +23,7 @@ import java.io.OutputStream;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -68,22 +69,41 @@ public class ThinJarWrapper {
 
 	private Library library;
 
+	private Properties args;
+
 	public static void main(String[] args) throws Exception {
 		Class<?> launcher = ThinJarWrapper.class;
-		if (getProperty(THIN_ARCHIVE) == null) {
+		ThinJarWrapper wrapper = new ThinJarWrapper(args);
+		if (wrapper.getProperty(THIN_ARCHIVE) == null) {
 			System.setProperty(THIN_ARCHIVE, launcher.getProtectionDomain()
 					.getCodeSource().getLocation().toURI().toString());
 		}
-		new ThinJarWrapper().launch(args);
+		wrapper.launch(args);
 	}
 
-	ThinJarWrapper() {
+	ThinJarWrapper(String... args) {
+		this.args = properties(args);
 		this.library = library();
+	}
+
+	private static Properties properties(String[] args) {
+		Properties properties = new Properties();
+		for (String arg : args) {
+			if (arg.startsWith("--") && arg.length() > 2) {
+				arg = arg.substring(2);
+				String[] split = arg.split("=");
+				properties.setProperty(split[0].trim(),
+						split.length > 1 ? split[1].trim() : "");
+			}
+		}
+		return properties;
 	}
 
 	Library library() {
 		String coordinates = getProperty(THIN_LIBRARY);
-		return new Library(coordinates == null ? DEFAULT_LIBRARY : coordinates);
+		String repo = getProperty(THIN_REPO);
+		repo = repo != null ? repo : "https://repo.spring.io/libs-snapshot";
+		return new Library(coordinates == null ? DEFAULT_LIBRARY : coordinates, repo);
 	}
 
 	private void launch(String... args) throws Exception {
@@ -134,7 +154,10 @@ public class ThinJarWrapper {
 		return home == null ? "." : home;
 	}
 
-	static String getProperty(String key) {
+	String getProperty(String key) {
+		if (args != null && args.getProperty(key) != null) {
+			return args.getProperty(key);
+		}
 		if (System.getProperty(key) != null) {
 			return System.getProperty(key);
 		}
@@ -149,9 +172,11 @@ public class ThinJarWrapper {
 		private String version;
 		private String classifier;
 		private String extension;
+		private String repo;
 
-		public Library(String coordinates) {
+		public Library(String coordinates, String repo) {
 			this.coordinates = coordinates;
+			this.repo = repo;
 			Pattern p = Pattern
 					.compile("([^: ]+):([^: ]+)(:([^: ]*)(:([^: ]+))?)?:([^: ]+)");
 			Matcher m = p.matcher(coordinates);
@@ -188,7 +213,7 @@ public class ThinJarWrapper {
 					result = downloadFromUrl(getUrl(defaultPath), target);
 				}
 				if (!result) {
-					result = downloadFromUrl(repo(), target);
+					result = downloadFromUrl(this.repo, target);
 				}
 				if (!result) {
 					throw new IllegalStateException(
@@ -237,11 +262,6 @@ public class ThinJarWrapper {
 				}
 			}
 			return false;
-		}
-
-		private String repo() {
-			String repo = getProperty(THIN_REPO);
-			return repo != null ? repo : "https://repo.spring.io/libs-snapshot";
 		}
 
 		public String getCoordinates() {
