@@ -323,6 +323,10 @@ public class DependencyResolver {
 					: new CompositeProxySelector(Arrays.asList(existing, fallback));
 			session.setProxySelector(selector);
 		}
+		if (properties.containsKey("thin.offline")
+				&& !"false".equals(properties.getProperty("thin.offline"))) {
+			session.setOffline(true);
+		}
 		return session;
 	}
 

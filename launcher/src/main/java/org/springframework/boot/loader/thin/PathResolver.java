@@ -57,6 +57,8 @@ public class PathResolver {
 
 	private Properties overrides = new Properties();
 
+	private boolean offline;
+
 	public PathResolver(DependencyResolver engine) {
 		this.engine = engine;
 	}
@@ -72,6 +74,10 @@ public class PathResolver {
 	public void setOverrides(Properties overrides) {
 		this.overrides = overrides;
 
+	}
+
+	public void setOffline(boolean offline) {
+		this.offline = offline;
 	}
 
 	public List<Archive> resolve(Archive archive, String name, String... profiles) {
@@ -182,6 +188,9 @@ public class PathResolver {
 		loadThinProperties(properties, this.locations, name, profiles);
 		if (root != null) {
 			properties.setProperty("thin.root", root);
+		}
+		if (offline) {
+			properties.setProperty("thin.offline", "true");
 		}
 		addOverrideProperties(properties);
 		return properties;

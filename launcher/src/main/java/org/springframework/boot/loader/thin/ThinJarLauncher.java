@@ -58,6 +58,13 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 	public static final String THIN_DRYRUN = "thin.dryrun";
 
 	/**
+	 * System property to signal offline execution (all dependencies can be resolved
+	 * locally). Defaults to "false" and any value other than "false" is equivalent to
+	 * "true".
+	 */
+	public static final String THIN_OFFLINE = "thin.offline";
+
+	/**
 	 * System property to signal a "classpath run" where dependencies are resolved but the
 	 * main method is not executed and the output is in the form of a classpath.
 	 */
@@ -270,6 +277,7 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 				.resolvePlaceholders("${" + ThinJarLauncher.THIN_PROFILE + ":}")
 				.split(",");
 		String root = environment.resolvePlaceholders("${" + THIN_ROOT + ":}");
+		String offline = environment.resolvePlaceholders("${" + THIN_OFFLINE + ":false}");
 		Archive parentArchive = null;
 		if (StringUtils.hasText(parent)) {
 			parentArchive = ArchiveUtils.getArchive(parent);
@@ -280,6 +288,9 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 		}
 		if (StringUtils.hasText(root)) {
 			resolver.setRoot(root);
+		}
+		if (!"false".equals(offline)) {
+			resolver.setOffline(true);
 		}
 		resolver.setOverrides(getSystemProperties());
 		List<Archive> archives = resolver.resolve(parentArchive, getArchive(), name,

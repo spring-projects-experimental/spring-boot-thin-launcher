@@ -162,6 +162,43 @@ public class ThinJarLauncherTests {
 	}
 
 	@Test
+	public void commandLineOffline() throws Exception {
+		settingsReadFromRoot();
+		DependencyResolver.close();
+		String[] args = new String[] { "--thin.root=target/thin/test",
+				"--thin.dryrun=true", "--thin.offline=true",
+				"--thin.archive=src/test/resources/apps/snapshots-with-repos",
+				"--debug" };
+		FileSystemUtils.deleteRecursively(
+				new File("target/thin/test/repository/org/springframework/spring-core"));
+		expected.expect(RuntimeException.class);
+		expected.expectMessage("spring-core");
+		ThinJarLauncher.main(args);
+	}
+
+	@Test
+	public void settingsOffline() throws Exception {
+		settingsReadFromRoot();
+		DependencyResolver.close();
+		String home = System.getProperty("user.home");
+		System.setProperty("user.home",
+				new File("src/test/resources/settings/offline").getAbsolutePath());
+		try {
+			String[] args = new String[] { "--thin.root=target/thin/test",
+					"--thin.dryrun=true",
+					"--thin.archive=src/test/resources/apps/snapshots-with-repos",
+					"--debug" };
+			ThinJarLauncher.main(args);
+		}
+		finally {
+			System.setProperty("user.home", home);
+		}
+		assertThat(new File("target/thin/test/repository").exists()).isTrue();
+		assertThat(new File("target/thin/test/repository/org/springframework/spring-core")
+				.exists()).isTrue();
+	}
+
+	@Test
 	public void repositorySettingsMissing() throws Exception {
 		DependencyResolver.close();
 		FileSystemUtils.deleteRecursively(
