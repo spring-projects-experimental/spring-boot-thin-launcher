@@ -31,10 +31,20 @@ jobs:
           repository: springio/spring-ci-base
       inputs:
         - name: source
+      caches:
+        - path: source/.m2
+        - path: source/.gradle
       run:
         dir: source
         path: ./mvnw
-        args: [deploy, "-s", ".mvn/settings.xml"]
+        path: sh
+        args:
+        - -c
+        - |
+          rm -rf ~/.m2 ~/.gradle
+          ln -s $(pwd)/.m2 ~/.m2
+          ln -s $(pwd)/.gradle ~/.gradle
+          ./mvnw deploy -s .mvn/settings.xml
     params:
       TERM: -dumb
       passphrase: {{passphrase}}
