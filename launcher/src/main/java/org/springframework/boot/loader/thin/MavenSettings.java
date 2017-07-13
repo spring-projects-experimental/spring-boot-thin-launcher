@@ -70,6 +70,8 @@ public class MavenSettings {
 
 	private final AuthenticationSelector authenticationSelector;
 
+	private final Map<String, org.apache.maven.artifact.repository.Authentication> repositoryAuthentications;
+
 	private final ProxySelector proxySelector;
 
 	private final String localRepository;
@@ -85,9 +87,27 @@ public class MavenSettings {
 		this.offline = settings.isOffline();
 		this.mirrorSelector = createMirrorSelector(settings);
 		this.authenticationSelector = createAuthenticationSelector(decryptedSettings);
+		this.repositoryAuthentications = createRepositoryAuthentications(decryptedSettings);
 		this.proxySelector = createProxySelector(decryptedSettings);
 		this.localRepository = settings.getLocalRepository();
 		this.activeProfiles = determineActiveProfiles(settings);
+	}
+
+	public org.apache.maven.artifact.repository.Authentication getRepositoryAuthentication(String id) {
+		return repositoryAuthentications.get(id);
+	}
+
+	private Map<String, org.apache.maven.artifact.repository.Authentication> createRepositoryAuthentications(SettingsDecryptionResult decryptedSettings){
+		Map<String, org.apache.maven.artifact.repository.Authentication> repositoryAuthentications = new HashMap<>();
+		for(Server server : decryptedSettings.getServers()){
+			org.apache.maven.artifact.repository.Authentication authentication = new org.apache.maven.artifact.repository.Authentication(
+					server.getUsername(), server.getPassword()
+			);
+			authentication.setPassphrase(server.getPassphrase());
+			authentication.setPrivateKey(server.getPrivateKey());
+			repositoryAuthentications.put(server.getId(), authentication);
+		}
+		return repositoryAuthentications;
 	}
 
 	private MirrorSelector createMirrorSelector(Settings settings) {

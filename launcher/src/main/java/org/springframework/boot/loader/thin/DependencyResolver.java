@@ -306,6 +306,7 @@ public class DependencyResolver {
 		disabled.setEnabled(false);
 		repository.setReleaseUpdatePolicy(releases ? enabled : disabled);
 		repository.setSnapshotUpdatePolicy(snapshots ? enabled : disabled);
+		repository.setAuthentication(settings.getRepositoryAuthentication(id));
 		return repository;
 	}
 
