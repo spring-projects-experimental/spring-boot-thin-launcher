@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.HashMap;
 
 import org.apache.maven.model.ActivationFile;
 import org.apache.maven.model.ActivationOS;
