@@ -243,24 +243,52 @@ public class PathResolver {
 	}
 
 	private Properties loadProperties(Properties props, String url, String path) {
+		log.info("Searching for properties in: " + url);
+		Properties added = new Properties();
 		try {
-			log.info("Searching for properties in: " + url);
 			Resource resource = resources.getResource(url)
 					.createRelative("META-INF/" + path);
 			if (resource.exists()) {
 				log.info("Loading properties from: " + resource);
-				PropertiesLoaderUtils.fillProperties(props, resource);
+				PropertiesLoaderUtils.fillProperties(added, resource);
 			}
 			resource = resources.getResource(url).createRelative("/" + path);
 			if (resource.exists()) {
 				log.info("Loading properties from: " + resource);
-				PropertiesLoaderUtils.fillProperties(props, resource);
+				PropertiesLoaderUtils.fillProperties(added, resource);
 			}
-			return props;
 		}
 		catch (Exception e) {
 			throw new IllegalStateException("Cannot load properties", e);
 		}
+		if (!merge(props, added)) {
+			throw new IllegalStateException("Cannot merge properties (inconsistent computed dependencies)");
+		}
+		return props;
+	}
+
+	private boolean merge(Properties props, Properties added) {
+		if ("true".equals(props.get("computed"))) {
+			if (!"true".equals(added.get("computed"))) {
+				// Ensure there are no added dependencies since they are not computed
+				for (Object key : added.keySet()) {
+					if (((String)key).startsWith("dependencies.")) {
+						return false;
+					}
+				}
+			}
+		} else {
+			if ("true".equals(added.get("computed"))) {
+				// Ensure there are no added dependencies since they are not computed
+				for (Object key : props.keySet()) {
+					if (((String)key).startsWith("dependencies.")) {
+						return false;
+					}
+				}
+			}
+		}
+		props.putAll(added);
+		return true;
 	}
 
 	private List<Archive> archives(List<Dependency> dependencies) {

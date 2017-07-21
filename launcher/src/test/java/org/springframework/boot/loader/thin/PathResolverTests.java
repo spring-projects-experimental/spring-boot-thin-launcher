@@ -26,11 +26,14 @@ import java.util.Properties;
 import org.eclipse.aether.artifact.Artifact;
 import org.eclipse.aether.artifact.DefaultArtifact;
 import org.eclipse.aether.graph.Dependency;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.mockito.Mockito;
 import org.springframework.boot.loader.archive.Archive;
 import org.springframework.boot.loader.archive.ExplodedArchive;
 import org.springframework.core.io.Resource;
+import org.springframework.test.util.ReflectionTestUtils;
 
 /**
  * @author Dave Syer
@@ -40,6 +43,9 @@ public class PathResolverTests {
 
 	private DependencyResolver dependencies = Mockito.mock(DependencyResolver.class);
 	private PathResolver resolver = new PathResolver(dependencies);
+
+	@Rule
+	public ExpectedException expected = ExpectedException.none();
 
 	@Test
 	public void petclinic() throws Exception {
@@ -56,6 +62,34 @@ public class PathResolverTests {
 		assertThat(result.size()).isEqualTo(2);
 		assertThat(result.get(1).getUrl()).isEqualTo(artifact.getFile().toURI().toURL());
 		// Mockito.verify(dependencies);
+	}
+
+	@Test
+	public void properties() throws Exception {
+		Archive parent = new ExplodedArchive(
+				new File("src/test/resources/apps/exclusions"));
+		Properties result = ReflectionTestUtils.invokeMethod(resolver, "getProperties",
+				parent, "thin", new String[] {});
+		assertThat(result.size()).isEqualTo(2);
+	}
+
+	@Test
+	public void propertiesPreresolved() throws Exception {
+		Archive parent = new ExplodedArchive(
+				new File("src/test/resources/apps/error-preresolved"));
+		Properties result = ReflectionTestUtils.invokeMethod(resolver, "getProperties",
+				parent, "thin", new String[] {});
+		assertThat(result.size()).isEqualTo(71);
+	}
+
+	@Test
+	public void propertiesError() throws Exception {
+		Archive parent = new ExplodedArchive(
+				new File("src/test/resources/apps/error-preresolved"));
+		expected.expect(IllegalStateException.class);
+		Properties result = ReflectionTestUtils.invokeMethod(resolver, "getProperties",
+				parent, "thin", new String[] { "error" });
+		assertThat(result.size()).isEqualTo(71);
 	}
 
 	@Test

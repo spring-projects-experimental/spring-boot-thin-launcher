@@ -386,6 +386,16 @@ $ java -jar myapp.jar --thin.profile=rapid --thin.compute > thin-super.propertie
 $ java -jar myapp.jar --thin.profile=super
 ```
 
+Note that the generated `thin.properties` in these examples contains
+the property value `computed=true`. This tells the dependency graph
+calculator that the dependencies provided do not need to have their
+transitve dependencies or versions computed. It is an error to combine
+more than one properties file if they have different values of the
+`computed` flag, if they both also contain dependencies. Note that
+this means if you have a computed profile it cannot be used when the
+jar already contains a non-computed `thin.properties` (the
+profile-less `thin.properties` is always included).
+
 ## License
 This project is Open Source software released under the
 http://www.apache.org/licenses/LICENSE-2.0.html[Apache 2.0 license].
