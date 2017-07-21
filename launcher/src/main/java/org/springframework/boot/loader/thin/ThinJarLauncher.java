@@ -23,6 +23,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
+import org.eclipse.aether.artifact.Artifact;
+import org.eclipse.aether.graph.Dependency;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -69,6 +71,13 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 	 * main method is not executed and the output is in the form of a classpath.
 	 */
 	public static final String THIN_CLASSPATH = "thin.classpath";
+
+	/**
+	 * System property to signal a "compute run" where dependencies are resolved but the
+	 * main method is not executed and the output is in the form of a thin.properties
+	 * file.
+	 */
+	public static final String THIN_COMPUTE = "thin.compute";
 
 	/**
 	 * System property holding the path to the root directory, where Maven repository and
@@ -141,6 +150,8 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 		String root = environment.resolvePlaceholders("${" + THIN_ROOT + ":}");
 		boolean classpath = !"false".equals(
 				environment.resolvePlaceholders("${" + THIN_CLASSPATH + ":false}"));
+		boolean compute = !"false"
+				.equals(environment.resolvePlaceholders("${" + THIN_COMPUTE + ":false}"));
 		boolean trace = !"false"
 				.equals(environment.resolvePlaceholders("${thin.trace:${trace:false}}"));
 		if (classpath) {
@@ -164,14 +175,26 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 			System.out.println(classpath(archives));
 			return;
 		}
+		if (compute) {
+			List<Dependency> dependencies = getDependencies();
+			System.out.println(properties(dependencies));
+			return;
+		}
+		log.info("Version: " + getVersion());
 		if (!"false".equals(
 				environment.resolvePlaceholders("${" + THIN_DRYRUN + ":false}"))) {
-			getClassPathArchives();
+			List<Archive> archives = getClassPathArchives();
 			log.info("Downloaded dependencies"
 					+ (!StringUtils.hasText(root) ? "" : " to " + root));
+			log.info("Resolved: " + archives);
 			return;
 		}
 		super.launch(args);
+	}
+
+	private static String getVersion() {
+		Package pkg = ThinJarLauncher.class.getPackage();
+		return (pkg != null ? pkg.getImplementationVersion() : null);
 	}
 
 	private String[] removeThinArgs(String[] args) {
@@ -188,6 +211,25 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 			result.add(arg);
 		}
 		return result.toArray(new String[0]);
+	}
+
+	private String properties(List<Dependency> dependencies) {
+		StringBuilder builder = new StringBuilder("computed=true\n");
+		for (Dependency dependency : dependencies) {
+			builder.append("dependencies." + dependency.getArtifact().getArtifactId()
+					+ "=" + coordinates(dependency.getArtifact()) + "\n");
+		}
+		return builder.toString();
+	}
+
+	static String coordinates(Artifact artifact) {
+		// group:artifact:extension:classifier:version
+		String classifier = artifact.getClassifier();
+		String extension = artifact.getExtension();
+		return artifact.getGroupId() + ":" + artifact.getArtifactId()
+				+ (StringUtils.hasText(extension) && !"jar".equals(extension) ? ":" + extension : "")
+				+ (StringUtils.hasText(classifier) ? ":" + classifier : "") + ":"
+				+ artifact.getVersion();
 	}
 
 	private String classpath(List<Archive> archives) throws Exception {
@@ -271,17 +313,34 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 				.resolvePlaceholders("${" + ThinJarLauncher.THIN_PARENT + ":}");
 		String name = environment
 				.resolvePlaceholders("${" + ThinJarLauncher.THIN_NAME + ":thin}");
-		String locations = environment
-				.resolvePlaceholders("${" + ThinJarLauncher.THIN_LOCATION + ":}");
 		String[] profiles = environment
 				.resolvePlaceholders("${" + ThinJarLauncher.THIN_PROFILE + ":}")
 				.split(",");
-		String root = environment.resolvePlaceholders("${" + THIN_ROOT + ":}");
-		String offline = environment.resolvePlaceholders("${" + THIN_OFFLINE + ":false}");
+		PathResolver resolver = getResolver();
 		Archive parentArchive = null;
 		if (StringUtils.hasText(parent)) {
 			parentArchive = ArchiveUtils.getArchive(parent);
 		}
+		List<Archive> archives = resolver.resolve(parentArchive, getArchive(), name,
+				profiles);
+		return archives;
+	}
+
+	protected List<Dependency> getDependencies() throws Exception {
+		String name = environment
+				.resolvePlaceholders("${" + ThinJarLauncher.THIN_NAME + ":thin}");
+		String[] profiles = environment
+				.resolvePlaceholders("${" + ThinJarLauncher.THIN_PROFILE + ":}")
+				.split(",");
+		PathResolver resolver = getResolver();
+		return resolver.extract(getArchive(), name, profiles);
+	}
+
+	private PathResolver getResolver() {
+		String locations = environment
+				.resolvePlaceholders("${" + ThinJarLauncher.THIN_LOCATION + ":}");
+		String root = environment.resolvePlaceholders("${" + THIN_ROOT + ":}");
+		String offline = environment.resolvePlaceholders("${" + THIN_OFFLINE + ":false}");
 		PathResolver resolver = new PathResolver(DependencyResolver.instance());
 		if (StringUtils.hasText(locations)) {
 			resolver.setLocations(locations.split(","));
@@ -293,9 +352,7 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 			resolver.setOffline(true);
 		}
 		resolver.setOverrides(getSystemProperties());
-		List<Archive> archives = resolver.resolve(parentArchive, getArchive(), name,
-				profiles);
-		return archives;
+		return resolver;
 	}
 
 	private Properties getSystemProperties() {

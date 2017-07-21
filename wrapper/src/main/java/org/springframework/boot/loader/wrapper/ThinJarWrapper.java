@@ -34,31 +34,31 @@ import java.util.regex.Pattern;
 public class ThinJarWrapper {
 
 	/**
-	 * System property for the root where the launcher jar is downloaded and cached (level
+	 * Property key for the root where the launcher jar is downloaded and cached (level
 	 * above /repository). Defaults to <code>${user.home}/.m2</code>.
 	 */
 	public static final String THIN_ROOT = "thin.root";
 
 	/**
-	 * System property key for the main library where the launcher class is located.
+	 * Property key for the main library where the launcher class is located.
 	 */
 	public static final String THIN_LIBRARY = "thin.library";
 
 	/**
-	 * System property key used to store location of main archive (the one that this class
+	 * Property key used to store location of main archive (the one that this class
 	 * is found in). Can also be used to run a different archive, resolving it via a URL
 	 * or a "maven://group:artifact:version".
 	 */
 	public static final String THIN_ARCHIVE = "thin.archive";
 
 	/**
-	 * System property key for remote location of main archive (the one that this class is
+	 * Property key for remote location of main archive (the one that this class is
 	 * found in).
 	 */
 	public static final String THIN_REPO = "thin.repo";
 
 	/**
-	 * System property key used to override the launcher main class if necessary. Defaults
+	 * Property key used to override the launcher main class if necessary. Defaults
 	 * to <code>ThinJarLauncher</code>.
 	 */
 	public static final String THIN_LAUNCHER = "thin.launcher";

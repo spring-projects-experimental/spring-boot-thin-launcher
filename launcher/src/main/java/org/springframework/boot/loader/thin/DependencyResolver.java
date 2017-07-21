@@ -72,6 +72,8 @@ import org.codehaus.plexus.PlexusContainer;
 import org.codehaus.plexus.classworlds.ClassWorld;
 import org.eclipse.aether.DefaultRepositorySystemSession;
 import org.eclipse.aether.RepositorySystem;
+import org.eclipse.aether.artifact.Artifact;
+import org.eclipse.aether.artifact.DefaultArtifact;
 import org.eclipse.aether.connector.basic.BasicRepositoryConnectorFactory;
 import org.eclipse.aether.graph.Dependency;
 import org.eclipse.aether.impl.ArtifactDescriptorReader;
@@ -94,11 +96,15 @@ import org.eclipse.aether.transport.http.HttpTransporterFactory;
 import org.eclipse.aether.util.repository.JreProxySelector;
 import org.eclipse.sisu.inject.DefaultBeanLocator;
 import org.eclipse.sisu.plexus.ClassRealmManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import org.springframework.core.io.Resource;
 import org.springframework.util.StringUtils;
 
 public class DependencyResolver {
+
+	private static final Logger log = LoggerFactory.getLogger(DependencyResolver.class);
 
 	private static DependencyResolver instance = new DependencyResolver();
 
@@ -167,7 +173,14 @@ public class DependencyResolver {
 	public List<Dependency> dependencies(final Resource resource,
 			final Properties properties) {
 		initialize();
+		if ("true".equals(properties.getProperty("computed", "false"))) {
+			log.info("Dependencies are pre-computed in properties");
+			Model model = new Model();
+			model = ThinPropertiesModelProcessor.process(model, properties);
+			return aetherDependencies(model.getDependencies());
+		}
 		try {
+			log.info("Computing dependencies from pom and properties");
 			ProjectBuildingRequest request = getProjectBuildingRequest(properties);
 			request.setResolveDependencies(true);
 			synchronized (DependencyResolver.class) {
@@ -197,6 +210,30 @@ public class DependencyResolver {
 		catch (ProjectBuildingException | NoLocalRepositoryManagerException e) {
 			throw new IllegalStateException("Cannot build model", e);
 		}
+	}
+
+	private List<Dependency> aetherDependencies(
+			List<org.apache.maven.model.Dependency> dependencies) {
+		List<Dependency> list = new ArrayList<>();
+		for (org.apache.maven.model.Dependency dependency : dependencies) {
+			Artifact artifact = new DefaultArtifact(coordinates(dependency));
+			Dependency converted = new Dependency(artifact,
+					"runtime");
+			artifact = artifact.setFile(resolve(converted));
+			converted = converted.setArtifact(artifact);
+			list.add(converted);
+		}
+		return list;
+	}
+
+	private String coordinates(org.apache.maven.model.Dependency artifact) {
+		// group:artifact:extension:classifier:version
+		String classifier = artifact.getClassifier();
+		String extension = artifact.getType();
+		return artifact.getGroupId() + ":" + artifact.getArtifactId()
+				+ (extension != null ? ":" + extension : "")
+				+ (classifier != null ? ":" + classifier : "") + ":"
+				+ artifact.getVersion();
 	}
 
 	public File resolve(Dependency dependency) {

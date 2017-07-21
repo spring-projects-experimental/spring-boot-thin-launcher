@@ -21,6 +21,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
+import org.springframework.boot.test.rule.OutputCapture;
 import org.springframework.util.FileSystemUtils;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -33,12 +34,31 @@ public class ThinJarLauncherTests {
 
 	@Rule
 	public ExpectedException expected = ExpectedException.none();
+	
+	@Rule
+	public OutputCapture output = new OutputCapture();
 
 	@Test
 	public void dryrun() throws Exception {
 		String[] args = new String[] { "--thin.dryrun=true",
 				"--thin.archive=src/test/resources/apps/basic", "--debug" };
 		ThinJarLauncher.main(args);
+	}
+
+	@Test
+	public void classpath() throws Exception {
+		String[] args = new String[] { "--thin.classpath",
+				"--thin.archive=src/test/resources/apps/basic"};
+		ThinJarLauncher.main(args);
+		assertThat(output.toString()).contains("spring-web-4.3.3.RELEASE.jar" + File.pathSeparator);
+	}
+
+	@Test
+	public void compute() throws Exception {
+		String[] args = new String[] { "--thin.compute",
+				"--thin.archive=src/test/resources/apps/basic"};
+		ThinJarLauncher.main(args);
+		assertThat(output.toString()).contains("dependencies.spring-web=org.springframework:spring-web:4.3.3.RELEASE\n");
 	}
 
 	@Test

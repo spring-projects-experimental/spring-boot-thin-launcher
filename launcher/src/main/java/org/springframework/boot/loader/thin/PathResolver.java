@@ -175,7 +175,7 @@ public class PathResolver {
 				+ dependency.getArtifact().getArtifactId();
 	}
 
-	private List<Dependency> extract(Archive archive, String name, String[] profiles) {
+	public List<Dependency> extract(Archive archive, String name, String[] profiles) {
 		Properties properties = getProperties(archive, name, profiles);
 		Resource pom = getPom(archive);
 		log.info("Extracting dependencies from: {}", pom);

@@ -57,6 +57,23 @@ public class DependencyResolverTests {
 	}
 
 	@Test
+	public void preresolved() throws Exception {
+		Resource resource = new ClassPathResource("apps/petclinic-preresolved/pom.xml");
+		List<Dependency> dependencies = resolver.dependencies(resource,
+				PropertiesLoaderUtils.loadProperties(new ClassPathResource(
+						"apps/petclinic-preresolved/META-INF/thin.properties")));
+		// System.err.println(dependencies);
+		assertThat(dependencies.size()).isGreaterThan(20);
+		// Resolved from a placeholder version
+		assertThat(dependencies).filteredOn("artifact.artifactId", "bootstrap").first()
+				.is(version("3.3.6"));
+		// Transitive from a starter
+		assertThat(dependencies).filteredOn("artifact.artifactId", "spring-boot-starter")
+				.first().is(version("1.4.2.RELEASE"));
+		assertThat(dependencies).filteredOn("artifact.artifactId", "bootstrap").first().is(resolved());
+	}
+
+	@Test
 	public void pomWithBom() throws Exception {
 		Resource resource = new ClassPathResource("apps/cloud/pom.xml");
 		List<Dependency> dependencies = resolver.dependencies(resource);
@@ -206,6 +223,15 @@ public class DependencyResolverTests {
 			@Override
 			public boolean matches(Dependency value) {
 				return value.getArtifact().getVersion().equals(version);
+			}
+		};
+	}
+
+	static Condition<Dependency> resolved() {
+		return new Condition<Dependency>("artifact is resolved") {
+			@Override
+			public boolean matches(Dependency value) {
+				return value.getArtifact().getFile()!=null;
 			}
 		};
 	}

@@ -81,6 +81,10 @@ class ThinPropertiesModelProcessor extends DefaultModelProcessor {
 
 	private Model process(Model model) {
 		Properties properties = DependencyResolver.getGlobals();
+		return process(model, properties);
+	}
+
+	static Model process(Model model, Properties properties) {
 		if (properties != null) {
 			for (String name : properties.stringPropertyNames()) {
 				if (name.startsWith("boms.")) {
@@ -150,7 +154,7 @@ class ThinPropertiesModelProcessor extends DefaultModelProcessor {
 		return model;
 	}
 
-	private Exclusion exclusion(String pom) {
+	private static Exclusion exclusion(String pom) {
 		Exclusion exclusion = new Exclusion();
 		DefaultArtifact artifact = artifact(pom);
 		exclusion.setGroupId(artifact.getGroupId());
@@ -158,14 +162,14 @@ class ThinPropertiesModelProcessor extends DefaultModelProcessor {
 		return exclusion;
 	}
 
-	private Dependency bom(DefaultArtifact artifact) {
+	private static Dependency bom(DefaultArtifact artifact) {
 		Dependency result = dependency(artifact);
 		result.setType("pom");
 		result.setScope("import");
 		return result;
 	}
 
-	private boolean isParentBom(Model model, DefaultArtifact artifact) {
+	private static boolean isParentBom(Model model, DefaultArtifact artifact) {
 		if (model.getParent() == null) {
 			return false;
 		}
@@ -184,7 +188,7 @@ class ThinPropertiesModelProcessor extends DefaultModelProcessor {
 		return false;
 	}
 
-	private Dependency dependency(DefaultArtifact artifact) {
+	private static Dependency dependency(DefaultArtifact artifact) {
 		Dependency dependency = new Dependency();
 		dependency.setGroupId(artifact.getGroupId());
 		dependency.setArtifactId(artifact.getArtifactId());
@@ -196,7 +200,7 @@ class ThinPropertiesModelProcessor extends DefaultModelProcessor {
 		return dependency;
 	}
 
-	private DefaultArtifact artifact(String coordinates) {
+	private static DefaultArtifact artifact(String coordinates) {
 		Pattern p = Pattern
 				.compile("([^: ]+):([^: ]+)(:([^: ]*)(:([^: ]+))?)?(:([^: ]+))?");
 		Matcher m = p.matcher(coordinates);

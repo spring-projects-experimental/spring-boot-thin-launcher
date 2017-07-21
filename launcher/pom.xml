@@ -83,6 +83,16 @@
 	<build>
 		<plugins>
 			<plugin>
+				<artifactId>maven-jar-plugin</artifactId>
+				<configuration>
+					<archive>
+						<manifest>
+							<addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+						</manifest>
+					</archive>
+				</configuration>
+			</plugin>
+			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-dependency-plugin</artifactId>
 				<executions>
@@ -138,16 +148,12 @@
 					<shadedClassifierName>exec</shadedClassifierName>
 					<shadedArtifactAttached>true</shadedArtifactAttached>
 					<transformers>
-						<transformer
-							implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+						<transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
 							<mainClass>org.springframework.boot.loader.thin.ThinJarLauncher</mainClass>
 						</transformer>
-						<transformer
-							implementation="org.apache.maven.plugins.shade.resource.ComponentsXmlResourceTransformer" />
-						<transformer
-							implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
-						<transformer
-							implementation="org.springframework.boot.loader.thin.maven.RelocatingAppendingResourceTransformer">
+						<transformer implementation="org.apache.maven.plugins.shade.resource.ComponentsXmlResourceTransformer" />
+						<transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
+						<transformer implementation="org.springframework.boot.loader.thin.maven.RelocatingAppendingResourceTransformer">
 							<resource>META-INF/sisu/javax.inject.Named</resource>
 						</transformer>
 					</transformers>
@@ -202,8 +208,7 @@
 		</plugins>
 		<pluginManagement>
 			<plugins>
-				<!--This plugin's configuration is used to store Eclipse m2e settings 
-					only. It has no influence on the Maven build itself. -->
+				<!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself. -->
 				<plugin>
 					<groupId>org.eclipse.m2e</groupId>
 					<artifactId>lifecycle-mapping</artifactId>

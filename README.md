@@ -1,4 +1,4 @@
-A "thin" jar launcher for java apps. Version 1.0.3.RELEASE is in Maven Central. See https://github.com/spring-projects/spring-boot/issues/1813 for more discussion and ideas.
+A "thin" jar launcher for java apps. Version 1.0.5.RELEASE is in Maven Central. See https://github.com/spring-projects/spring-boot/issues/1813 for more discussion and ideas.
 
 ## Getting Started
 
@@ -90,7 +90,7 @@ in the standard `META-INF/maven` location.
 The app jar in the demo is built using the Spring Boot plugin and a
 custom `Layout` (so it only builds with Spring Boot 1.5.x and above).
 
-## Caching
+## Caching JARs
 
 All jar files are cached in the local Maven repository, so if you are
 building and running the same app repeatedly, it should be faster
@@ -251,6 +251,7 @@ You can set a variety of options on the command line with system properties (`-D
 | `thin.dryrun` | false | Only resolve and download the dependencies. Don't run any main class. N.B. any value other than "false" (even empty) is true. |
 | `thin.offline` | false | Switch to "offline" mode. All dependencies must be avalailable locally (e.g. via a previous dry run) or there will be an exception. |
 | `thin.classpath` | false | Only print the classpath. Don't run and main class.  N.B. any value other than "false" (even empty) is true. |
+| `thin.compute` | false | Only compute and print the dependencies in the form of a properties file. Don't run and main class.  N.B. any value other than "false" (even empty) is true. |
 | `thin.root | `${user.home}/.m2` | The location of the local jar cache, laid out as a maven repository. The launcher creates a new directory here called "repository" if it doesn't exist. |
 | `thin.archive` | the same as the target archive | The archive to launch. Can be used to launch a JAR file that was build with a different version of the thin launcher, for instance, or a fat jar built by Spring Boot without the thin launcher. |
 | `thin.parent` | `<empty>` | A parent archive to use for dependency management and common classpath entries. If you run two apps with the same parent, they will have a classpath that is the same, reading from left to right, until they actually differ. |
@@ -321,7 +322,7 @@ $ java -jar myapp.jar --thin.classpath
 
 prints out (on stdout) a class path in the form that can be used
 directly in `java -cp`. So this is a way to run the app from its main
-method (which iis slightly faster than using the launcher):
+method (which is faster than using the launcher):
 
 ```
 $ CLASSPATH=`java -jar myapp.jar --thin.classpath`
@@ -360,6 +361,30 @@ $ java -XX:+UnlockCommercialFeatures -XX:+UseAppCDS -Xshare:on \
 the two apps at the end are sharing class data from `app.jsa` and will
 also start up faster (e.g. 6s startup goes down to 4s for
 a vanilla Eureka Server).
+
+The thin launcher can be used to pre-compute its own dependency graph
+in the form of a properties file, which also speeds up the launch a
+bit, even if you still have to resolve all the jars (remotely or from
+the cache). To compute the dependency graph and output the result in
+the form of a properties file, just use the `thin.compute` flag on
+startup, e.g.
+
+```
+$ java -jar myapp.jar --thin.compute > thin.properties
+$ java -jar myapp.jar
+```
+
+In this example the second startup will be slightly faster, depending
+on the size of the classpath, but up to a few hundred milliseconds on
+afast server, and more in a constrained environment.
+
+It also works fine with profiles, so, for example, if `myapp.jar`
+contains a `META-INF/thin-rapid.properties` you could do this:
+
+```
+$ java -jar myapp.jar --thin.profile=rapid --thin.compute > thin-super.properties
+$ java -jar myapp.jar --thin.profile=super
+```
 
 ## License
 This project is Open Source software released under the
