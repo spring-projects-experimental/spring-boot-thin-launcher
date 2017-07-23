@@ -17,6 +17,7 @@
 package org.springframework.boot.loader.thin;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.net.URL;
 import java.security.AccessControlException;
 import java.util.ArrayList;
@@ -35,6 +36,7 @@ import org.springframework.boot.loader.archive.Archive.Entry;
 import org.springframework.core.env.MutablePropertySources;
 import org.springframework.core.env.SimpleCommandLinePropertySource;
 import org.springframework.core.env.StandardEnvironment;
+import org.springframework.util.FileCopyUtils;
 import org.springframework.util.StringUtils;
 
 import ch.qos.logback.classic.Level;
@@ -131,8 +133,15 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 	 */
 	public static final String THIN_PARENT_BOOT = "thin.parent.boot";
 
+	/**
+	 * Flag to say that a Docker build should be created, i.e., .m2 with repository and appropriate Dockerfile.
+	 * Default false.
+	 */
+	public static final String THIN_DOCKER = "thin.docker";
+
 	private StandardEnvironment environment = new StandardEnvironment();
 	private boolean debug;
+	private String root = "";
 
 	public static void main(String[] args) throws Exception {
 		LogUtils.setLogLevel(Level.OFF);
@@ -147,7 +156,7 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 	protected void launch(String[] args) throws Exception {
 		addCommandLineProperties(args);
 		args = removeThinArgs(args);
-		String root = environment.resolvePlaceholders("${" + THIN_ROOT + ":}");
+		root = environment.resolvePlaceholders("${" + THIN_ROOT + ":}");
 		boolean classpath = !"false".equals(
 				environment.resolvePlaceholders("${" + THIN_CLASSPATH + ":false}"));
 		boolean compute = !"false"
@@ -181,6 +190,13 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 			return;
 		}
 		log.info("Version: " + getVersion());
+		if (!"false".equals(
+				environment.resolvePlaceholders("${" + THIN_DOCKER + ":false}"))) {
+
+			createDockerBuild();
+
+			return;
+		}
 		if (!"false".equals(
 				environment.resolvePlaceholders("${" + THIN_DRYRUN + ":false}"))) {
 			List<Archive> archives = getClassPathArchives();
@@ -246,18 +262,114 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 			}
 			log.info("Archive: {}", archive);
 			String uri = archive.getUrl().toURI().toString();
-			if (uri.startsWith("jar:")) {
-				uri = uri.substring("jar:".length());
-			}
-			if (uri.startsWith("file:")) {
-				uri = uri.substring("file:".length());
-			}
-			if (uri.endsWith("!/")) {
-				uri = uri.substring(0, uri.length() - "!/".length());
-			}
+			uri = cutFileAndInternalJarRootFromUri(uri);
 			builder.append(new File(uri).getCanonicalPath());
 		}
 		return builder.toString();
+	}
+
+	private String cutFileAndInternalJarRootFromUri(String uri) {
+		if (uri.startsWith("jar:")) {
+			uri = uri.substring("jar:".length());
+		}
+		if (uri.startsWith("file:")) {
+            uri = uri.substring("file:".length());
+        }
+		if (uri.endsWith("!/")) {
+            uri = uri.substring(0, uri.length() - "!/".length());
+        }
+		return uri;
+	}
+
+	// TODO: Add some more options, e.g.,
+	//   thin.docker.file for the path to the docker file
+	//   thin.docker.base for the base image,
+	//   ...
+	private void createDockerBuild() throws Exception {
+		// FIXME Find a better name for the root since it not (only) contains a Maven kind of repository
+		final String dockerM2 = ".m2";
+		if (StringUtils.hasText(root)) {
+			log.warn ("Overriding current 'thin.root' ('{}') by Docker Maven root '{}' for Dockerfile", root, dockerM2);
+		} else {
+			log.info ("Using '{}' as Docker Maven root", dockerM2);
+		}
+		root = dockerM2;
+
+		List<Archive> archives = getClassPathArchives();
+
+		StringBuilder builder = new StringBuilder();
+
+		// TODO: Make the base image configurable
+		builder.append ("FROM openjdk:8-alpine\n" +
+				"\n" +
+				"# The dependencies\n");
+
+		File rootDir = new File (root);
+		int rootDirPathlen = rootDir.getAbsolutePath().length();
+		String mainJar = null;
+		String separator = System.getProperty("path.separator");
+		StringBuilder classpath = new StringBuilder();
+		for (Archive archive : archives) {
+			String uri = archive.getUrl().toURI().toString();
+			if (uri.startsWith("jar:")) {
+				if (null != mainJar) {
+					log.warn("Cannot ADD another main JAR '{}' to Dockerfile (already have '{}')", uri, mainJar);
+				} else {
+					uri = cutFileAndInternalJarRootFromUri(uri);
+					mainJar = uri;
+				}
+			}
+			else {
+				uri = cutFileAndInternalJarRootFromUri(uri);
+				uri = uri.substring(rootDirPathlen);
+				String fullUri = root + uri;
+				builder.append ("ADD " + fullUri + " /" + fullUri + "\n");
+				if (classpath.length() != 0) {
+					classpath.append(separator);
+				}
+				classpath.append("/" + fullUri);
+			}
+		}
+
+		if (null == mainJar) {
+			throw new RuntimeException ("There is no main jar defined");
+		}
+
+		String mainJarBasename = new File (mainJar).getName();
+		String mainJarTarget = root + "/" + mainJarBasename;
+
+		// This is a hack to get the Jar file into the Docker build (can we do it better?)
+		log.debug ("Copying application Jar '{}' to '{}'", mainJar, mainJarTarget);
+		File mainJarIn = new File(mainJar);
+		File mainJarOut = new File (mainJarTarget);
+		FileCopyUtils.copy(mainJarIn, mainJarOut);
+
+		builder.append ("\n" +
+						"EXPOSE 8080" +
+						"\n" +
+						"ENV CLASSPATH=/" +mainJarTarget + separator + classpath.toString() +
+						"\n\n" +
+						// Let the Application be the latest Docker layer
+						"# The Spring Boot Application\n" +
+						"ADD " + mainJarTarget + " /" + mainJarTarget + "\n" +
+						"\n" +
+						// TODO: Set Spring/Thin profile(s) as provided by THIN_PROFILE property
+//				"CMD [ \"sh\", \"-c\", \"java -Djava.security.egd=file:/dev/./urandom ${JAVA_OPTS} -jar "
+//				+ mainJarBasename + " --thin.root=/" + root + "\" ${MAIN_ARGS} ]\n"
+						"\n"+
+						"CMD [ \"sh\", \"-c\", \"java -Djava.security.egd=file:/dev/./urandom ${JAVA_OPTS} " +
+							getMainClass() + " ${MAIN_ARGS}\" ]\n"
+		);
+		File dockerfile = new File ("Dockerfile");
+		if (dockerfile.exists()) {
+			log.warn ("Overriding existing Dockerfile");
+			dockerfile.delete();
+		} else {
+			log.info ("Creating Dockerfile");
+		}
+		FileOutputStream dockerstream = new FileOutputStream(dockerfile);
+		dockerstream.write(builder.toString().getBytes());
+		dockerstream.close();
 	}
 
 	private void addCommandLineProperties(String[] args) {
@@ -339,7 +451,10 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 	private PathResolver getResolver() {
 		String locations = environment
 				.resolvePlaceholders("${" + ThinJarLauncher.THIN_LOCATION + ":}");
-		String root = environment.resolvePlaceholders("${" + THIN_ROOT + ":}");
+		if (!StringUtils.hasText(root)) {
+			// root might already be set, e.g., by overriding it for Docker build generator
+			root = environment.resolvePlaceholders("${" + THIN_ROOT + ":}");
+		}
 		String offline = environment.resolvePlaceholders("${" + THIN_OFFLINE + ":false}");
 		PathResolver resolver = new PathResolver(DependencyResolver.instance());
 		if (StringUtils.hasText(locations)) {

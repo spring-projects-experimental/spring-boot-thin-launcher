@@ -248,6 +248,7 @@ You can set a variety of options on the command line with system properties (`-D
 | Option | Default | Description |
 |--------|---------|-------------|
 | `thin.main` | Start-Class in MANIFEST.MF| The main class to launch (for a Spring Boot app, usually the one with `@SpringBootApplication`)|
+| `thin.docker` | false | Prepare a Docker build by creating a Dockerfile in the local directory and including all dependencies as separate Docker layers. |
 | `thin.dryrun` | false | Only resolve and download the dependencies. Don't run any main class. N.B. any value other than "false" (even empty) is true. |
 | `thin.offline` | false | Switch to "offline" mode. All dependencies must be avalailable locally (e.g. via a previous dry run) or there will be an exception. |
 | `thin.classpath` | false | Only print the classpath. Don't run and main class.  N.B. any value other than "false" (even empty) is true. |
@@ -290,6 +291,16 @@ RUN java -jar app.jar --thin.root=/m2 --thin.dryrun
 ENTRYPOINT [ "sh", "-c", "java -Djava.security.egd=file:/dev/./urandom -jar app.jar --thin.root=/m2" ]
 
 EXPOSE 8080
+```
+
+### How to Create a complete Docker build
+
+Creates Dockerfile and `.m2/` directory with all runtime dependencies in current directory.
+Dockerfile will contain all dependencies and application jar as separate layers (will improve build and shipment)
+
+```
+$ java -jar app.jar --thin.docker
+$ docker build -t myname/myapp:myversion .
 ```
 
 ## Building
