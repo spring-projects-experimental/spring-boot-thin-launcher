@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2016 the original author or authors.
+ * Copyright 2012-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,11 +30,6 @@ import org.gradle.jvm.tasks.Jar;
 
 /**
  * Gradle {@link Plugin} for Spring Boot's thin launcher.
- * <p>
- * If the Java plugin is applied to the project, a {@link GenerateLauncherPropertiesTask}
- * named {@code generateLibProperties} is added to the project. This task is configured to
- * use the {@code runtime} configuration to generate a {@code META-INF/thin.properties}
- * file in the {@code main} source set's resource output directory.
  *
  * @author Andy Wilkinson
  */
@@ -46,28 +41,28 @@ public class ThinLauncherPlugin implements Plugin<Project> {
 
 			@Override
 			public void execute(Jar jar) {
-				createCopyTask(project, jar);
-				createResolveTask(project, jar);
+				Copy copy = createCopyTask(project, jar);
+				createResolveTask(project, jar, copy);
 			}
 
 		});
 	}
 
-	private void createCopyTask(final Project project, final Jar jar) {
-		final Copy copy = project.getTasks().create("thinResolvePrepare", Copy.class);
+	private Copy createCopyTask(Project project, Jar jar) {
+		Copy copy = project.getTasks().create(jar.getName() + "ThinResolvePrepare", Copy.class);
 		copy.dependsOn("bootRepackage");
 		copy.from(jar.getOutputs().getFiles());
 		copy.into(new File(project.getBuildDir(), "thin/root"));
+		return copy;
 	}
 
-	private void createResolveTask(final Project project, final Jar jar) {
-		final Exec exec = project.getTasks().create("thinResolve", Exec.class);
-		exec.dependsOn("thinResolvePrepare");
+	private void createResolveTask(final Project project, final Jar jar, final Copy copy) {
+		final Exec exec = project.getTasks().create(jar.getName() + "ThinResolve", Exec.class);
+		exec.dependsOn(copy);
 		exec.doFirst(new Action<Task>() {
 			@SuppressWarnings("unchecked")
 			@Override
 			public void execute(Task task) {
-				Copy copy = (Copy) project.getTasks().getByName("thinResolvePrepare");
 				exec.setWorkingDir(copy.getOutputs().getFiles().getSingleFile());
 				exec.setCommandLine(Jvm.current().getJavaExecutable());
 				exec.args(Arrays.asList("-Dthin.root=.", "-Dthin.dryrun", "-jar",
