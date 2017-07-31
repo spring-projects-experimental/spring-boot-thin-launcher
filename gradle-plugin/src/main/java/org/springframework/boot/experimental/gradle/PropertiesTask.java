@@ -71,6 +71,7 @@ public class PropertiesTask extends DefaultTask {
 
 	protected Properties getThinProperties(Configuration configuration) {
 		Properties properties = new Properties();
+		// TODO: add computed flag to task and offer option not to compute transitives
 		properties.setProperty("computed", "true");
 		if (configuration != null) {
 			for (ResolvedArtifact artifact : configuration.getResolvedConfiguration()
