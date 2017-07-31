@@ -23,8 +23,12 @@ import org.gradle.api.Action;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 import org.gradle.api.Task;
+import org.gradle.api.plugins.JavaPlugin;
+import org.gradle.api.plugins.JavaPluginConvention;
 import org.gradle.api.tasks.Copy;
 import org.gradle.api.tasks.Exec;
+import org.gradle.api.tasks.SourceSetContainer;
+import org.gradle.api.tasks.TaskContainer;
 import org.gradle.internal.jvm.Jvm;
 import org.gradle.jvm.tasks.Jar;
 
@@ -48,14 +52,31 @@ public class ThinLauncherPlugin implements Plugin<Project> {
 			public void execute(Jar jar) {
 				createCopyTask(project, jar);
 				createResolveTask(project, jar);
-				createPropertiesTask(project, jar);
+				createPropertiesTask(project);
 			}
 
 		});
 	}
 
-	private void createPropertiesTask(Project project, Jar jar) {
-		// TODO: a task that creates thin.properties
+	private void createPropertiesTask(final Project project) {
+		TaskContainer taskContainer = project.getTasks();
+		taskContainer.create("thinProperties", PropertiesTask.class,
+				new Action<PropertiesTask>() {
+					@Override
+					public void execute(PropertiesTask libPropertiesTask) {
+						configureLibPropertiesTask(libPropertiesTask, project);
+					}
+				});
+	}
+
+	private void configureLibPropertiesTask(PropertiesTask libPropertiesTask,
+			Project project) {
+		libPropertiesTask.setConfiguration(project.getConfigurations()
+				.getByName(JavaPlugin.RUNTIME_CONFIGURATION_NAME));
+		SourceSetContainer sourceSets = project.getConvention()
+				.getPlugin(JavaPluginConvention.class).getSourceSets();
+		File resourcesDir = sourceSets.getByName("main").getOutput().getResourcesDir();
+		libPropertiesTask.setOutput(new File(resourcesDir, "META-INF"));
 	}
 
 	private void createCopyTask(final Project project, final Jar jar) {

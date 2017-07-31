@@ -43,7 +43,7 @@ buildscript {
 }
 ```
 
-In Gradle you also need to generate a `pom.xml` (unless you want to maintain it by hand). You can do that with the "maven" plugin, for example:
+In Gradle you also need to generate a `pom.xml` or a `thin.properties` (unless you want to maintain it by hand). You can create a `pom.xml` with the "maven" plugin, for example:
 
 ```groovy
 apply plugin: 'maven'
@@ -61,6 +61,14 @@ jar.dependsOn = [createPom]
 ```
 
 The generated pom can go in the root of the jar, or in the normal maven place (which is what is configured in the sample above).
+
+Instead of a `pom.xml` you could generate a `thin.properties` using `gradle thinProperties` (the task is always registered by the thin gradle plugin). By default it shows up in `META-INF` in the built resources, so you need to run it before the jar is built, either manually, or via a task dependency, e.g.
+
+```groovy
+jar.dependsOn = [thinProperties]
+```
+
+The generated properties file is "computed" (it contains all the transitive dependencies), so if you have that the dependencies from the `pom.xml` will be ignored.
 
 If you look at the jar file produced by the build you will see that it
 is "thin" (a few KB), but executable with `java -jar ...`.
