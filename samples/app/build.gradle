@@ -20,14 +20,6 @@ apply plugin: 'maven'
 apply plugin: 'eclipse'
 apply plugin: 'org.springframework.boot'
 
-task createPom {
-	doLast {
-		pom {
-			withXml(dependencyManagement.pomConfigurer)
-		}.writeTo("build/resources/main/META-INF/maven/${project.group}/${project.name}/pom.xml")
-	}
-}
-
 group = 'com.example'
 version = '0.0.1-SNAPSHOT'
 sourceCompatibility = 1.8
@@ -44,5 +36,3 @@ dependencies {
 	compile('org.springframework.boot:spring-boot-starter')
 	testCompile('org.springframework.boot:spring-boot-starter-test')
 }
-
-jar.dependsOn = [createPom]

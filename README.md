@@ -43,11 +43,11 @@ buildscript {
 }
 ```
 
-In Gradle you also need to generate a `pom.xml` or a `thin.properties` (unless you want to maintain it by hand). You can create a `pom.xml` with the "maven" plugin, for example:
+In Gradle you also need to generate a `pom.xml` or a `thin.properties` (unless you want to maintain it by hand). A `pom.xml` will be generated automatically by the "thinPom" task in the Thin Gradle plugin. It does this by calling out to the maven plugin and the dependency management plugin; the maven plugin is always present, and the dependency management plugin is present if you are using the Spring Boot plugin. The generated pom goes in the normal maven place by default. You can configure the output directory by setting the "output" property of the "thinPom" task.
+
+You can customize the generated `pom.xml`, or switch it off, by creating your own task in `build.gradle` and forcing the jar task to depend on it. Example (which just duplicates the default):
 
 ```groovy
-apply plugin: 'maven'
-
 task createPom {
 	doLast {
 		pom {
@@ -55,14 +55,11 @@ task createPom {
 		}.writeTo("build/resources/main/META-INF/maven/${project.group}/${project.name}/pom.xml")
 	}
 }
-group = 'com.example'
-version = '0.0.1-SNAPSHOT'
+
 jar.dependsOn = [createPom]
 ```
 
-The generated pom can go in the root of the jar, or in the normal maven place (which is what is configured in the sample above).
-
-Instead of a `pom.xml` you could generate a `thin.properties` using `gradle thinProperties` (the task is always registered by the thin gradle plugin). By default it shows up in `META-INF` in the built resources, so you need to run it before the jar is built, either manually, or via a task dependency, e.g.
+Instead of or as well as a `pom.xml` you could generate a `thin.properties` using `gradle thinProperties` (the task is always registered by the Thin Gradle plugin but is not exewcuted by default). By default it shows up in `META-INF` in the built resources, so you need to run it before the jar is built, either manually, or via a task dependency, e.g.
 
 ```groovy
 jar.dependsOn = [thinProperties]

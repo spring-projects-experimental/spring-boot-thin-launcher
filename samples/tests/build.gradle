@@ -10,7 +10,7 @@ buildscript {
 		maven { url "https://repo.spring.io/milestone" }
 	}
 	dependencies {
-		classpath("org.springframework.boot.experimental:spring-boot-thin-launcher:${wrapperVersion}")
+		classpath("org.springframework.boot.experimental:spring-boot-thin-layout:${wrapperVersion}")
 		classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
 	}
 }
@@ -20,7 +20,7 @@ apply plugin: 'eclipse'
 apply plugin: 'org.springframework.boot'
 
 task libs << {
-	def file = new File('build/resources/main/META-INF/dependencies.properties')
+	def file = new File('build/resources/main/META-INF/thin.properties')
 	file.text=''
 	configurations.runtime.dependencies.each { def version = it.version ? ":${it.version}" : ""; file << "dependencies.${it.name}=${it.group}:${it.name}${version}\n" }
 	configurations.compile.dependencies.each { def version = it.version ? ":${it.version}" : "";file << "dependencies.${it.name}=${it.group}:${it.name}${version}\n" }

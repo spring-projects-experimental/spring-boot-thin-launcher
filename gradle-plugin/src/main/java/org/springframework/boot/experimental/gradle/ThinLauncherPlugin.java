@@ -53,8 +53,31 @@ public class ThinLauncherPlugin implements Plugin<Project> {
 				createCopyTask(project, jar);
 				createResolveTask(project, jar);
 				createPropertiesTask(project);
+				createPomTask(project);
 			}
 
+		});
+	}
+
+	private void createPomTask(final Project project) {
+		TaskContainer taskContainer = project.getTasks();
+		final Task thin = taskContainer.create("thinPom", PomTask.class,
+				new Action<PomTask>() {
+					@Override
+					public void execute(PomTask thin) {
+						SourceSetContainer sourceSets = project.getConvention()
+								.getPlugin(JavaPluginConvention.class).getSourceSets();
+						File resourcesDir = sourceSets.getByName("main").getOutput()
+								.getResourcesDir();
+						thin.setOutput(new File(resourcesDir, "META-INF/"
+								+ project.getGroup() + "/" + project.getName()));
+					}
+				});
+		project.getTasks().withType(Jar.class, new Action<Jar>() {
+			@Override
+			public void execute(Jar jar) {
+				jar.dependsOn(thin);
+			}
 		});
 	}
 
@@ -69,14 +92,13 @@ public class ThinLauncherPlugin implements Plugin<Project> {
 				});
 	}
 
-	private void configureLibPropertiesTask(PropertiesTask libPropertiesTask,
-			Project project) {
-		libPropertiesTask.setConfiguration(project.getConfigurations()
+	private void configureLibPropertiesTask(PropertiesTask thin, Project project) {
+		thin.setConfiguration(project.getConfigurations()
 				.getByName(JavaPlugin.RUNTIME_CONFIGURATION_NAME));
 		SourceSetContainer sourceSets = project.getConvention()
 				.getPlugin(JavaPluginConvention.class).getSourceSets();
 		File resourcesDir = sourceSets.getByName("main").getOutput().getResourcesDir();
-		libPropertiesTask.setOutput(new File(resourcesDir, "META-INF"));
+		thin.setOutput(new File(resourcesDir, "META-INF"));
 	}
 
 	private void createCopyTask(final Project project, final Jar jar) {
