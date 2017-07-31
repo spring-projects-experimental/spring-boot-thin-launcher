@@ -154,7 +154,7 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 				.equals(environment.resolvePlaceholders("${" + THIN_COMPUTE + ":false}"));
 		boolean trace = !"false"
 				.equals(environment.resolvePlaceholders("${thin.trace:${trace:false}}"));
-		if (classpath) {
+		if (classpath || compute) {
 			this.debug = false;
 			LogUtils.setLogLevel(Level.OFF);
 		}
@@ -183,10 +183,9 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 		log.info("Version: " + getVersion());
 		if (!"false".equals(
 				environment.resolvePlaceholders("${" + THIN_DRYRUN + ":false}"))) {
-			List<Archive> archives = getClassPathArchives();
+			getClassPathArchives();
 			log.info("Downloaded dependencies"
 					+ (!StringUtils.hasText(root) ? "" : " to " + root));
-			log.info("Resolved: " + archives);
 			return;
 		}
 		super.launch(args);
@@ -227,7 +226,8 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 		String classifier = artifact.getClassifier();
 		String extension = artifact.getExtension();
 		return artifact.getGroupId() + ":" + artifact.getArtifactId()
-				+ (StringUtils.hasText(extension) && !"jar".equals(extension) ? ":" + extension : "")
+				+ (StringUtils.hasText(extension) && !"jar".equals(extension)
+						? ":" + extension : "")
 				+ (StringUtils.hasText(classifier) ? ":" + classifier : "") + ":"
 				+ artifact.getVersion();
 	}

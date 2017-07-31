@@ -19,7 +19,6 @@ package org.springframework.boot.experimental.gradle;
 import java.io.File;
 import java.util.Arrays;
 
-import org.codehaus.groovy.util.StringUtil;
 import org.gradle.api.Action;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;

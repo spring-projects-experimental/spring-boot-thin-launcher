@@ -204,7 +204,13 @@ public class DependencyResolver {
 					}
 					throw new RuntimeException(builder.toString());
 				}
-				return runtime(dependencies.getDependencies());
+				List<Dependency> output = runtime(dependencies.getDependencies());
+				if (log.isInfoEnabled()) {
+					for (Dependency dependency : output) {
+						log.info("Resolved: " + coordinates(dependency)  + "=" + dependency.getArtifact().getFile());
+					}
+				}
+				return output;
 			}
 		}
 		catch (ProjectBuildingException | NoLocalRepositoryManagerException e) {
@@ -233,6 +239,21 @@ public class DependencyResolver {
 		return artifact.getGroupId() + ":" + artifact.getArtifactId()
 				+ (extension != null ? ":" + extension : "")
 				+ (classifier != null ? ":" + classifier : "") + ":"
+				+ artifact.getVersion();
+	}
+
+	private String coordinates(Dependency dependency) {
+		Artifact artifact = dependency.getArtifact();
+		// group:artifact:extension:classifier:version
+		String classifier = artifact.getClassifier();
+		String extension = artifact.getExtension();
+		if ("jar".equals(extension) && !StringUtils.hasText(classifier)) {
+			extension = null;
+		}
+		boolean hasExtension = extension!=null && !"jar".equals(extension);
+		return artifact.getGroupId() + ":" + artifact.getArtifactId()
+				+ (hasExtension ? ":" + extension : "")
+				+ (StringUtils.hasText(classifier) ? ":" + classifier : "") + ":"
 				+ artifact.getVersion();
 	}
 
