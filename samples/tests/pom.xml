@@ -62,6 +62,9 @@
 							<directory>${basedir}/../simple/build</directory>
 						</fileset>
 						<fileset>
+							<directory>${basedir}/../other/build</directory>
+						</fileset>
+						<fileset>
 							<directory>target</directory>
 						</fileset>
 					</filesets>

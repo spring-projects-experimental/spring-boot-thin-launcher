@@ -61,18 +61,18 @@ public class ThinLauncherPlugin implements Plugin<Project> {
 
 	private void createPomTask(final Project project) {
 		TaskContainer taskContainer = project.getTasks();
-		final Task thin = taskContainer.create("thinPom", PomTask.class,
-				new Action<PomTask>() {
-					@Override
-					public void execute(PomTask thin) {
-						SourceSetContainer sourceSets = project.getConvention()
-								.getPlugin(JavaPluginConvention.class).getSourceSets();
-						File resourcesDir = sourceSets.getByName("main").getOutput()
-								.getResourcesDir();
-						thin.setOutput(new File(resourcesDir, "META-INF/"
-								+ project.getGroup() + "/" + project.getName()));
-					}
-				});
+		final PomTask thin = taskContainer.create("thinPom", PomTask.class);
+		thin.doFirst(new Action<Task>() {
+			@Override
+			public void execute(Task task) {
+				SourceSetContainer sourceSets = project.getConvention()
+						.getPlugin(JavaPluginConvention.class).getSourceSets();
+				File resourcesDir = sourceSets.getByName("main").getOutput()
+						.getResourcesDir();
+				thin.setOutput(new File(resourcesDir, "META-INF/maven/"
+						+ project.getGroup() + "/" + project.getName()));
+			}
+		});
 		project.getTasks().withType(Jar.class, new Action<Jar>() {
 			@Override
 			public void execute(Jar jar) {

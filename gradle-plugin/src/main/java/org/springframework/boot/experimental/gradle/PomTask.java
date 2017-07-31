@@ -43,6 +43,7 @@ public class PomTask extends DefaultTask {
 	public void generate() {
 		try {
 			output.mkdirs();
+			getLogger().info("Output: " + output);
 			PomDependencyManagementConfigurer pomConfigurer = getProject().getExtensions()
 					.findByType(DependencyManagementExtension.class).getPomConfigurer();
 			getProject().getConvention().findPlugin(MavenPluginConvention.class).pom()
