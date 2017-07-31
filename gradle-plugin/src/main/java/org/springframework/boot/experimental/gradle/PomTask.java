@@ -46,8 +46,13 @@ public class PomTask extends DefaultTask {
 			getLogger().info("Output: " + output);
 			PomDependencyManagementConfigurer pomConfigurer = getProject().getExtensions()
 					.findByType(DependencyManagementExtension.class).getPomConfigurer();
-			getProject().getConvention().findPlugin(MavenPluginConvention.class).pom()
-					.withXml(pomConfigurer).writeTo(new File(output, "pom.xml"));
+			MavenPluginConvention maven = getProject().getConvention()
+					.findPlugin(MavenPluginConvention.class);
+			if (maven != null) {
+				maven.pom().withXml(pomConfigurer).writeTo(new File(output, "pom.xml"));
+			} else {
+				getLogger().info("Skipping pom generation (maybe you forgot to apply plugin: 'maven'?)");
+			}
 		}
 		catch (Exception e) {
 			throw new TaskExecutionException(this, e);
@@ -56,7 +61,8 @@ public class PomTask extends DefaultTask {
 
 	/**
 	 * Sets the location to which the properties file will be written. Defaults to
-	 * META-INF in the compiled classes output (build/resources/main/META-INF/${project.group}/${project.name}).
+	 * META-INF in the compiled classes output
+	 * (build/resources/main/META-INF/${project.group}/${project.name}).
 	 *
 	 * @param output the output location
 	 */
