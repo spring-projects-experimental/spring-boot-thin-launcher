@@ -215,8 +215,10 @@ apply plugin: 'org.springframework.boot.experimental.thin-launcher'
 
 ```
 
-A "dry run" can be executed in Gradle by calling the "thinResolve"
-task defined by the plugin, e.g.
+The plugin creates 2 tasks for every jar task in the project, one that
+reolves the dependencies, and one that copies the jar into the same
+location to make it easy to launch.  A "dry run" can be executed in
+Gradle by calling the "thinResolve" task defined by the plugin, e.g.
 
 ```
 $ cd samples/simple
@@ -233,6 +235,13 @@ thinResolvePrepare {
 	into new File("${buildDir}/thin/deploy")
 }
 ```
+
+> NOTE: The "thinResolve" and "thinResolvePrepare" tasks are the
+> default names for a single jar project. If your jar task is not
+> called "jar", then the names are appended with the jar task name
+> (capitalized), e.g. "thinResolveMyJar" for a task called
+> "myJar"). If you have multiple jar tasks in the project, then each
+> one has its own resolve tasks.
 
 ## Deploying to Cloud Foundry (or Heroku)
 

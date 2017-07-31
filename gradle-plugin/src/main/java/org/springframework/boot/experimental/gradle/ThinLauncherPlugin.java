@@ -19,6 +19,7 @@ package org.springframework.boot.experimental.gradle;
 import java.io.File;
 import java.util.Arrays;
 
+import org.codehaus.groovy.util.StringUtil;
 import org.gradle.api.Action;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
@@ -27,6 +28,8 @@ import org.gradle.api.tasks.Copy;
 import org.gradle.api.tasks.Exec;
 import org.gradle.internal.jvm.Jvm;
 import org.gradle.jvm.tasks.Jar;
+
+import org.springframework.util.StringUtils;
 
 /**
  * Gradle {@link Plugin} for Spring Boot's thin launcher.
@@ -59,14 +62,14 @@ public class ThinLauncherPlugin implements Plugin<Project> {
 	}
 
 	private void createCopyTask(final Project project, final Jar jar) {
-		final Copy copy = project.getTasks().create("thinResolvePrepare", Copy.class);
+		final Copy copy = project.getTasks().create("thinResolvePrepare" + suffix(jar), Copy.class);
 		copy.dependsOn("bootRepackage");
 		copy.from(jar.getOutputs().getFiles());
 		copy.into(new File(project.getBuildDir(), "thin/root"));
 	}
 
 	private void createResolveTask(final Project project, final Jar jar) {
-		final Exec exec = project.getTasks().create("thinResolve", Exec.class);
+		final Exec exec = project.getTasks().create("thinResolve" + suffix(jar), Exec.class);
 		exec.dependsOn("thinResolvePrepare");
 		exec.doFirst(new Action<Task>() {
 			@SuppressWarnings("unchecked")
@@ -79,6 +82,11 @@ public class ThinLauncherPlugin implements Plugin<Project> {
 						jar.getArchiveName()));
 			}
 		});
+	}
+
+	private String suffix(Jar jar) {
+		String name = jar.getName();
+		return "jar".equals(name) ? "" : StringUtils.capitalize(name);
 	}
 
 }
