@@ -33,10 +33,8 @@ import org.springframework.util.StringUtils;
 /**
  * Gradle {@link Plugin} for Spring Boot's thin launcher.
  * <p>
- * If the Java plugin is applied to the project, a {@link GenerateLauncherPropertiesTask}
- * named {@code generateLibProperties} is added to the project. This task is configured to
- * use the {@code runtime} configuration to generate a {@code META-INF/thin.properties}
- * file in the {@code main} source set's resource output directory.
+ * If the Java plugin is applied to the project, a task named {@code thinResolve} is added
+ * to the project. This task is run the project jar and download its dependencies.
  *
  * @author Andy Wilkinson
  */
@@ -61,20 +59,23 @@ public class ThinLauncherPlugin implements Plugin<Project> {
 	}
 
 	private void createCopyTask(final Project project, final Jar jar) {
-		final Copy copy = project.getTasks().create("thinResolvePrepare" + suffix(jar), Copy.class);
+		final Copy copy = project.getTasks().create("thinResolvePrepare" + suffix(jar),
+				Copy.class);
 		copy.dependsOn("bootRepackage");
 		copy.from(jar.getOutputs().getFiles());
 		copy.into(new File(project.getBuildDir(), "thin/root"));
 	}
 
 	private void createResolveTask(final Project project, final Jar jar) {
-		final Exec exec = project.getTasks().create("thinResolve" + suffix(jar), Exec.class);
-		exec.dependsOn("thinResolvePrepare");
+		final Exec exec = project.getTasks().create("thinResolve" + suffix(jar),
+				Exec.class);
+		final String prepareTask = "thinResolvePrepare" + suffix(jar);
+		exec.dependsOn(prepareTask);
 		exec.doFirst(new Action<Task>() {
 			@SuppressWarnings("unchecked")
 			@Override
 			public void execute(Task task) {
-				Copy copy = (Copy) project.getTasks().getByName("thinResolvePrepare");
+				Copy copy = (Copy) project.getTasks().getByName(prepareTask);
 				exec.setWorkingDir(copy.getOutputs().getFiles().getSingleFile());
 				exec.setCommandLine(Jvm.current().getJavaExecutable());
 				exec.args(Arrays.asList("-Dthin.root=.", "-Dthin.dryrun", "-jar",
