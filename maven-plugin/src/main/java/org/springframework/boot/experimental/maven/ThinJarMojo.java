@@ -17,23 +17,15 @@
 package org.springframework.boot.experimental.maven;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
 
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.resolver.ArtifactResolutionRequest;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Component;
-import org.apache.maven.plugins.annotations.LifecyclePhase;
-import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
-import org.apache.maven.plugins.annotations.ResolutionScope;
-import org.apache.maven.project.MavenProject;
 import org.apache.maven.repository.RepositorySystem;
-import org.codehaus.plexus.util.FileUtils;
 
 import org.springframework.boot.loader.tools.JavaExecutable;
 import org.springframework.boot.loader.tools.RunProcess;
@@ -53,81 +45,20 @@ import org.springframework.boot.loader.tools.RunProcess;
  * @author Dave Syer
  *
  */
-@Mojo(name = "resolve", defaultPhase = LifecyclePhase.PACKAGE, requiresProject = true, threadSafe = true, requiresDependencyResolution = ResolutionScope.NONE, requiresDependencyCollection = ResolutionScope.NONE)
-public class ThinJarMojo extends AbstractMojo {
-
-	/**
-	 * The Maven project.
-	 */
-	@Parameter(defaultValue = "${project}", readonly = true, required = true)
-	private MavenProject project;
-
-	@Component
-	private RepositorySystem repositorySystem;
-
-	/**
-	 * Directory containing the downloaded archives.
-	 */
-	@Parameter(defaultValue = "${project.build.directory}/thin/root", required = true)
-	private File outputDirectory;
+public abstract class ThinJarMojo extends AbstractMojo {
 
 	/**
 	 * Skip the execution.
 	 */
 	@Parameter(property = "skip", defaultValue = "false")
-	private boolean skip;
+	protected boolean skip;
 
-	/**
-	 * A list of the deployable thin libraries that must be downloaded and assembled.
-	 */
-	@Parameter
-	private List<Dependency> deployables;
-
-	/**
-	 * A flag to indicate whether to include the current project as a deployable.
-	 */
-	@Parameter
-	private boolean includeSelf = true;
+	@Component
+	private RepositorySystem repositorySystem;
 
 	private static final int EXIT_CODE_SIGINT = 130;
 
-	@Override
-	public void execute() throws MojoExecutionException, MojoFailureException {
-
-		if (skip) {
-			getLog().info("Skipping exection");
-			return;
-		}
-
-		List<File> deployables = new ArrayList<>();
-		if (this.includeSelf) {
-			deployables.add(this.project.getArtifact().getFile());
-		}
-		if (this.deployables != null) {
-			for (Dependency deployable : this.deployables) {
-				deployables.add(resolveFile(deployable));
-			}
-		}
-
-		for (File deployable : deployables) {
-			getLog().info("Deploying: " + deployable);
-			try {
-				getLog().info(
-						"Copying: " + deployable.getName() + " to " + outputDirectory);
-				FileUtils.copyFile(deployable,
-						new File(outputDirectory, deployable.getName()));
-				runWithForkedJvm(deployable, outputDirectory);
-			}
-			catch (Exception e) {
-				throw new MojoExecutionException("Cannot locate deployable " + deployable,
-						e);
-			}
-		}
-		getLog().info("All deployables ready in: " + outputDirectory);
-
-	}
-
-	private File resolveFile(Dependency deployable) {
+	protected File resolveFile(Dependency deployable) {
 		Artifact artifact = repositorySystem.createArtifactWithClassifier(
 				deployable.getGroupId(), deployable.getArtifactId(),
 				deployable.getVersion(), deployable.getType(),

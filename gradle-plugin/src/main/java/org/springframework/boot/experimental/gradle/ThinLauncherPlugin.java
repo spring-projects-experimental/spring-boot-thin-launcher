@@ -48,9 +48,14 @@ public class ThinLauncherPlugin implements Plugin<Project> {
 			public void execute(Jar jar) {
 				createCopyTask(project, jar);
 				createResolveTask(project, jar);
+				createPropertiesTask(project, jar);
 			}
 
 		});
+	}
+
+	private void createPropertiesTask(Project project, Jar jar) {
+		// TODO: a task that creates thin.properties
 	}
 
 	private void createCopyTask(final Project project, final Jar jar) {

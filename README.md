@@ -181,6 +181,22 @@ The "simple" sample has the same feature, but it also downloads and
 warms up the cache for the "app" sample, so you could use the same
 build to run both apps if you felt like it.
 
+The Maven plugin also has a `properties` mojo, so you can create or
+update `thin.properties` from the dependencies of the project
+directly. By default it creates a `thin.properties` in
+`src/main/resources/META-INF`, but you can switch it with the plugin
+configuration. Example:
+
+```
+$ cd samples/app
+$ mvn spring-boot-thin:properties -Dthin.output=.
+```
+
+By default the `thin.properties` is "computed" (i.e. it contains all
+transitive dependencies), but you can switch to just the declared
+dependencies using the "compute" configuration flag (`thin.compute` on
+the command line).
+
 ### Gradle
 
 The same features are available to Gradle users by adding a plugin:

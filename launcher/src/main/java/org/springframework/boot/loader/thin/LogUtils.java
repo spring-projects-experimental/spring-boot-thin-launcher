@@ -32,7 +32,7 @@ import ch.qos.logback.classic.LoggerContext;
  * @author Dave Syer
  *
  */
-public class LogUtils {
+class LogUtils {
 
 	public static void setLogLevel(Level level) {
 		setLogLevel(Logger.ROOT_LOGGER_NAME, level);
