@@ -261,19 +261,18 @@ public class PathResolver {
 		catch (Exception e) {
 			throw new IllegalStateException("Cannot load properties", e);
 		}
-		if (!merge(props, added)) {
-			throw new IllegalStateException("Cannot merge properties (inconsistent computed dependencies)");
-		}
+		merge(props, added);
 		return props;
 	}
 
-	private boolean merge(Properties props, Properties added) {
+	private void merge(Properties props, Properties added) {
 		if ("true".equals(props.get("computed"))) {
 			if (!"true".equals(added.get("computed"))) {
 				// Ensure there are no added dependencies since they are not computed
 				for (Object key : added.keySet()) {
-					if (((String)key).startsWith("dependencies.")) {
-						return false;
+					String name = (String)key;
+					if (name.startsWith("dependencies.") || name.startsWith("boms.")) {
+						added.remove(key);
 					}
 				}
 			}
@@ -281,14 +280,14 @@ public class PathResolver {
 			if ("true".equals(added.get("computed"))) {
 				// Ensure there are no added dependencies since they are not computed
 				for (Object key : props.keySet()) {
-					if (((String)key).startsWith("dependencies.")) {
-						return false;
+					String name = (String)key;
+					if (name.startsWith("dependencies.") || name.startsWith("boms.")) {
+						props.remove(key);
 					}
 				}
 			}
 		}
 		props.putAll(added);
-		return true;
 	}
 
 	private List<Archive> archives(List<Dependency> dependencies) {

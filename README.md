@@ -49,7 +49,7 @@ In Gradle you also need to generate a `pom.xml` or a `thin.properties` (unless y
 
 The generated pom goes in the normal maven place by default under `META-INF/maven`. You can configure the output directory by setting the "output" property of the "thinPom" task.
 
-You can customize the generated `pom.xml`, or switch it off, by creating your own task in `build.gradle` and forcing the jar task to depend on it instead of "thinPom". Example (which just duplicates the default):
+You can customize the generated `pom.xml`, or switch it off, by creating your own task in `build.gradle` and forcing the jar task to depend on it instead of "thinPom", or by simply not using the Thin Gradle plugin. Example (which just duplicates the default):
 
 ```groovy
 task createPom {
@@ -73,7 +73,6 @@ The generated properties file is "computed" (it contains all the transitive depe
 
 If you look at the jar file produced by the build you will see that it
 is "thin" (a few KB), but executable with `java -jar ...`.
-
 
 ## How does it Work?
 
@@ -284,7 +283,7 @@ You can set a variety of options on the command line with system properties (`-D
 | `thin.main` | Start-Class in MANIFEST.MF| The main class to launch (for a Spring Boot app, usually the one with `@SpringBootApplication`)|
 | `thin.dryrun` | false | Only resolve and download the dependencies. Don't run any main class. N.B. any value other than "false" (even empty) is true. |
 | `thin.offline` | false | Switch to "offline" mode. All dependencies must be avalailable locally (e.g. via a previous dry run) or there will be an exception. |
-| `thin.classpath` | false | Only print the classpath. Don't run and main class.  N.B. any value other than "false" (even empty) is true. |
+| `thin.classpath` | false | Only print the classpath. Don't run the main class.  N.B. any value other than "false" (even empty) is true. |
 | `thin.compute` | false | Only compute and print the dependencies in the form of a properties file. Don't run and main class.  N.B. any value other than "false" (even empty) is true. |
 | `thin.root | `${user.home}/.m2` | The location of the local jar cache, laid out as a maven repository. The launcher creates a new directory here called "repository" if it doesn't exist. |
 | `thin.archive` | the same as the target archive | The archive to launch. Can be used to launch a JAR file that was build with a different version of the thin launcher, for instance, or a fat jar built by Spring Boot without the thin launcher. |
@@ -420,15 +419,14 @@ $ java -jar myapp.jar --thin.profile=rapid --thin.compute > thin-super.propertie
 $ java -jar myapp.jar --thin.profile=super
 ```
 
-Note that the generated `thin.properties` in these examples contains
-the property value `computed=true`. This tells the dependency graph
-calculator that the dependencies provided do not need to have their
-transitve dependencies or versions computed. It is an error to combine
-more than one properties file if they have different values of the
-`computed` flag, if they both also contain dependencies. Note that
-this means if you have a computed profile it cannot be used when the
-jar already contains a non-computed `thin.properties` (the
-profile-less `thin.properties` is always included).
+Note that the generated `thin.properties` in these examples contains the property value
+`computed=true`. This tells the dependency graph calculator that the dependencies provided
+do not need to have their transitive dependencies or versions computed. It is possible to
+combine more than one properties file if they have different values of the `computed`
+flag, but if they both also contain dependencies then only the computed ones will be
+used. Note that this means you can compute a profile using `--thin.compute` and use it as
+a cache, speeding up startup without affecting any other settings that might be in other
+`thin.properties`.
 
 ## License
 This project is Open Source software released under the
