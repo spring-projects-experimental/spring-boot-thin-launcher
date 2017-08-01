@@ -379,6 +379,9 @@ public class DependencyResolver {
 	private org.apache.maven.artifact.repository.Authentication authentication( MavenSettings settings, RepositorySystemSession session, 
 			RemoteRepository remote, Authentication authentication) {
 		AuthenticationContext context = AuthenticationContext.forRepository(session, remote);
+		if (context==null) {
+			return null;
+		}
 		authentication.fill(context, "username", Collections.<String, String>emptyMap());
 		authentication.fill(context, "password", Collections.<String, String>emptyMap());
 		authentication.fill(context, "passphrase", Collections.<String, String>emptyMap());
