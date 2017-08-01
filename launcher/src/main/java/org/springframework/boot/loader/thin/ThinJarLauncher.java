@@ -68,16 +68,10 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 
 	/**
 	 * System property to signal a "classpath run" where dependencies are resolved but the
-	 * main method is not executed and the output is in the form of a classpath.
+	 * main method is not executed and the output is in the form of a classpath. Supported
+	 * formats are "path" and "properties".
 	 */
 	public static final String THIN_CLASSPATH = "thin.classpath";
-
-	/**
-	 * System property to signal a "compute run" where dependencies are resolved but the
-	 * main method is not executed and the output is in the form of a thin.properties
-	 * file.
-	 */
-	public static final String THIN_COMPUTE = "thin.compute";
 
 	/**
 	 * System property holding the path to the root directory, where Maven repository and
@@ -148,10 +142,11 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 		addCommandLineProperties(args);
 		args = removeThinArgs(args);
 		String root = environment.resolvePlaceholders("${" + THIN_ROOT + ":}");
-		boolean classpath = !"false".equals(
-				environment.resolvePlaceholders("${" + THIN_CLASSPATH + ":false}"));
-		boolean compute = !"false"
-				.equals(environment.resolvePlaceholders("${" + THIN_COMPUTE + ":false}"));
+		String classpathValue = environment
+				.resolvePlaceholders("${" + THIN_CLASSPATH + ":false}");
+		boolean classpath = "".equals(classpathValue) || "true".equals(classpathValue)
+				|| "path".equals(classpathValue);
+		boolean compute = "properties".equals(classpathValue);
 		boolean trace = !"false"
 				.equals(environment.resolvePlaceholders("${thin.trace:${trace:false}}"));
 		if (classpath || compute) {

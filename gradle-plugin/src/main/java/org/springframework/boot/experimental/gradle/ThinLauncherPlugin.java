@@ -37,9 +37,20 @@ import org.springframework.util.StringUtils;
 /**
  * Gradle {@link Plugin} for Spring Boot's thin launcher.
  * <p>
- * If the Java plugin is applied to the project, a task named {@code thinResolve} is added
- * to the project. This task is run the project jar and download its dependencies.
- *
+ * If the Java plugin is applied to the project, some tasks are added to the project.
+ * <ul>
+ * <li>"thinResolve": runs the project jar and download its dependencies. If you have more
+ * than one jar task then an additional task is created for each one named
+ * "thinResolve[JarTaskName]" (where "JarTaskName" is the capitalized name of the jar
+ * task).</li>
+ * <li>"thinResolvePrepare": copies the project jar to the "root" directory preparing for
+ * the resolution. The same naming convention applies to multiple jar tasks.</li>
+ * <li>"thinProperties": calculates thin.properties and puts them in the main build
+ * output.</li>
+ * <li>"thinPom": runs automatically if you apply the Maven plugin. Generates a pom.xml
+ * and puts it in the main build output.</li>
+ * </p>
+ * 
  * @author Andy Wilkinson
  */
 public class ThinLauncherPlugin implements Plugin<Project> {

@@ -55,7 +55,7 @@ public class ThinJarLauncherTests {
 
 	@Test
 	public void compute() throws Exception {
-		String[] args = new String[] { "--thin.compute",
+		String[] args = new String[] { "--thin.classpath=properties",
 				"--thin.archive=src/test/resources/apps/basic"};
 		ThinJarLauncher.main(args);
 		assertThat(output.toString()).contains("dependencies.spring-web=org.springframework:spring-web:4.3.3.RELEASE\n");

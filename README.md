@@ -189,21 +189,19 @@ The "simple" sample has the same feature, but it also downloads and
 warms up the cache for the "app" sample, so you could use the same
 build to run both apps if you felt like it.
 
-The Maven plugin also has a `properties` mojo, so you can create or
-update `thin.properties` from the dependencies of the project
-directly. By default it creates a `thin.properties` in
-`src/main/resources/META-INF`, but you can switch it with the plugin
-configuration. Example:
+The Maven plugin also has a `properties` mojo, so you can create or update
+`thin.properties` from the dependencies of the project directly. By default it creates a
+`thin.properties` in `src/main/resources/META-INF`, but you can change the output
+directory with the plugin configuration. Example:
 
 ```
 $ cd samples/app
 $ mvn spring-boot-thin:properties -Dthin.output=.
 ```
 
-By default the `thin.properties` is "computed" (i.e. it contains all
-transitive dependencies), but you can switch to just the declared
-dependencies using the "compute" configuration flag (`thin.compute` on
-the command line).
+By default the `thin.properties` is "computed" (i.e. it contains all transitive
+dependencies), but you can switch to just the declared dependencies using the "compute"
+configuration flag in the plugin (or `-Dthin.compute=false` on the command line).
 
 ### Gradle
 
@@ -283,8 +281,7 @@ You can set a variety of options on the command line with system properties (`-D
 | `thin.main` | Start-Class in MANIFEST.MF| The main class to launch (for a Spring Boot app, usually the one with `@SpringBootApplication`)|
 | `thin.dryrun` | false | Only resolve and download the dependencies. Don't run any main class. N.B. any value other than "false" (even empty) is true. |
 | `thin.offline` | false | Switch to "offline" mode. All dependencies must be avalailable locally (e.g. via a previous dry run) or there will be an exception. |
-| `thin.classpath` | false | Only print the classpath. Don't run the main class.  N.B. any value other than "false" (even empty) is true. |
-| `thin.compute` | false | Only compute and print the dependencies in the form of a properties file. Don't run and main class.  N.B. any value other than "false" (even empty) is true. |
+| `thin.classpath` | false | Only print the classpath. Don't run the main class. Two formats are supported: "path" and "properties". For backwards compatibility "true" or empty are equivalent to "path". |
 | `thin.root | `${user.home}/.m2` | The location of the local jar cache, laid out as a maven repository. The launcher creates a new directory here called "repository" if it doesn't exist. |
 | `thin.archive` | the same as the target archive | The archive to launch. Can be used to launch a JAR file that was build with a different version of the thin launcher, for instance, or a fat jar built by Spring Boot without the thin launcher. |
 | `thin.parent` | `<empty>` | A parent archive to use for dependency management and common classpath entries. If you run two apps with the same parent, they will have a classpath that is the same, reading from left to right, until they actually differ. |
@@ -350,7 +347,7 @@ The launcher has some optional arguments that result in classpath
 computations, instead of running the Boot app. E.g.
 
 ```
-$ java -jar myapp.jar --thin.classpath
+$ java -jar myapp.jar --thin.classpath=path
 ```
 
 prints out (on stdout) a class path in the form that can be used
@@ -358,14 +355,14 @@ directly in `java -cp`. So this is a way to run the app from its main
 method (which is faster than using the launcher):
 
 ```
-$ CLASSPATH=`java -jar myapp.jar --thin.classpath`
+$ CLASSPATH=`java -jar myapp.jar --thin.classpath=path`
 $ java -cp "$CLASSPATH:myapp.jar" demo.MyApplication
 ```
 
 You can also compute the classpath using explicit name and profile parameters:
 
 ```
-$ java -jar myapp.jar --thin.classpath --thin.name=app --thin.profile=dev
+$ java -jar myapp.jar --thin.classpath=path --thin.name=app --thin.profile=dev
 ```
 
 will look for `app.properties` and `app-dev.properties` to list the dependencies.
@@ -375,8 +372,8 @@ prefix for the classpath. Two apps that share a parent then have the
 same prefix, and can share classes using `-Xshare:on`. For example:
 
 ```
-$ CP1=`java -jar myapp.jar --thin.classpath`
-$ CP2=`java -jar otherapp.jar --thin.classpath --thin.parent=myapp.jar`
+$ CP1=`java -jar myapp.jar --thin.classpath=path`
+$ CP2=`java -jar otherapp.jar --thin.classpath=path --thin.parent=myapp.jar`
 
 $ java -XX:+UnlockCommercialFeatures -XX:+UseAppCDS -Xshare:off \
   -XX:DumpLoadedClassList=app.classlist \
@@ -395,15 +392,14 @@ the two apps at the end are sharing class data from `app.jsa` and will
 also start up faster (e.g. 6s startup goes down to 4s for
 a vanilla Eureka Server).
 
-The thin launcher can be used to pre-compute its own dependency graph
-in the form of a properties file, which also speeds up the launch a
-bit, even if you still have to resolve all the jars (remotely or from
-the cache). To compute the dependency graph and output the result in
-the form of a properties file, just use the `thin.compute` flag on
+The thin launcher can be used to pre-compute its own dependency graph in the form of a
+properties file, which also speeds up the launch a bit, even if you still have to resolve
+all the jars (remotely or from the cache). To compute the dependency graph and output the
+result in the form of a properties file, just use the `thin.classpath=properties` flag on
 startup, e.g.
 
 ```
-$ java -jar myapp.jar --thin.compute > thin.properties
+$ java -jar myapp.jar --thin.classpath=properties > thin.properties
 $ java -jar myapp.jar
 ```
 
@@ -424,9 +420,9 @@ Note that the generated `thin.properties` in these examples contains the propert
 do not need to have their transitive dependencies or versions computed. It is possible to
 combine more than one properties file if they have different values of the `computed`
 flag, but if they both also contain dependencies then only the computed ones will be
-used. Note that this means you can compute a profile using `--thin.compute` and use it as
-a cache, speeding up startup without affecting any other settings that might be in other
-`thin.properties`.
+used. Note that this means you can compute a profile using `--thin.classpath=properties`
+and use it as a cache, speeding up startup without affecting any other settings that might
+be in other `thin.properties`.
 
 ## License
 This project is Open Source software released under the
