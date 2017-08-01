@@ -282,7 +282,7 @@ You can set a variety of options on the command line with system properties (`-D
 | `thin.dryrun` | false | Only resolve and download the dependencies. Don't run any main class. N.B. any value other than "false" (even empty) is true. |
 | `thin.offline` | false | Switch to "offline" mode. All dependencies must be avalailable locally (e.g. via a previous dry run) or there will be an exception. |
 | `thin.classpath` | false | Only print the classpath. Don't run the main class. Two formats are supported: "path" and "properties". For backwards compatibility "true" or empty are equivalent to "path". |
-| `thin.root | `${user.home}/.m2` | The location of the local jar cache, laid out as a maven repository. The launcher creates a new directory here called "repository" if it doesn't exist. |
+| `thin.root` | `${user.home}/.m2` | The location of the local jar cache, laid out as a maven repository. The launcher creates a new directory here called "repository" if it doesn't exist. |
 | `thin.archive` | the same as the target archive | The archive to launch. Can be used to launch a JAR file that was build with a different version of the thin launcher, for instance, or a fat jar built by Spring Boot without the thin launcher. |
 | `thin.parent` | `<empty>` | A parent archive to use for dependency management and common classpath entries. If you run two apps with the same parent, they will have a classpath that is the same, reading from left to right, until they actually differ. |
 | `thin.location` | `file:.,classpath:/` | The path to directory containing thin properties files (as per `thin.name`), as a comma-separated list of resource locations (directories). These locations plus relative /META-INF will be searched. |
@@ -426,5 +426,5 @@ be in other `thin.properties`.
 
 ## License
 This project is Open Source software released under the
-http://www.apache.org/licenses/LICENSE-2.0.html[Apache 2.0 license].
+[Apache 2.0 license](http://www.apache.org/licenses/LICENSE-2.0.html).
 
