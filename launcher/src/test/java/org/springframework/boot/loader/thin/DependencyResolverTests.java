@@ -6,6 +6,8 @@ import java.util.Properties;
 
 import org.assertj.core.api.Condition;
 import org.eclipse.aether.graph.Dependency;
+import org.junit.After;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -15,6 +17,7 @@ import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.core.io.support.PropertiesLoaderUtils;
+import org.springframework.util.FileSystemUtils;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -24,6 +27,11 @@ public class DependencyResolverTests {
 	public ExpectedException expected = ExpectedException.none();
 
 	private DependencyResolver resolver = DependencyResolver.instance();
+
+	@After
+	public void clear() {
+		System.clearProperty("maven.home");
+	}
 
 	@Test
 	public void localPom() throws Exception {
@@ -70,7 +78,8 @@ public class DependencyResolverTests {
 		// Transitive from a starter
 		assertThat(dependencies).filteredOn("artifact.artifactId", "spring-boot-starter")
 				.first().is(version("1.4.2.RELEASE"));
-		assertThat(dependencies).filteredOn("artifact.artifactId", "bootstrap").first().is(resolved());
+		assertThat(dependencies).filteredOn("artifact.artifactId", "bootstrap").first()
+				.is(resolved());
 	}
 
 	@Test
@@ -218,6 +227,16 @@ public class DependencyResolverTests {
 		assertThat(dependencies.size()).isGreaterThan(20);
 	}
 
+	@Test
+	@Ignore("Set up a secure server and declare it in your settings.xml to run this test. Point it at your .m2/repository so it can resolve the app sample from this project.")
+	public void authentication() throws Exception {
+		FileSystemUtils.deleteRecursively(new File("target/root"));
+		System.setProperty("maven.home", "target/root");
+		Resource resource = new ClassPathResource("apps/authentication/pom.xml");
+		List<Dependency> dependencies = resolver.dependencies(resource);
+		assertThat(dependencies.size()).isGreaterThan(16);
+	}
+
 	static Condition<Dependency> version(final String version) {
 		return new Condition<Dependency>("artifact matches " + version) {
 			@Override
@@ -231,7 +250,7 @@ public class DependencyResolverTests {
 		return new Condition<Dependency>("artifact is resolved") {
 			@Override
 			public boolean matches(Dependency value) {
-				return value.getArtifact().getFile()!=null;
+				return value.getArtifact().getFile() != null;
 			}
 		};
 	}
