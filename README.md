@@ -311,18 +311,30 @@ $ java -jar app.jar --thin.location=file:./config
 
 ### How to Create a Docker File System Layer
 
-```
-FROM openjdk:8
+Precompute the dependencies:
 
+```
+$ java -jar app.jar --thin.root=m2 --thin.dryrun
+$ java -jar app.jar --thin.classpath=properties > thin.properties
+```
+
+Then build a docker image using a `Dockerfile` based on this:
+
+```
+FROM openjdk:8-jdk-alpine
+VOLUME /tmp
+
+ADD m2 m2
 ADD app.jar app.jar
 ADD thin.properties thin.properties
-
-RUN java -jar app.jar --thin.root=/m2 --thin.dryrun
 
 ENTRYPOINT [ "sh", "-c", "java -Djava.security.egd=file:/dev/./urandom -jar app.jar --thin.root=/m2" ]
 
 EXPOSE 8080
 ```
+
+The step to add a `thin.properties` is optional, as is its calculation (you could maintain a hand-written properties file inside the JAR as well).
+
 
 ## Building
 
