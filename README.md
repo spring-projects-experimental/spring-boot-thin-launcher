@@ -1,4 +1,4 @@
-A "thin" jar launcher for java apps. Version 1.0.5.RELEASE is in Maven Central. See https://github.com/spring-projects/spring-boot/issues/1813 for more discussion and ideas.
+A "thin" jar launcher for java apps. Version 1.0.6.RELEASE is in Maven Central. See https://github.com/spring-projects/spring-boot/issues/1813 for more discussion and ideas.
 
 ## Getting Started
 
@@ -29,7 +29,7 @@ and in Gradle
 ```groovy
 buildscript {
 	ext {
-		springBootVersion = '1.5.2.RELEASE'
+		springBootVersion = '1.5.6.RELEASE'
 		wrapperVersion = '1.0.6.RELEASE'
 	}
 	repositories {
@@ -63,13 +63,13 @@ task createPom {
 jar.dependsOn = [createPom]
 ```
 
-Instead of or as well as a `pom.xml` you could generate a `thin.properties` using `gradle thinProperties` (the task is always registered by the Thin Gradle plugin but is not exewcuted by default). By default it shows up in `META-INF` in the built resources, so you need to run it before the jar is built, either manually, or via a task dependency, e.g.
+Instead of or as well as a `pom.xml` you could generate a `thin.properties` using `gradle thinProperties` (the task is always registered by the Thin Gradle plugin but is not executed by default). By default it shows up in `META-INF` in the built resources, so you need to run it before the jar is built, either manually, or via a task dependency, e.g.
 
 ```groovy
 jar.dependsOn = [thinProperties]
 ```
 
-The generated properties file is "computed" (it contains all the transitive dependencies), so if you have that the dependencies from the `pom.xml` will be ignored.
+The generated properties file is "computed" (it contains all the transitive dependencies), so if you have that, the dependencies from the `pom.xml` will be ignored.
 
 If you look at the jar file produced by the build you will see that it
 is "thin" (a few KB), but executable with `java -jar ...`.
