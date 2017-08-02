@@ -271,6 +271,8 @@ $ cf push myapp -p target/thin
 
 (Note the use of a subdirectory `.m2` to hold the local repository cache - this works because the root is the default `HOME` directory in a Cloud Foundry app.)
 
+The Maven plugin has a "resolve" task with a flag unpack (or `-Dthin.unpack` on the command line) that creates the cache in the precise form that you need to push to Cloud Foundry. The unpack flag is false by default, so remember to set it if you want to use Maven to prepare the push.
+
 
 ## Command Line Options
 

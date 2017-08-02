@@ -74,7 +74,7 @@ public abstract class ThinJarMojo extends AbstractMojo {
 		try {
 			RunProcess runProcess = new RunProcess(workingDirectory,
 					new JavaExecutable().toString(), "-Dthin.dryrun", "-Dthin.root=.",
-					"-jar", archive.getName());
+					"-jar", archive.getAbsolutePath());
 			Runtime.getRuntime()
 					.addShutdownHook(new Thread(new RunProcessKiller(runProcess)));
 			getLog().debug("Running: " + archive);

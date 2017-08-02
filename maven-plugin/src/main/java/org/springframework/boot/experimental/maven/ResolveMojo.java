@@ -23,11 +23,15 @@ import java.util.List;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
+import org.codehaus.plexus.archiver.UnArchiver;
+import org.codehaus.plexus.archiver.manager.ArchiverManager;
+import org.codehaus.plexus.archiver.manager.NoSuchArchiverException;
 import org.codehaus.plexus.util.FileUtils;
 
 /**
@@ -57,7 +61,7 @@ public class ResolveMojo extends ThinJarMojo {
 	/**
 	 * Directory containing the downloaded archives.
 	 */
-	@Parameter(defaultValue = "${project.build.directory}/thin/root", required = true)
+	@Parameter(defaultValue = "${project.build.directory}/thin/root", required = true, property="thin.outputDirectory")
 	private File outputDirectory;
 
 	/**
@@ -69,8 +73,20 @@ public class ResolveMojo extends ThinJarMojo {
 	/**
 	 * A flag to indicate whether to include the current project as a deployable.
 	 */
-	@Parameter
+	@Parameter(property="thin.includeSelf")
 	private boolean includeSelf = true;
+
+	/**
+	 * A flag to indicate whether to unpack the main archive (self).
+	 */
+	@Parameter(property="thin.unpack")
+	private boolean unpack = false;
+
+	/**
+	 * To look up Archiver/UnArchiver implementations
+	 */
+	@Component
+	protected ArchiverManager archiverManager;
 
 	@Override
 	public void execute() throws MojoExecutionException, MojoFailureException {
@@ -80,9 +96,12 @@ public class ResolveMojo extends ThinJarMojo {
 			return;
 		}
 
+		outputDirectory.mkdirs();
+
 		List<File> deployables = new ArrayList<>();
-		if (this.includeSelf) {
-			deployables.add(this.project.getArtifact().getFile());
+		File file = this.project.getArtifact().getFile();
+		if (this.includeSelf && !this.unpack) {
+			deployables.add(file);
 		}
 		if (this.deployables != null) {
 			for (Dependency deployable : this.deployables) {
@@ -95,6 +114,7 @@ public class ResolveMojo extends ThinJarMojo {
 			try {
 				getLog().info(
 						"Copying: " + deployable.getName() + " to " + outputDirectory);
+
 				FileUtils.copyFile(deployable,
 						new File(outputDirectory, deployable.getName()));
 				runWithForkedJvm(deployable, outputDirectory);
@@ -104,8 +124,23 @@ public class ResolveMojo extends ThinJarMojo {
 						e);
 			}
 		}
-		getLog().info("All deployables ready in: " + outputDirectory);
 
+		if (this.includeSelf && this.unpack) {
+			try {
+				runWithForkedJvm(file, outputDirectory);
+				UnArchiver archiver = archiverManager.getUnArchiver(file);
+				archiver.setSourceFile(file);
+				archiver.setDestDirectory(outputDirectory);
+				archiver.setOverwrite(true);
+				archiver.setUseJvmChmod(true);
+				archiver.extract();
+			}
+			catch (NoSuchArchiverException e) {
+				throw new MojoExecutionException("Cannot unpack artifact " + file, e);
+			}
+		}
+
+		getLog().info("All deployables and dependencies ready in: " + outputDirectory);
 	}
 
 }
