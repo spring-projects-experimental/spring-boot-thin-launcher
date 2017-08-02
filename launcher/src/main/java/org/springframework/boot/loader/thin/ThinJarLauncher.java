@@ -222,7 +222,8 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 		String extension = artifact.getExtension();
 		return artifact.getGroupId() + ":" + artifact.getArtifactId()
 				+ (StringUtils.hasText(extension) && !"jar".equals(extension)
-						? ":" + extension : "")
+						? ":" + extension
+						: "")
 				+ (StringUtils.hasText(classifier) ? ":" + classifier : "") + ":"
 				+ artifact.getVersion();
 	}
@@ -386,8 +387,8 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 
 	private static Archive computeArchive(String[] args) throws Exception {
 		String path = getProperty(THIN_ARCHIVE);
+		String prefix = "--" + THIN_ARCHIVE;
 		for (String arg : args) {
-			String prefix = "--" + THIN_ARCHIVE;
 			if (arg.startsWith(prefix)) {
 				// You can always override --thin.archive on the command line
 				if (arg.length() <= prefix.length() + 1) {
