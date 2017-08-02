@@ -51,6 +51,7 @@ public class ThinConverterApplication {
 	}
 
 	private String repository = "target/thin/root/repository";
+	private String mainClass;
 
 	private void repackage(String[] args) throws IOException {
 		File jarfile = new File(System.getProperty("java.class.path"));
@@ -60,6 +61,9 @@ public class ThinConverterApplication {
 		}
 		if (args.length > 0) {
 			this.repository = args[0];
+		}
+		if (args.length > 1) {
+			this.mainClass = args[1];
 		}
 		if (needsHelp(args, jarfile)) {
 			help();
@@ -73,19 +77,15 @@ public class ThinConverterApplication {
 
 	private void help() {
 		System.out.println(
-				"\nConverts a thin executable jar to a Spring Boot fat jar with the same name but with '-exec' suffix.\n");
-		System.out.println(
-				"Usage: run a thin jar and make this one the --thin.archive for it. E.g. \n");
-		System.out.println(
-				"    $ java -jar myapp.jar --thin.dryrun --thin.root=target/thin/root");
-		System.out.println(
-				"    $ java -jar myapp.jar --thin.archive=maven://org.springframework.boot.experimental:spring-boot-thin-converter:1.0.7.BUILD-SNAPSHOT");
-		System.out.println("    $ java -jar myapp-exec.jar");
-		System.out.println("\n  Optional args:\n");
-		System.out.println(
-				"    repository - location of Maven repository cache (defaults to target/thin/root/repository)");
-		System.out.println(
-				"\n  *ALL* jars in the Maven repository will be packed into the fat jar (so don't use ~/.m2/repository).\n");
+				"\nConverts a thin executable jar to a Spring Boot fat jar with the same name but with '-exec' suffix.\n\n"
+						+ "Usage: run a thin jar and make this one the --thin.archive for it. E.g. \n\n"
+						+ "    $ java -jar myapp.jar --thin.dryrun --thin.root=target/thin/root\n"
+						+ "    $ java -jar myapp.jar --thin.archive=maven://org.springframework.boot.experimental:spring-boot-thin-converter:1.0.7.BUILD-SNAPSHOT\n"
+						+ "    $ java -jar myapp-exec.jar\n\n" + //
+						"  Optional args:\n\n" //
+						+ "    repository - location of Maven repository cache (defaults to target/thin/root/repository)\n"
+						+ "    mainClass  - name of main class in application (defaults to the one in the thin jar manifest)\n\n"
+						+ "  *ALL* jars in the Maven repository will be packed into the fat jar (so don't use ~/.m2/repository).\n");
 	}
 
 	private boolean needsHelp(String[] args, File jarfile) {
@@ -119,6 +119,9 @@ public class ThinConverterApplication {
 		manifest.getMainAttributes().remove(new Attributes.Name(BOOT_VERSION_ATTRIBUTE));
 		// We also want to replace this with the default one from the repackager
 		manifest.getMainAttributes().remove(Attributes.Name.MAIN_CLASS);
+		if (this.mainClass != null) {
+			manifest.getMainAttributes().put(Attributes.Name.MAIN_CLASS, this.mainClass);
+		}
 		return manifest;
 	}
 
