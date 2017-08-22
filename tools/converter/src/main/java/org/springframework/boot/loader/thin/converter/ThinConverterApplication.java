@@ -39,6 +39,10 @@ import org.springframework.boot.loader.tools.Repackager;
 import org.springframework.util.StringUtils;
 
 /**
+ * Utility for converting a thin jar to a standard Spring Boot executable fat jar. Command
+ * line arguments: Run the main method with no arguments (or --help) to print a usage
+ * message.
+ * 
  * @author Dave Syer
  *
  */

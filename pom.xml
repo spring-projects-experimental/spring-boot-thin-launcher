@@ -14,9 +14,9 @@
 		<module>wrapper</module>
 		<module>layout</module>
 		<module>launcher</module>
-		<module>converter</module>
 		<module>maven-plugin</module>
 		<module>gradle-plugin</module>
+		<module>tools</module>
 		<module>samples</module>
 		<module>deployer</module>
 	</modules>
