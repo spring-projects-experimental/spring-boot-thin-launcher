@@ -18,6 +18,7 @@
 	<modules>
 		<module>app</module>
 		<module>other</module>
+		<module>shadow</module>
 		<module>simple</module>	
 		<module>petclinic</module>	
 		<module>tests</module>

@@ -20,6 +20,7 @@ import java.io.File;
 import java.util.Arrays;
 
 import org.gradle.api.Action;
+import org.gradle.api.InvalidUserDataException;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 import org.gradle.api.Task;
@@ -72,29 +73,33 @@ public class ThinLauncherPlugin implements Plugin<Project> {
 
 	private void createPomTask(final Project project) {
 		TaskContainer taskContainer = project.getTasks();
-		final PomTask thin = taskContainer.create("thinPom", PomTask.class);
-		thin.doFirst(new Action<Task>() {
+		create(taskContainer, "thinPom", PomTask.class, new Action<PomTask>() {
 			@Override
-			public void execute(Task task) {
-				SourceSetContainer sourceSets = project.getConvention()
-						.getPlugin(JavaPluginConvention.class).getSourceSets();
-				File resourcesDir = sourceSets.getByName("main").getOutput()
-						.getResourcesDir();
-				thin.setOutput(new File(resourcesDir, "META-INF/maven/"
-						+ project.getGroup() + "/" + project.getName()));
-			}
-		});
-		project.getTasks().withType(Jar.class, new Action<Jar>() {
-			@Override
-			public void execute(Jar jar) {
-				jar.dependsOn(thin);
+			public void execute(final PomTask thin) {
+				thin.doFirst(new Action<Task>() {
+					@Override
+					public void execute(Task task) {
+						SourceSetContainer sourceSets = project.getConvention()
+								.getPlugin(JavaPluginConvention.class).getSourceSets();
+						File resourcesDir = sourceSets.getByName("main").getOutput()
+								.getResourcesDir();
+						thin.setOutput(new File(resourcesDir, "META-INF/maven/"
+								+ project.getGroup() + "/" + project.getName()));
+					}
+				});
+				project.getTasks().withType(Jar.class, new Action<Jar>() {
+					@Override
+					public void execute(Jar jar) {
+						jar.dependsOn(thin);
+					}
+				});
 			}
 		});
 	}
 
 	private void createPropertiesTask(final Project project) {
 		TaskContainer taskContainer = project.getTasks();
-		taskContainer.create("thinProperties", PropertiesTask.class,
+		create(taskContainer, "thinProperties", PropertiesTask.class,
 				new Action<PropertiesTask>() {
 					@Override
 					public void execute(PropertiesTask libPropertiesTask) {
@@ -113,29 +118,39 @@ public class ThinLauncherPlugin implements Plugin<Project> {
 	}
 
 	private void createCopyTask(final Project project, final Jar jar) {
-		final Copy copy = project.getTasks().create("thinResolvePrepare" + suffix(jar),
-				Copy.class);
-		copy.dependsOn("bootRepackage");
-		copy.from(jar.getOutputs().getFiles());
-		copy.into(new File(project.getBuildDir(), "thin/root"));
+		create(project.getTasks(), "thinResolvePrepare" + suffix(jar), Copy.class,
+				new Action<Copy>() {
+					@Override
+					public void execute(Copy copy) {
+						copy.dependsOn("bootRepackage");
+						copy.from(jar.getOutputs().getFiles());
+						copy.into(new File(project.getBuildDir(), "thin/root"));
+					}
+				});
 	}
 
 	private void createResolveTask(final Project project, final Jar jar) {
-		final Exec exec = project.getTasks().create("thinResolve" + suffix(jar),
-				Exec.class);
-		final String prepareTask = "thinResolvePrepare" + suffix(jar);
-		exec.dependsOn(prepareTask);
-		exec.doFirst(new Action<Task>() {
-			@SuppressWarnings("unchecked")
-			@Override
-			public void execute(Task task) {
-				Copy copy = (Copy) project.getTasks().getByName(prepareTask);
-				exec.setWorkingDir(copy.getOutputs().getFiles().getSingleFile());
-				exec.setCommandLine(Jvm.current().getJavaExecutable());
-				exec.args(Arrays.asList("-Dthin.root=.", "-Dthin.dryrun", "-jar",
-						jar.getArchiveName()));
-			}
-		});
+		create(project.getTasks(), "thinResolve" + suffix(jar),
+				Exec.class, new Action<Exec>() {
+					@Override
+					public void execute(final Exec exec) {
+						final String prepareTask = "thinResolvePrepare" + suffix(jar);
+						exec.dependsOn(prepareTask);
+						exec.doFirst(new Action<Task>() {
+							@SuppressWarnings("unchecked")
+							@Override
+							public void execute(Task task) {
+								Copy copy = (Copy) project.getTasks()
+										.getByName(prepareTask);
+								exec.setWorkingDir(
+										copy.getOutputs().getFiles().getSingleFile());
+								exec.setCommandLine(Jvm.current().getJavaExecutable());
+								exec.args(Arrays.asList("-Dthin.root=.", "-Dthin.dryrun",
+										"-jar", jar.getArchiveName()));
+							}
+						});
+					}
+				});
 	}
 
 	private String suffix(Jar jar) {
@@ -143,4 +158,14 @@ public class ThinLauncherPlugin implements Plugin<Project> {
 		return "jar".equals(name) ? "" : StringUtils.capitalize(name);
 	}
 
+	@SuppressWarnings("unchecked")
+	private <T extends Task> T create(TaskContainer taskContainer, String name,
+			Class<T> type, Action<? super T> configuration)
+			throws InvalidUserDataException {
+		Task existing = taskContainer.findByName(name);
+		if (existing != null) {
+			return (T) existing;
+		}
+		return taskContainer.create(name, type, configuration);
+	}
 }

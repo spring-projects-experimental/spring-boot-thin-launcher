@@ -1,0 +1,49 @@
+buildscript {
+	ext {
+		springBootVersion = '1.5.1.RELEASE'
+		wrapperVersion = '1.0.7.BUILD-SNAPSHOT'
+        shadowVersion = '2.0.1'
+	}
+	repositories {
+		jcenter()
+		mavenLocal()
+		mavenCentral()
+		maven { url "https://repo.spring.io/snapshot" }
+		maven { url "https://repo.spring.io/milestone" }
+	}
+	dependencies {
+        classpath "com.github.jengelman.gradle.plugins:shadow:${shadowVersion}"
+		classpath("org.springframework.boot.experimental:spring-boot-thin-gradle-plugin:${wrapperVersion}")
+		classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+	}
+}
+
+apply plugin: 'java'
+apply plugin: 'maven'
+apply plugin: 'eclipse'
+apply plugin: 'spring-boot'
+apply plugin: 'com.github.johnrengelman.shadow'
+apply plugin: 'org.springframework.boot.experimental.thin-launcher'
+
+group = 'com.example'
+version = '0.0.1-SNAPSHOT'
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+assemble.dependsOn = [shadowJar, bootRepackage]
+
+repositories {
+	mavenLocal()
+	mavenCentral()
+	maven { url "https://repo.spring.io/snapshot" }
+	maven { url "https://repo.spring.io/milestone" }
+}
+
+configurations {
+    testCompile.extendsFrom(compileOnly)
+}
+
+dependencies {
+	compileOnly('org.springframework.boot:spring-boot-starter')
+	testCompile('org.springframework.boot:spring-boot-starter-test')
+}

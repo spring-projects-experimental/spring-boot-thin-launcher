@@ -105,6 +105,20 @@
 						</goals>
 					</execution>
 					<execution>
+						<id>shadow</id>
+						<phase>pre-integration-test</phase>
+						<configuration>
+							<workingDirectory>${basedir}/../shadow</workingDirectory>
+							<executable>./gradlew</executable>
+							<arguments>
+								<argument>build</argument>
+							</arguments>
+						</configuration>
+						<goals>
+							<goal>exec</goal>
+						</goals>
+					</execution>
+					<execution>
 						<id>simple</id>
 						<phase>pre-integration-test</phase>
 						<configuration>
