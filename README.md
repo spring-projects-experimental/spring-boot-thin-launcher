@@ -132,22 +132,6 @@ for example.
 > variables or command line flags for its (smaller) set of optional
 > arguments.
 
-## Upgrades and Profiles
-
-You can upgrade all the libraries by changing the
-`thin.properties`. You can also read a local `thin.properties` from
-the current working directory, or set a System property `thin.name` to
-change the local file name (defaults to `thin`). There is also a
-`thin.profile` (comma separated list) which is appended to
-`thin.name`, so additional libraries can be added using
-`thin-{profile}.properties`. Profile-specific properties are loaded
-last so they take precedence. You can exclude and remove dependencies
-by prepending a key in the properties file with `exclusions.`.
-
-NOTE: You can add or override `thin.properties` entries on the command
-line or with System properties using key names in `thin.properties.*`
-(the prefix `thin.properties.` is stripped).
-
 ## Build Tools
 
 ### Maven
@@ -335,6 +319,84 @@ EXPOSE 8080
 
 The step to add a `thin.properties` is optional, as is its calculation (you could maintain a hand-written properties file inside the JAR as well).
 
+
+## How to Change Dependencies
+
+You can change the runtime dependencies, by changing the
+`thin.properties` in the jar. You can also read a local
+`thin.properties` from the current working directory, or set a System
+property `thin.name` to change the local file name (defaults to
+`thin`). There is also a `thin.profile` (comma separated list) which
+is appended to `thin.name`, so additional libraries can be added using
+`thin-{profile}.properties`. Profile-specific properties are loaded
+last so they take precedence. Example to pick up an extra set of
+dependencies in `thin.-rabbit.properties`:
+
+```
+$ java -jar myapp.jar --thin.profile=rabbit
+```
+
+Profile-specific `thin.properties` can be saved in the jar file
+(conventionally in `META-INF`), or in the current working directory by
+default.
+
+NOTE: You can add or override `thin.properties` entries on the command
+line or with System properties using key names in `thin.properties.*`
+(the prefix `thin.properties.` is stripped).
+
+## How to Upgrade Spring Boot or Spring Cloud
+
+If your main pom (or properties) file uses boms to manage dependency
+versions, you can change the version of the bom using
+`thin.properties`. E.g.
+
+```
+boms.spring-boot-dependencies=org.springframework.boot:spring-boot-dependencies:1.5.6.RELEASE
+...
+```
+
+If your main pom uses properties to manage dependencies (e.g. via the
+Spring Boot starter parent), you can change the value of the property
+using `thin.properties`. E.g.
+
+```
+spring-boot.version=1.5.6.RELEASE
+spring-cloud.version=Dalston.SR3
+```
+
+where the pom has
+
+```
+<dependencyManagement>
+  <dependencies>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-dependencies</artifactId>
+      <version>${spring-boot.version}</version>
+      <type>pom</type>
+      <scope>import</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.cloud</groupId>
+      <artifactId>spring-cloud-dependencies</artifactId>
+      <version>${spring-cloud.version}</version>
+      <type>pom</type>
+      <scope>import</scope>
+    </dependency>
+  </dependencies>
+</dependencyManagement>
+```
+
+## How to Exclude a Transitive Dependency
+
+You can exclude and remove dependencies
+by prepending a key in the properties file with `exclusions.`. E.g.
+
+```
+dependencies.spring-boot-starter-web=org.springframework.boot:spring-boot-starter-web
+dependencies.spring-boot-starter-jetty=org.springframework.boot:spring-boot-starter-jetty
+exclusions.spring-cloud-starter-tomcat=org.springframework.boot:spring-cloud-starter-tomcat
+```
 
 ## Building
 
