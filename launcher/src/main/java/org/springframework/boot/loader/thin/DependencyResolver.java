@@ -175,13 +175,13 @@ public class DependencyResolver {
 
 	public List<Dependency> dependencies(final Resource resource,
 			final Properties properties) {
-		initialize();
 		if ("true".equals(properties.getProperty("computed", "false"))) {
 			log.info("Dependencies are pre-computed in properties");
 			Model model = new Model();
 			model = ThinPropertiesModelProcessor.process(model, properties);
 			return aetherDependencies(model.getDependencies());
 		}
+		initialize();
 		try {
 			log.info("Computing dependencies from pom and properties");
 			ProjectBuildingRequest request = getProjectBuildingRequest(properties);
@@ -210,7 +210,8 @@ public class DependencyResolver {
 				List<Dependency> output = runtime(dependencies.getDependencies());
 				if (log.isInfoEnabled()) {
 					for (Dependency dependency : output) {
-						log.info("Resolved: " + coordinates(dependency)  + "=" + dependency.getArtifact().getFile());
+						log.info("Resolved: " + coordinates(dependency) + "="
+								+ dependency.getArtifact().getFile());
 					}
 				}
 				return output;
@@ -226,10 +227,15 @@ public class DependencyResolver {
 		List<Dependency> list = new ArrayList<>();
 		for (org.apache.maven.model.Dependency dependency : dependencies) {
 			Artifact artifact = new DefaultArtifact(coordinates(dependency));
-			Dependency converted = new Dependency(artifact,
-					"runtime");
-			artifact = artifact.setFile(resolve(converted));
-			converted = converted.setArtifact(artifact);
+			Dependency converted = new Dependency(artifact, "runtime");
+			list.add(converted);
+		}
+		initialize();
+		List<ArtifactResult> result = collectNonTransitive(list);
+		list = new ArrayList<>();
+		for (ArtifactResult item : result) {
+			Artifact artifact = item.getArtifact();
+			Dependency converted = new Dependency(artifact, "runtime");
 			list.add(converted);
 		}
 		return list;
@@ -253,7 +259,7 @@ public class DependencyResolver {
 		if ("jar".equals(extension) && !StringUtils.hasText(classifier)) {
 			extension = null;
 		}
-		boolean hasExtension = extension!=null && !"jar".equals(extension);
+		boolean hasExtension = extension != null && !"jar".equals(extension);
 		return artifact.getGroupId() + ":" + artifact.getArtifactId()
 				+ (hasExtension ? ":" + extension : "")
 				+ (StringUtils.hasText(classifier) ? ":" + classifier : "") + ":"
@@ -282,7 +288,8 @@ public class DependencyResolver {
 		DefaultProjectBuildingRequest projectBuildingRequest = new DefaultProjectBuildingRequest();
 		DefaultRepositorySystemSession session = createSession(properties);
 		projectBuildingRequest.setRepositoryMerging(RepositoryMerging.REQUEST_DOMINANT);
-		projectBuildingRequest.setRemoteRepositories(mavenRepositories(settings, session, properties));
+		projectBuildingRequest
+				.setRemoteRepositories(mavenRepositories(settings, session, properties));
 		projectBuildingRequest.getRemoteRepositories()
 				.addAll(mavenRepositories(settings, session));
 		projectBuildingRequest.setRepositorySession(session);
@@ -298,32 +305,38 @@ public class DependencyResolver {
 		List<ArtifactRepository> list = new ArrayList<>();
 		for (Profile profile : settings.getActiveProfiles()) {
 			for (Repository repository : profile.getRepositories()) {
-				addRepositoryIfMissing(settings, session, list, repository.getId(), repository.getUrl(),
+				addRepositoryIfMissing(settings, session, list, repository.getId(),
+						repository.getUrl(),
 						repository.getReleases() != null
-								? repository.getReleases().isEnabled() : true,
+								? repository.getReleases().isEnabled()
+								: true,
 						repository.getSnapshots() != null
-								? repository.getSnapshots().isEnabled() : false);
+								? repository.getSnapshots().isEnabled()
+								: false);
 			}
 		}
 		return list;
 	}
 
-	private List<ArtifactRepository> mavenRepositories(MavenSettings settings, DefaultRepositorySystemSession session, Properties properties) {
+	private List<ArtifactRepository> mavenRepositories(MavenSettings settings,
+			DefaultRepositorySystemSession session, Properties properties) {
 		List<ArtifactRepository> list = new ArrayList<>();
 		if (properties.containsKey(ThinJarLauncher.THIN_ROOT)) {
-			addRepositoryIfMissing(settings, session, list, "local", "file://" + getM2RepoDirectory(), true,
-					true);
+			addRepositoryIfMissing(settings, session, list, "local",
+					"file://" + getM2RepoDirectory(), true, true);
 		}
 		addRepositoryIfMissing(settings, session, list, "spring-snapshots",
 				"https://repo.spring.io/libs-snapshot", true, true);
-		addRepositoryIfMissing(settings, session, list, "central", "https://repo1.maven.org/maven2", true,
-				false);
+		addRepositoryIfMissing(settings, session, list, "central",
+				"https://repo1.maven.org/maven2", true, false);
 		return list;
 	}
 
-	private List<RemoteRepository> aetherRepositories(MavenSettings settings, DefaultRepositorySystemSession session, Properties properties) {
+	private List<RemoteRepository> aetherRepositories(MavenSettings settings,
+			DefaultRepositorySystemSession session, Properties properties) {
 		List<RemoteRepository> list = new ArrayList<>();
-		for (ArtifactRepository input : mavenRepositories(settings, session, properties)) {
+		for (ArtifactRepository input : mavenRepositories(settings, session,
+				properties)) {
 			list.add(remote(input));
 		}
 		return list;
@@ -342,8 +355,9 @@ public class DependencyResolver {
 		return policy;
 	}
 
-	private void addRepositoryIfMissing(MavenSettings settings, DefaultRepositorySystemSession session, List<ArtifactRepository> list, String id,
-			String url, boolean releases, boolean snapshots) {
+	private void addRepositoryIfMissing(MavenSettings settings,
+			DefaultRepositorySystemSession session, List<ArtifactRepository> list,
+			String id, String url, boolean releases, boolean snapshots) {
 		for (ArtifactRepository repo : list) {
 			if (url.equals(repo.getUrl())) {
 				return;
@@ -355,8 +369,9 @@ public class DependencyResolver {
 		list.add(repo(settings, session, id, url, releases, snapshots));
 	}
 
-	private ArtifactRepository repo(MavenSettings settings, DefaultRepositorySystemSession session, String id, String url, boolean releases,
-			boolean snapshots) {
+	private ArtifactRepository repo(MavenSettings settings,
+			DefaultRepositorySystemSession session, String id, String url,
+			boolean releases, boolean snapshots) {
 		MavenArtifactRepository repository = new MavenArtifactRepository();
 		repository.setLayout(new DefaultRepositoryLayout());
 		repository.setId(id);
@@ -368,29 +383,37 @@ public class DependencyResolver {
 		repository.setReleaseUpdatePolicy(releases ? enabled : disabled);
 		repository.setSnapshotUpdatePolicy(snapshots ? enabled : disabled);
 		RemoteRepository remote = new RemoteRepository.Builder(id, null, url).build();
-		Authentication authentication = settings.getAuthenticationSelector().getAuthentication(remote);
-		if (authentication!=null) {
-			remote = new RemoteRepository.Builder(remote).setAuthentication(authentication).build();
-			repository.setAuthentication(authentication(settings, session, remote, authentication));
+		Authentication authentication = settings.getAuthenticationSelector()
+				.getAuthentication(remote);
+		if (authentication != null) {
+			remote = new RemoteRepository.Builder(remote)
+					.setAuthentication(authentication).build();
+			repository.setAuthentication(
+					authentication(settings, session, remote, authentication));
 		}
 		return repository;
 	}
 
-	private org.apache.maven.artifact.repository.Authentication authentication( MavenSettings settings, RepositorySystemSession session, 
+	private org.apache.maven.artifact.repository.Authentication authentication(
+			MavenSettings settings, RepositorySystemSession session,
 			RemoteRepository remote, Authentication authentication) {
-		AuthenticationContext context = AuthenticationContext.forRepository(session, remote);
-		if (context==null) {
+		AuthenticationContext context = AuthenticationContext.forRepository(session,
+				remote);
+		if (context == null) {
 			return null;
 		}
 		authentication.fill(context, "username", Collections.<String, String>emptyMap());
 		authentication.fill(context, "password", Collections.<String, String>emptyMap());
-		authentication.fill(context, "passphrase", Collections.<String, String>emptyMap());
-		authentication.fill(context, "privateKey", Collections.<String, String>emptyMap());
-		org.apache.maven.artifact.repository.Authentication maven = new org.apache.maven.artifact.repository.Authentication(context.get("username"), context.get("password"));
-		if (context.get("passphrase")!=null) {
+		authentication.fill(context, "passphrase",
+				Collections.<String, String>emptyMap());
+		authentication.fill(context, "privateKey",
+				Collections.<String, String>emptyMap());
+		org.apache.maven.artifact.repository.Authentication maven = new org.apache.maven.artifact.repository.Authentication(
+				context.get("username"), context.get("password"));
+		if (context.get("passphrase") != null) {
 			maven.setPassphrase(context.get("passphrase"));
 		}
-		if (context.get("privateKey")!=null) {
+		if (context.get("privateKey") != null) {
 			maven.setPrivateKey(context.get("privateKey"));
 		}
 		return maven;
@@ -480,7 +503,8 @@ public class DependencyResolver {
 			DefaultRepositorySystemSession session;
 			try {
 				session = createSession(new Properties());
-				request.setRepositories(aetherRepositories(settings, session, new Properties()));
+				request.setRepositories(
+						aetherRepositories(settings, session, new Properties()));
 			}
 			catch (NoLocalRepositoryManagerException e) {
 				throw new IllegalStateException("No local repository manager", e);
