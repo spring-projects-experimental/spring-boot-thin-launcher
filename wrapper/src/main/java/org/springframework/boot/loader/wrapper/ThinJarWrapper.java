@@ -25,7 +25,10 @@ import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
@@ -76,6 +79,15 @@ public class ThinJarWrapper {
 
 	private static final String DEFAULT_LAUNCHER_CLASS = "org.springframework.boot.loader.thin.ThinJarLauncher";
 
+	private static final Map<String, String> LIBRARIES = new HashMap<>();
+
+	static {
+		LIBRARIES.put("thin.classpath",
+				"org.springframework.boot.experimental:spring-boot-thin-tools-classpath:1.0.7.BUILD-SNAPSHOT");
+		LIBRARIES.put("thin.convert",
+				"org.springframework.boot.experimental:spring-boot-thin-tools-converter:1.0.7.BUILD-SNAPSHOT");
+	}
+
 	private static final String DEFAULT_LIBRARY = "org.springframework.boot.experimental:spring-boot-thin-launcher:jar:exec:1.0.7.BUILD-SNAPSHOT";
 
 	/**
@@ -114,6 +126,19 @@ public class ThinJarWrapper {
 	}
 
 	private String coordinates(String library) {
+		// If we are already running a tool then THIN_SOURCE will be set and we don't want
+		// to pick the tool again
+		if (getProperty(THIN_SOURCE) == null) {
+			library = getProperty(THIN_LIBRARY);
+			if (library == null) {
+				for (Entry<String, String> entry : LIBRARIES.entrySet()) {
+					if (getProperty(entry.getKey()) != null) {
+						library = entry.getValue();
+						break;
+					}
+				}
+			}
+		}
 		if (library == null) {
 			return DEFAULT_LIBRARY;
 		}

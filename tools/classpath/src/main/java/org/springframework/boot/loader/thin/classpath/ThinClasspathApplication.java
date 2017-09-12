@@ -50,6 +50,8 @@ public class ThinClasspathApplication {
 
 	private static final String THIN_SOURCE = "thin.source";
 
+	private static final String THIN_CLASSPATH = "thin.classpath";
+
 	private StandardEnvironment environment = new StandardEnvironment();
 
 	public static void main(String[] args) throws Exception {
@@ -97,7 +99,7 @@ public class ThinClasspathApplication {
 			LogUtils.setLogLevel(Level.DEBUG);
 		}
 		String classpathValue = environment
-				.resolvePlaceholders("${" + ThinJarLauncher.THIN_CLASSPATH + ":true}");
+				.resolvePlaceholders("${" + THIN_CLASSPATH + ":true}");
 		boolean classpath = "".equals(classpathValue) || "true".equals(classpathValue)
 				|| "path".equals(classpathValue);
 		boolean compute = "properties".equals(classpathValue);
@@ -134,13 +136,16 @@ public class ThinClasspathApplication {
 		System.out.println(
 				"\nPrints the classpath for a thin executable jar or exploded archive.\n\n"
 						+ "Usage: run a thin jar and make this one the --thin.library for it. E.g. \n\n"
-						+ "    $ java -jar myapp.jar --thin.library=org.springframework.boot.experimental:spring-boot-thin-classpath:1.0.7.BUILD-SNAPSHOT\n");
+						+ "    $ java -jar myapp.jar --thin.classpath\n\n"
+						+ "The thin.classpath flag has 2 possible values (or it can be empty):\n\n"
+						+ "    * path (the default): prints the path in a form suitable for the java command line\n"
+						+ "    * properties: prints the path in properties form (can be piped straight to thin.properties)\n");
 	}
 
 	private boolean needsHelp(String[] args, File jarfile) {
 		Set<String> strings = new HashSet<>(Arrays.asList(args));
 		try {
-			return strings.contains("--help") || strings.contains("-h")
+			return this.environment.getProperty("help") != null || strings.contains("-h")
 					|| jarfile.toURI().toURL().equals(getClass().getProtectionDomain()
 							.getCodeSource().getLocation());
 		}
@@ -167,7 +172,7 @@ public class ThinClasspathApplication {
 			}
 			return builder.toString();
 		}
-		
+
 		static String coordinates(Artifact artifact) {
 			// group:artifact:extension:classifier:version
 			String classifier = artifact.getClassifier();
@@ -175,14 +180,13 @@ public class ThinClasspathApplication {
 			return artifact.getGroupId() + ":" + artifact.getArtifactId()
 					+ (StringUtils.hasText(extension) && !"jar".equals(extension)
 							? ":" + extension
-							: "")
+							: (StringUtils.hasText(classifier) ? ":jar" : ""))
 					+ (StringUtils.hasText(classifier) ? ":" + classifier : "") + ":"
 					+ artifact.getVersion();
 		}
 
 	}
 
-	
 	private static class ClasspathLauncher extends ThinJarLauncher {
 
 		protected ClasspathLauncher(String[] args) throws Exception {

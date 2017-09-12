@@ -65,13 +65,6 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 	public static final String THIN_OFFLINE = "thin.offline";
 
 	/**
-	 * System property to signal a "classpath run" where dependencies are resolved but the
-	 * main method is not executed and the output is in the form of a classpath. Supported
-	 * formats are "path" and "properties".
-	 */
-	public static final String THIN_CLASSPATH = "thin.classpath";
-
-	/**
 	 * System property holding the path to the root directory, where Maven repository and
 	 * settings live. Defaults to <code>${user.home}/.m2</code>.
 	 */

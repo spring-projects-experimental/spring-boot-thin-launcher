@@ -31,7 +31,6 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Properties;
 import java.util.Set;
 import java.util.jar.Attributes;
 import java.util.jar.JarFile;
@@ -39,6 +38,9 @@ import java.util.jar.Manifest;
 
 import org.springframework.boot.loader.tools.JarWriter;
 import org.springframework.boot.loader.tools.Repackager;
+import org.springframework.core.env.MutablePropertySources;
+import org.springframework.core.env.SimpleCommandLinePropertySource;
+import org.springframework.core.env.StandardEnvironment;
 import org.springframework.util.StringUtils;
 
 /**
@@ -54,18 +56,34 @@ public class ThinConverterApplication {
 	private static final String THIN_SOURCE = "thin.source";
 	private static final String BOOT_VERSION_ATTRIBUTE = "Spring-Boot-Version";
 
+	private StandardEnvironment environment = new StandardEnvironment();
+
 	public static void main(String[] args) throws Exception {
 		new ThinConverterApplication(args).repackage();
 	}
 
 	private String repository = "target/thin/root/repository";
 	private String mainClass;
-	private Properties properties;
 	private String[] args;
 
 	private ThinConverterApplication(String[] args) {
-		this.properties = properties(args);
+		addCommandLineProperties(args);
 		this.args = args(args);
+	}
+
+	private void addCommandLineProperties(String[] args) {
+		if (args == null || args.length == 0) {
+			return;
+		}
+		MutablePropertySources properties = environment.getPropertySources();
+		SimpleCommandLinePropertySource source = new SimpleCommandLinePropertySource(
+				"commandArgs", args);
+		if (!properties.contains("commandArgs")) {
+			properties.addFirst(source);
+		}
+		else {
+			properties.replace("commandArgs", source);
+		}
 	}
 
 	private static String[] args(String[] args) {
@@ -78,24 +96,12 @@ public class ThinConverterApplication {
 		return result.toArray(new String[result.size()]);
 	}
 
-	private static Properties properties(String[] args) {
-		Properties properties = new Properties();
-		for (String arg : args) {
-			if (arg.startsWith("--") && arg.length() > 2) {
-				arg = arg.substring(2);
-				String[] split = arg.split("=");
-				properties.setProperty(split[0].trim(),
-						split.length > 1 ? split[1].trim() : "");
-			}
-		}
-		return properties;
-	}
-
 	private void repackage() throws IOException {
 		File jarfile = new File(findSource());
 		if (!jarfile.exists()) {
 			System.err.println(
-					"Archive does not exist or is not a file (try running with java -jar): " + jarfile);
+					"Archive does not exist or is not a file (try running with java -jar): "
+							+ jarfile);
 			return;
 		}
 		if (this.args.length > 0) {
@@ -116,17 +122,12 @@ public class ThinConverterApplication {
 
 	private String findSource() {
 		String source = null;
-		if (this.properties.containsKey(THIN_SOURCE)) {
-			source = this.properties.getProperty(THIN_SOURCE);
-		}
+		source = environment.getProperty(THIN_SOURCE);
 		if (source == null) {
-			source = System.getProperty(THIN_SOURCE);
-			if (source == null) {
-				source = System.getProperty("java.class.path");
-				String separator = System.getProperty("path.separator");
-				if (source.contains(separator)) {
-					source = source.substring(source.indexOf(separator));
-				}
+			source = System.getProperty("java.class.path");
+			String separator = System.getProperty("path.separator");
+			if (source.contains(separator)) {
+				source = source.substring(source.indexOf(separator));
 			}
 		}
 		if (source.startsWith("file:")) {
@@ -141,9 +142,9 @@ public class ThinConverterApplication {
 	private void help() {
 		System.out.println(
 				"\nConverts a thin executable jar to a Spring Boot fat jar with the same name but with '-exec' suffix.\n\n"
-						+ "Usage: run a thin jar and make this one the --thin.library for it. E.g. \n\n"
+						+ "Usage: run a thin jar and use the thin.convert option. E.g. \n\n"
 						+ "    $ java -jar myapp.jar --thin.dryrun --thin.root=target/thin/root\n"
-						+ "    $ java -jar myapp.jar --thin.library=org.springframework.boot.experimental:spring-boot-thin-converter:1.0.7.BUILD-SNAPSHOT\n"
+						+ "    $ java -jar myapp.jar --thin.convert\n"
 						+ "    $ java -jar myapp-exec.jar\n\n" + //
 						"  Optional args:\n\n" //
 						+ "    repository - location of Maven repository cache (defaults to target/thin/root/repository)\n"
@@ -155,16 +156,25 @@ public class ThinConverterApplication {
 		Set<String> strings = new HashSet<>(Arrays.asList(args));
 		File file = new File(this.repository);
 		if (!file.exists() || !file.isDirectory()) {
+			System.out.println("Cannot find repository cache: " + file);
+			return true;
+		}
+		if (this.environment.getProperty("help") != null || strings.contains("-h")) {
 			return true;
 		}
 		try {
-			return strings.contains("--help") || strings.contains("-h")
-					|| jarfile.toURI().toURL().equals(getClass().getProtectionDomain()
-							.getCodeSource().getLocation());
+			if (jarfile.toURI().toURL().equals(
+					getClass().getProtectionDomain().getCodeSource().getLocation())) {
+				System.out
+						.println("Running converter with no source archive: " + jarfile);
+				return true;
+			}
 		}
 		catch (MalformedURLException e) {
+			System.out.println("Cannot find source file: " + jarfile);
 			return true;
 		}
+		return false;
 	}
 
 	private void rewriteManifest(File source, File target)
