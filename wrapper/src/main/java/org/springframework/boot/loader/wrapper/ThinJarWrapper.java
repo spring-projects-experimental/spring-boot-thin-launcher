@@ -18,12 +18,17 @@ package org.springframework.boot.loader.wrapper;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
+import java.util.jar.JarFile;
+import java.util.jar.Manifest;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -40,26 +45,32 @@ public class ThinJarWrapper {
 	public static final String THIN_ROOT = "thin.root";
 
 	/**
-	 * Property key for the main library where the launcher class is located.
+	 * Property key for the maven co-ordinates of the main library where the launcher
+	 * class is located.
 	 */
 	public static final String THIN_LIBRARY = "thin.library";
 
 	/**
-	 * Property key used to store location of main archive (the one that this class
-	 * is found in). Can also be used to run a different archive, resolving it via a URL
-	 * or a "maven://group:artifact:version".
+	 * Property key used to store location of main archive (the one that this class is
+	 * found in). Can also be used to run a different archive, resolving it via a URL or a
+	 * "maven://group:artifact:version".
 	 */
 	public static final String THIN_ARCHIVE = "thin.archive";
 
 	/**
-	 * Property key for remote location of main archive (the one that this class is
-	 * found in).
+	 * Property key for downstream tool to find archive.
+	 */
+	private static final String THIN_SOURCE = "thin.source";
+
+	/**
+	 * Property key for remote location of main archive (the one that this class is found
+	 * in).
 	 */
 	public static final String THIN_REPO = "thin.repo";
 
 	/**
-	 * Property key used to override the launcher main class if necessary. Defaults
-	 * to <code>ThinJarLauncher</code>.
+	 * Property key used to override the launcher main class if necessary. Defaults to
+	 * <code>ThinJarLauncher</code>.
 	 */
 	public static final String THIN_LAUNCHER = "thin.launcher";
 
@@ -69,7 +80,7 @@ public class ThinJarWrapper {
 
 	private Library library;
 
-	private Properties args;
+	private Properties properties;
 
 	public static void main(String[] args) throws Exception {
 		Class<?> launcher = ThinJarWrapper.class;
@@ -82,7 +93,7 @@ public class ThinJarWrapper {
 	}
 
 	ThinJarWrapper(String... args) {
-		this.args = properties(args);
+		this.properties = properties(args);
 		this.library = library();
 	}
 
@@ -108,13 +119,64 @@ public class ThinJarWrapper {
 
 	private void launch(String... args) throws Exception {
 		ClassLoader classLoader = getClassLoader();
-		Class<?> launcher = classLoader.loadClass(launcherClass());
-		findMainMethod(launcher).invoke(null, new Object[] { args });
+		String launcherClass = launcherClass();
+		Class<?> launcher = classLoader.loadClass(launcherClass);
+		findMainMethod(launcher).invoke(null, new Object[] { args(launcherClass, args) });
+	}
+
+	private String[] args(String launcherClass, String[] args) {
+		List<String> result = new ArrayList<>();
+		for (String arg : args) {
+			if (!arg.startsWith("--" + THIN_LIBRARY)) {
+				result.add(arg);
+			}
+		}
+		if (getClass().getName().equals(launcherClass)) {
+			// Danger of infinite loop, re-executing the same archive over and over...
+			String archive = getProperty(THIN_ARCHIVE);
+			if (archive != null) {
+				// Downstream tools have to look for thin.source, not thin.archive:
+				System.setProperty(THIN_SOURCE, archive);
+			}
+			for (String arg : args) {
+				if (arg.startsWith("--" + THIN_ARCHIVE)) {
+					result.remove(arg);
+				}
+			}
+			System.clearProperty(THIN_ARCHIVE);
+		}
+		return result.toArray(new String[result.size()]);
 	}
 
 	private String launcherClass() {
 		String launcher = getProperty(THIN_LAUNCHER);
-		return launcher == null ? DEFAULT_LAUNCHER_CLASS : launcher;
+		return launcher == null ? findLauncherClass() : launcher;
+	}
+
+	private String findLauncherClass() {
+		JarFile jar = null;
+		try {
+			jar = new JarFile(mavenLocal() + library.getPath());
+			Manifest manifest = jar.getManifest();
+			if (manifest != null) {
+				String mainClass = manifest.getMainAttributes().getValue("Main-Class");
+				if (mainClass != null) {
+					return mainClass;
+				}
+			}
+		}
+		catch (IOException e) {
+		}
+		finally {
+			if (jar != null) {
+				try {
+					jar.close();
+				}
+				catch (IOException e) {
+				}
+			}
+		}
+		return DEFAULT_LAUNCHER_CLASS;
 	}
 
 	private Method findMainMethod(Class<?> launcher) throws NoSuchMethodException {
@@ -155,8 +217,8 @@ public class ThinJarWrapper {
 	}
 
 	String getProperty(String key) {
-		if (args != null && args.getProperty(key) != null) {
-			return args.getProperty(key);
+		if (properties != null && properties.getProperty(key) != null) {
+			return properties.getProperty(key);
 		}
 		if (System.getProperty(key) != null) {
 			return System.getProperty(key);
