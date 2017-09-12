@@ -9,16 +9,17 @@
 		<version>1.0.7.BUILD-SNAPSHOT</version>
 	</parent>
 
-	<artifactId>spring-boot-thin-tools-converter</artifactId>
+	<artifactId>spring-boot-thin-tools-classpath</artifactId>
 	<packaging>jar</packaging>
 
-	<name>spring-boot-thin-tools-converter</name>
-	<description>Converts thin jars to fat jars</description>
+	<name>spring-boot-thin-tools-classpath</name>
+	<description>Computes classpath from a thin jar or exploded archive</description>
 
 	<dependencies>
 		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-loader-tools</artifactId>
+			<groupId>org.springframework.boot.experimental</groupId>
+			<artifactId>spring-boot-thin-launcher</artifactId>
+			<version>${project.version}</version>
 		</dependency>
 
 		<dependency>
