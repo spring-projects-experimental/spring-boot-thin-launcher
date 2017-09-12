@@ -16,14 +16,12 @@
 
 package org.springframework.boot.loader.thin;
 
-import java.io.File;
 import java.net.URL;
 import java.security.AccessControlException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-import org.eclipse.aether.artifact.Artifact;
 import org.eclipse.aether.graph.Dependency;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -87,6 +85,11 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 	public static final String THIN_ARCHIVE = "thin.archive";
 
 	/**
+	 * Property key for downstream tool to find archive.
+	 */
+	public static final String THIN_SOURCE = "thin.source";
+
+	/**
 	 * A parent archive (URL or "maven://..." locator) that controls the classpath and
 	 * dependency management defaults for the main archive.
 	 */
@@ -140,23 +143,14 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 	@Override
 	protected void launch(String[] args) throws Exception {
 		addCommandLineProperties(args);
-		args = removeThinArgs(args);
+		if (environment.getProperty(THIN_SOURCE) == null) {
+			args = removeThinArgs(args);
+		}
 		String root = environment.resolvePlaceholders("${" + THIN_ROOT + ":}");
-		String classpathValue = environment
-				.resolvePlaceholders("${" + THIN_CLASSPATH + ":false}");
-		boolean classpath = "".equals(classpathValue) || "true".equals(classpathValue)
-				|| "path".equals(classpathValue);
-		boolean compute = "properties".equals(classpathValue);
 		boolean trace = !"false"
 				.equals(environment.resolvePlaceholders("${thin.trace:${trace:false}}"));
-		if (classpath || compute) {
-			this.debug = false;
-			LogUtils.setLogLevel(Level.OFF);
-		}
-		else {
-			this.debug = trace || !"false".equals(
-					environment.resolvePlaceholders("${thin.debug:${debug:false}}"));
-		}
+		this.debug = trace || !"false"
+				.equals(environment.resolvePlaceholders("${thin.debug:${debug:false}}"));
 		if (debug || trace) {
 			if (trace) {
 				LogUtils.setLogLevel(Level.TRACE);
@@ -164,16 +158,6 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 			else {
 				LogUtils.setLogLevel(Level.INFO);
 			}
-		}
-		if (classpath) {
-			List<Archive> archives = getClassPathArchives();
-			System.out.println(classpath(archives));
-			return;
-		}
-		if (compute) {
-			List<Dependency> dependencies = getDependencies();
-			System.out.println(properties(dependencies));
-			return;
 		}
 		log.info("Version: " + getVersion());
 		if (!"false".equals(
@@ -205,55 +189,6 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 			result.add(arg);
 		}
 		return result.toArray(new String[0]);
-	}
-
-	private String properties(List<Dependency> dependencies) {
-		StringBuilder builder = new StringBuilder("computed=true\n");
-		for (Dependency dependency : dependencies) {
-			builder.append("dependencies." + dependency.getArtifact().getArtifactId()
-					+ "=" + coordinates(dependency.getArtifact()) + "\n");
-		}
-		return builder.toString();
-	}
-
-	static String coordinates(Artifact artifact) {
-		// group:artifact:extension:classifier:version
-		String classifier = artifact.getClassifier();
-		String extension = artifact.getExtension();
-		return artifact.getGroupId() + ":" + artifact.getArtifactId()
-				+ (StringUtils.hasText(extension) && !"jar".equals(extension)
-						? ":" + extension
-						: "")
-				+ (StringUtils.hasText(classifier) ? ":" + classifier : "") + ":"
-				+ artifact.getVersion();
-	}
-
-	private String classpath(List<Archive> archives) throws Exception {
-		StringBuilder builder = new StringBuilder();
-		String separator = System.getProperty("path.separator");
-		boolean first = true;
-		for (Archive archive : archives) {
-			if (!first) {
-				first = false;
-				continue;
-			}
-			if (builder.length() > 0) {
-				builder.append(separator);
-			}
-			log.info("Archive: {}", archive);
-			String uri = archive.getUrl().toURI().toString();
-			if (uri.startsWith("jar:")) {
-				uri = uri.substring("jar:".length());
-			}
-			if (uri.startsWith("file:")) {
-				uri = uri.substring("file:".length());
-			}
-			if (uri.endsWith("!/")) {
-				uri = uri.substring(0, uri.length() - "!/".length());
-			}
-			builder.append(new File(uri).getCanonicalPath());
-		}
-		return builder.toString();
 	}
 
 	private void addCommandLineProperties(String[] args) {

@@ -60,7 +60,7 @@ public class ThinJarWrapper {
 	/**
 	 * Property key for downstream tool to find archive.
 	 */
-	private static final String THIN_SOURCE = "thin.source";
+	public static final String THIN_SOURCE = "thin.source";
 
 	/**
 	 * Property key for remote location of main archive (the one that this class is found

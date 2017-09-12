@@ -23,6 +23,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.eclipse.aether.artifact.Artifact;
+import org.eclipse.aether.graph.Dependency;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,6 +33,7 @@ import org.springframework.boot.loader.thin.ThinJarLauncher;
 import org.springframework.core.env.MutablePropertySources;
 import org.springframework.core.env.SimpleCommandLinePropertySource;
 import org.springframework.core.env.StandardEnvironment;
+import org.springframework.util.StringUtils;
 
 import ch.qos.logback.classic.Level;
 
@@ -93,8 +96,20 @@ public class ThinClasspathApplication {
 		if (trace) {
 			LogUtils.setLogLevel(Level.DEBUG);
 		}
+		String classpathValue = environment
+				.resolvePlaceholders("${" + ThinJarLauncher.THIN_CLASSPATH + ":true}");
+		boolean classpath = "".equals(classpathValue) || "true".equals(classpathValue)
+				|| "path".equals(classpathValue);
+		boolean compute = "properties".equals(classpathValue);
 		System.setProperty(ThinJarLauncher.THIN_ARCHIVE, jarfile.getAbsolutePath());
-		new ClasspathLauncher(args).print();
+		if (classpath) {
+			new ClasspathLauncher(args).print();
+			return;
+		}
+		if (compute) {
+			new DependencyLauncher(args).print();
+			return;
+		}
 	}
 
 	private String findSource() {
@@ -134,6 +149,40 @@ public class ThinClasspathApplication {
 		}
 	}
 
+	private static class DependencyLauncher extends ThinJarLauncher {
+
+		protected DependencyLauncher(String[] args) throws Exception {
+			super(args);
+		}
+
+		public void print() throws Exception {
+			System.out.println(properties(getDependencies()));
+		}
+
+		private String properties(List<Dependency> dependencies) {
+			StringBuilder builder = new StringBuilder("computed=true\n");
+			for (Dependency dependency : dependencies) {
+				builder.append("dependencies." + dependency.getArtifact().getArtifactId()
+						+ "=" + coordinates(dependency.getArtifact()) + "\n");
+			}
+			return builder.toString();
+		}
+		
+		static String coordinates(Artifact artifact) {
+			// group:artifact:extension:classifier:version
+			String classifier = artifact.getClassifier();
+			String extension = artifact.getExtension();
+			return artifact.getGroupId() + ":" + artifact.getArtifactId()
+					+ (StringUtils.hasText(extension) && !"jar".equals(extension)
+							? ":" + extension
+							: "")
+					+ (StringUtils.hasText(classifier) ? ":" + classifier : "") + ":"
+					+ artifact.getVersion();
+		}
+
+	}
+
+	
 	private static class ClasspathLauncher extends ThinJarLauncher {
 
 		protected ClasspathLauncher(String[] args) throws Exception {
