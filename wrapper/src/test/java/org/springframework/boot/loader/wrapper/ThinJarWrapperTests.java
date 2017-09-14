@@ -57,9 +57,9 @@ public class ThinJarWrapperTests {
 	@Test
 	public void testDefaultLibrary() throws Exception {
 		ThinJarWrapper wrapper = new ThinJarWrapper();
-		assertThat(wrapper.library(), containsString("spring-boot-thin-launcher"));
+		assertThat(wrapper.download(), containsString("spring-boot-thin-launcher"));
 		if (System.getProperty("project.version") != null) {
-			assertThat(wrapper.library(),
+			assertThat(wrapper.download(),
 					containsString(System.getProperty("project.version")));
 		}
 	}
@@ -68,7 +68,23 @@ public class ThinJarWrapperTests {
 	public void testCustomLibrary() throws Exception {
 		System.setProperty("thin.library", "com.example:main:0.0.1-SNAPSHOT");
 		ThinJarWrapper wrapper = new ThinJarWrapper();
-		assertThat(wrapper.library(), containsString("com/example/main"));
+		assertThat(wrapper.download(), containsString("com/example/main"));
+	}
+
+	@Test
+	public void testCustomLibraryFilePrefix() throws Exception {
+		ThinJarWrapper wrapper = new ThinJarWrapper();
+		System.setProperty("thin.library", "file:" + wrapper.mavenLocal()
+				+ "/com/example/main/0.0.1-SNAPSHOT/main-0.0.1-SNAPSHOT.jar");
+		assertThat(wrapper.download(), containsString("com/example/main"));
+	}
+
+	@Test
+	public void testCustomLibraryFile() throws Exception {
+		ThinJarWrapper wrapper = new ThinJarWrapper();
+		System.setProperty("thin.library", wrapper.mavenLocal()
+				+ "/com/example/main/0.0.1-SNAPSHOT/main-0.0.1-SNAPSHOT.jar");
+		assertThat(wrapper.download(), containsString("com/example/main"));
 	}
 
 	@Test

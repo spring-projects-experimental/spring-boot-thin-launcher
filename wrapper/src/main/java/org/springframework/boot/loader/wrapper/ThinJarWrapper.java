@@ -115,8 +115,21 @@ public class ThinJarWrapper {
 		findMainMethod(launcher).invoke(null, new Object[] { args(launcherClass, args) });
 	}
 
-	private String download() {
-		String file = library();
+	String download() {
+		String library = getProperty(THIN_LIBRARY);
+		if (library != null && !library.startsWith("maven://")) {
+			if (library.startsWith("file:")) {
+				library = library.substring("file:".length());
+				if (library.startsWith("//")) {
+					library = library.substring("//".length());
+				}
+				return library;
+			}
+			if (new File(library).exists()) {
+				return library;
+			}
+		}
+		String file = getArtifactPath(coordinates(library));
 		String parent = mavenLocal();
 		File target = new File(parent + file);
 		if (!target.exists()) {
@@ -143,6 +156,16 @@ public class ThinJarWrapper {
 			}
 		}
 		return parent + file;
+	}
+
+	private String coordinates(String library) {
+		if (library == null) {
+			return DEFAULT_LIBRARY;
+		}
+		if (library.startsWith("maven://")) {
+			library = library.substring("maven://".length());
+		}
+		return library;
 	}
 
 	private String[] args(String launcherClass, String[] args) {
@@ -241,35 +264,6 @@ public class ThinJarWrapper {
 		return System.getenv(key.replace(".", "_").toUpperCase());
 	}
 
-	String library() {
-		String library = getProperty(THIN_LIBRARY);
-		String coordinates = coordinates(library);
-		Pattern p = Pattern.compile("([^: ]+):([^: ]+)(:([^: ]*)(:([^: ]+))?)?:([^: ]+)");
-		Matcher m = p.matcher(coordinates);
-		if (!m.matches()) {
-			throw new IllegalArgumentException("Bad artifact coordinates " + coordinates
-					+ ", expected format is <groupId>:<artifactId>[:<extension>[:<classifier>]]:<version>");
-		}
-		String groupId = m.group(1);
-		String artifactId = m.group(2);
-		String extension = get(m.group(4), "jar");
-		String classifier = get(m.group(6), null);
-		String version = m.group(7);
-		String path = getArtifactPath(groupId, artifactId, version, classifier,
-				extension);
-		return path;
-	}
-
-	private String coordinates(String library) {
-		if (library == null) {
-			return DEFAULT_LIBRARY;
-		}
-		if (library.startsWith("maven://")) {
-			library = library.substring("maven://".length());
-		}
-		return library;
-	}
-
 	private String get(String value, String defaultValue) {
 		return (value == null || value.length() <= 0) ? defaultValue : value;
 	}
@@ -316,8 +310,18 @@ public class ThinJarWrapper {
 		return false;
 	}
 
-	private String getArtifactPath(String groupId, String artifactId, String version,
-			String classifier, String extension) {
+	private String getArtifactPath(String coordinates) {
+		Pattern p = Pattern.compile("([^: ]+):([^: ]+)(:([^: ]*)(:([^: ]+))?)?:([^: ]+)");
+		Matcher m = p.matcher(coordinates);
+		if (!m.matches()) {
+			throw new IllegalArgumentException("Bad artifact coordinates " + coordinates
+					+ ", expected format is <groupId>:<artifactId>[:<extension>[:<classifier>]]:<version>");
+		}
+		String groupId = m.group(1);
+		String artifactId = m.group(2);
+		String extension = get(m.group(4), "jar");
+		String classifier = get(m.group(6), null);
+		String version = m.group(7);
 		return "/" + groupId.replace(".", "/") + "/" + artifactId + "/" + version + "/"
 				+ artifactId + "-" + version
 				+ (classifier != null ? "-" + classifier : "") + "." + extension;
