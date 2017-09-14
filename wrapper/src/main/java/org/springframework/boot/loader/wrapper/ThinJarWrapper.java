@@ -110,7 +110,7 @@ public class ThinJarWrapper {
 	private void launch(String... args) throws Exception {
 		String target = download();
 		if (!new File(target).exists()) {
-			throw new IllegalStateException("Cannot download library: " + target);
+			throw new IllegalStateException("Cannot locate library: " + target);
 		}
 		ClassLoader classLoader = getClassLoader(target);
 		String launcherClass = launcherClass(target);
@@ -128,7 +128,7 @@ public class ThinJarWrapper {
 				}
 				return library;
 			}
-			if (new File(library).exists()) {
+			if (library.endsWith(".jar")) {
 				return library;
 			}
 		}

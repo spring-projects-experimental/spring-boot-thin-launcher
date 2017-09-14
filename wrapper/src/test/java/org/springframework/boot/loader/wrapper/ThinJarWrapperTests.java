@@ -82,8 +82,8 @@ public class ThinJarWrapperTests {
 	@Test
 	public void testCustomLibraryFile() throws Exception {
 		ThinJarWrapper wrapper = new ThinJarWrapper();
-		System.setProperty("thin.library", wrapper.mavenLocal()
-				+ "/com/example/main/0.0.1-SNAPSHOT/main-0.0.1-SNAPSHOT.jar");
+		System.setProperty("thin.library",
+				"target/rubbish/com/example/main/0.0.1-SNAPSHOT/main-0.0.1-SNAPSHOT.jar");
 		assertThat(wrapper.download(), containsString("com/example/main"));
 	}
 
