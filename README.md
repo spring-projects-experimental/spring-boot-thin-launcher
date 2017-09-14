@@ -274,12 +274,20 @@ You can set a variety of options on the command line with system properties (`-D
 | `thin.location` | `file:.,classpath:/` | The path to directory containing thin properties files (as per `thin.name`), as a comma-separated list of resource locations (directories). These locations plus relative /META-INF will be searched. |
 | `thin.name` | "thin" | The name of the properties file to search for dependency specifications and overrides. |
 | `thin.profile` |<empty> | Comma-separated list of profiles to use to locate thin properties. E.g. if `thin.profile=foo` the launcher searches for files called `thin.properties` and `thin-foo.properties`. |
+| `thin.library` | `org.springframework.boot.experimental:spring-boot-thin-launcher:1.0.7.BUILD-SNAPSHOT` | A locator for the launcher library. Can be Maven coordinates (with optional `maven://` prefix), or a file (with optional `file://` prefix). |
+| `thin.launcher` | `org.springframework.boot.thin.ThinJarLauncher` | The main class in the `thin.library`. If not specified it is discovered from the manifest `Main-Class` attribute. |
 | `thin.parent.first` | true | Flag to say that the class loader is "parent first" (i.e. the system class loader will be used as the default). This is the "standard" JDK class loader strategy. Setting it to false is similar to what is normally used in web containers and application servers. |
 | `thin.parent.boot` | true | Flag to say that the parent class loader should be the boot class loader not the "system" class loader. The boot loader normally includes the JDK classes, but not the target archive, nor any agent jars added on the command line. |
 | `thin.debug` | false | Flag to switch on some slightly verbose logging during the dependency resolution. Can also be switched on with `debug` (like in Spring Boot).|
 | `thin.trace` | false | Super verbose logging of all activity during the dependency resolution and launch process. Can also be switched on with `trace`.|
 
 Any other `thin.properties.*` properties are used by the launcher to override or supplement the ones from `thin.properties`, so you can add additional individual dependencies on the command line using `thin.properties.dependencies.*` (for instance).
+
+## Downstream Tools
+
+The default behaviour of the `ThinJarWrapper` is to locate and launch the `ThinJarLauncher`, but it can also run any main class you like by using the `thin.library` and `thin.launcher` properties. One of the main reasons to provide this feature is to be able to support "tools" that process the application jar (or whatever), for example to generate metadata, create file system layers, etc. To create a new tool, make an executable jar (it can even be thin) with a `Main-Class` in its manifest, and point to it with `thin.library`. The launched main class will find the same command line as the launched jar, but with `--thin.library` removed if it was there. It will also find a system property `thin.source` containing the location of the launched jar, or the original `thin.archive` if that was provided on the command line (this is the archive that contains the data to process normally). If the tool jar is thin, i.e. if the main class is `ThinJarWrapper`, then the `thin.archive` command line argument and system property will also be removed (to prevent an infinite loop, where the wrapper just runs itself over and over).
+
+An example of a tool jar is the `spring-boot-thin-tools-converter` (see below). You could use that as a prototype if you wanted to create your own.
 
 ## HOWTO Guides
 
@@ -396,6 +404,16 @@ by prepending a key in the properties file with `exclusions.`. E.g.
 dependencies.spring-boot-starter-web=org.springframework.boot:spring-boot-starter-web
 dependencies.spring-boot-starter-jetty=org.springframework.boot:spring-boot-starter-jetty
 exclusions.spring-cloud-starter-tomcat=org.springframework.boot:spring-cloud-starter-tomcat
+```
+
+## How to Convert a Thin Jar to a Fat Jar
+
+There is a converter tool that you can use as a library in place of the launcher. It works by copying all of the libraries from a `thin.root` into the new jar. Example:
+
+```
+$ java -jar myapp.jar --thin.dryrun --thin.root=target/thin/root
+$ java -jar myapp.jar --thin.library=org.springframework.boot.experimental:spring-boot-thin-tools-converter:1.0.7.BUILD-SNAPSHOT
+$ java -jar myapp-exec.jar
 ```
 
 ## Building
