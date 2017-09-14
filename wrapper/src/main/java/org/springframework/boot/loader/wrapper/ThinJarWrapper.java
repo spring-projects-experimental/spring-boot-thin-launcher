@@ -109,6 +109,9 @@ public class ThinJarWrapper {
 
 	private void launch(String... args) throws Exception {
 		String target = download();
+		if (!new File(target).exists()) {
+			throw new IllegalStateException("Cannot download library: " + target);
+		}
 		ClassLoader classLoader = getClassLoader(target);
 		String launcherClass = launcherClass(target);
 		Class<?> launcher = classLoader.loadClass(launcherClass);
@@ -149,10 +152,7 @@ public class ThinJarWrapper {
 				if (repo.endsWith("/")) {
 					repo = repo.substring(0, repo.length() - 1);
 				}
-				result = downloadFromUrl(repo + file, target);
-			}
-			if (!result) {
-				throw new IllegalStateException("Cannot download library: " + target);
+				downloadFromUrl(repo + file, target);
 			}
 		}
 		return parent + file;
