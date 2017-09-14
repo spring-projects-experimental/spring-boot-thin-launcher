@@ -57,10 +57,9 @@ public class ThinJarWrapperTests {
 	@Test
 	public void testDefaultLibrary() throws Exception {
 		ThinJarWrapper wrapper = new ThinJarWrapper();
-		assertThat(wrapper.library().getCoordinates(),
-				containsString("spring-boot-thin-launcher"));
+		assertThat(wrapper.library(), containsString("spring-boot-thin-launcher"));
 		if (System.getProperty("project.version") != null) {
-			assertThat(wrapper.library().getCoordinates(),
+			assertThat(wrapper.library(),
 					containsString(System.getProperty("project.version")));
 		}
 	}
@@ -69,7 +68,7 @@ public class ThinJarWrapperTests {
 	public void testCustomLibrary() throws Exception {
 		System.setProperty("thin.library", "com.example:main:0.0.1-SNAPSHOT");
 		ThinJarWrapper wrapper = new ThinJarWrapper();
-		assertThat(wrapper.library().getCoordinates(), containsString("com.example"));
+		assertThat(wrapper.library(), containsString("com/example/main"));
 	}
 
 	@Test

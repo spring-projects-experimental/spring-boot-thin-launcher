@@ -78,7 +78,10 @@ public class ThinJarWrapper {
 
 	private static final String DEFAULT_LIBRARY = "org.springframework.boot.experimental:spring-boot-thin-launcher:jar:exec:1.0.7.BUILD-SNAPSHOT";
 
-	private Library library;
+	/**
+	 * The file path of the library to launch (relative to the repository root).
+	 */
+	private String library;
 
 	private Properties properties;
 
@@ -110,14 +113,20 @@ public class ThinJarWrapper {
 		return properties;
 	}
 
-	Library library() {
-		String coordinates = getProperty(THIN_LIBRARY);
-		String repo = getProperty(THIN_REPO);
-		repo = repo != null ? repo : "https://repo.spring.io/libs-snapshot";
-		return new Library(coordinates == null ? DEFAULT_LIBRARY : coordinates, repo);
+	private String coordinates(String library) {
+		if (library == null) {
+			return DEFAULT_LIBRARY;
+		}
+		if (library.startsWith("maven://")) {
+			library = library.substring("maven://".length());
+		}
+		return library;
 	}
 
 	private void launch(String... args) throws Exception {
+		String repo = getProperty(THIN_REPO);
+		repo = repo != null ? repo : "https://repo.spring.io/libs-snapshot";
+		download(repo, this.library);
 		ClassLoader classLoader = getClassLoader();
 		String launcherClass = launcherClass();
 		Class<?> launcher = classLoader.loadClass(launcherClass);
@@ -156,7 +165,7 @@ public class ThinJarWrapper {
 	private String findLauncherClass() {
 		JarFile jar = null;
 		try {
-			jar = new JarFile(mavenLocal() + library.getPath());
+			jar = new JarFile(mavenLocal() + this.library);
 			Manifest manifest = jar.getManifest();
 			if (manifest != null) {
 				String mainClass = manifest.getMainAttributes().getValue("Main-Class");
@@ -192,8 +201,7 @@ public class ThinJarWrapper {
 	}
 
 	private URL[] getUrls() throws Exception {
-		library.download(mavenLocal(), mavenLocal(null));
-		return new URL[] { new File(mavenLocal() + library.getPath()).toURI().toURL() };
+		return new URL[] { new File(mavenLocal() + this.library).toURI().toURL() };
 	}
 
 	String mavenLocal() {
@@ -226,136 +234,99 @@ public class ThinJarWrapper {
 		return System.getenv(key.replace(".", "_").toUpperCase());
 	}
 
-	static class Library {
-
-		private String coordinates;
-		private String groupId;
-		private String artifactId;
-		private String version;
-		private String classifier;
-		private String extension;
-		private String repo;
-
-		public Library(String coordinates, String repo) {
-			this.coordinates = coordinates;
-			this.repo = repo;
-			Pattern p = Pattern
-					.compile("([^: ]+):([^: ]+)(:([^: ]*)(:([^: ]+))?)?:([^: ]+)");
-			Matcher m = p.matcher(coordinates);
-			if (!m.matches()) {
-				throw new IllegalArgumentException("Bad artifact coordinates "
-						+ coordinates
-						+ ", expected format is <groupId>:<artifactId>[:<extension>[:<classifier>]]:<version>");
-			}
-			this.groupId = m.group(1);
-			this.artifactId = m.group(2);
-			this.extension = get(m.group(4), "jar");
-			this.classifier = get(m.group(6), null);
-			this.version = m.group(7);
+	String library() {
+		String library = getProperty(THIN_LIBRARY);
+		String coordinates = coordinates(library);
+		Pattern p = Pattern.compile("([^: ]+):([^: ]+)(:([^: ]*)(:([^: ]+))?)?:([^: ]+)");
+		Matcher m = p.matcher(coordinates);
+		if (!m.matches()) {
+			throw new IllegalArgumentException("Bad artifact coordinates " + coordinates
+					+ ", expected format is <groupId>:<artifactId>[:<extension>[:<classifier>]]:<version>");
 		}
+		String groupId = m.group(1);
+		String artifactId = m.group(2);
+		String extension = get(m.group(4), "jar");
+		String classifier = get(m.group(6), null);
+		String version = m.group(7);
+		String path = getArtifactPath(groupId, artifactId, version, classifier,
+				extension);
+		return path;
+	}
 
-		private static String get(String value, String defaultValue) {
-			return (value == null || value.length() <= 0) ? defaultValue : value;
-		}
+	private String get(String value, String defaultValue) {
+		return (value == null || value.length() <= 0) ? defaultValue : value;
+	}
 
-		public void download(String path, String defaultPath) {
-			if (path == null) {
-				path = defaultPath;
+	private void download(String repo, String file) {
+		String path = mavenLocal();
+		String defaultPath = mavenLocal(null);
+		File target = new File(path + file);
+		if (!target.exists()) {
+			if (!target.getParentFile().exists() && !target.getParentFile().mkdirs()) {
+				throw new IllegalStateException(
+						"Cannot create directory launcher at " + target);
 			}
-			File target = new File(path + getPath());
-			if (!target.exists()) {
-				if (!target.getParentFile().exists()
-						&& !target.getParentFile().mkdirs()) {
-					throw new IllegalStateException(
-							"Cannot create directory launcher at " + target);
-				}
-				boolean result = false;
-				if (!defaultPath.equals(path)) {
-					// Try local repo first
-					result = downloadFromUrl(getUrl(defaultPath), target);
-				}
-				if (!result) {
-					result = downloadFromUrl(this.repo, target);
-				}
-				if (!result) {
-					throw new IllegalStateException(
-							"Cannot download library for launcher " + coordinates);
-				}
+			boolean result = false;
+			if (!defaultPath.equals(path)) {
+				// Try local repo first
+				result = downloadFromUrl(getUrl(defaultPath) + file, target);
+			}
+			if (!result) {
+				result = downloadFromUrl(repo + file, target);
+			}
+			if (!result) {
+				throw new IllegalStateException("Cannot download library: " + path);
 			}
 		}
+	}
 
-		private String getUrl(String file) {
-			if (!file.startsWith(".") && !file.startsWith("/")) {
-				file = "./" + file;
-			}
-			return "file://" + file;
+	private String getUrl(String file) {
+		if (!file.startsWith(".") && !file.startsWith("/")) {
+			file = "./" + file;
 		}
+		return "file://" + file;
+	}
 
-		private boolean downloadFromUrl(String repo, File target) {
-			InputStream input = null;
-			OutputStream output = null;
-			try {
-				input = new URL(repo + getPath()).openStream();
-				output = new FileOutputStream(target);
-				byte[] bytes = new byte[4096];
-				int count = input.read(bytes);
-				while (count > 0) {
-					output.write(bytes, 0, count);
-					count = input.read(bytes);
-				}
-				return true;
+	private boolean downloadFromUrl(String path, File target) {
+		InputStream input = null;
+		OutputStream output = null;
+		try {
+			input = new URL(path).openStream();
+			output = new FileOutputStream(target);
+			byte[] bytes = new byte[4096];
+			int count = input.read(bytes);
+			while (count > 0) {
+				output.write(bytes, 0, count);
+				count = input.read(bytes);
 			}
-			catch (Exception e) {
-			}
-			finally {
-				if (input != null) {
-					try {
-						input.close();
-					}
-					catch (Exception e) {
-					}
+			return true;
+		}
+		catch (Exception e) {
+		}
+		finally {
+			if (input != null) {
+				try {
+					input.close();
 				}
-				if (output != null) {
-					try {
-						output.close();
-					}
-					catch (Exception e) {
-					}
+				catch (Exception e) {
 				}
 			}
-			return false;
+			if (output != null) {
+				try {
+					output.close();
+				}
+				catch (Exception e) {
+				}
+			}
 		}
+		return false;
+	}
 
-		public String getCoordinates() {
-			return coordinates;
-		}
-
-		public String getGroupId() {
-			return groupId;
-		}
-
-		public String getArtifactId() {
-			return artifactId;
-		}
-
-		public String getVersion() {
-			return version;
-		}
-
-		public String getClassifier() {
-			return classifier;
-		}
-
-		public String getExtension() {
-			return extension;
-		}
-
-		public String getPath() {
-			return "/" + groupId.replace(".", "/") + "/" + artifactId + "/" + version
-					+ "/" + artifactId + "-" + version
-					+ (classifier != null ? "-" + classifier : "") + "." + this.extension;
-		}
-
+	private String getArtifactPath(String groupId, String artifactId, String version,
+			String classifier, String extension) {
+		return "/" + groupId.replace(".", "/") + "/" + artifactId + "/" + version + "/"
+				+ artifactId + "-" + version
+				+ (classifier != null ? "-" + classifier : "") + "." + extension;
 	}
 
 }
