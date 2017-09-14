@@ -128,6 +128,14 @@ public class ThinJarWrapper {
 				}
 				return library;
 			}
+			if (library.contains("//")) {
+				// it's a real URL, so download it
+				String parent = mavenLocal();
+				String file = "/" + new File(library).getName();
+				File target = new File(parent + file);
+				downloadFromUrl(library, target);
+				return parent + file;
+			}
 			if (library.endsWith(".jar")) {
 				return library;
 			}
