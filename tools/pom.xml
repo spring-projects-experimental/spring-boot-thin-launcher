@@ -8,7 +8,7 @@
 		<version>1.0.7.BUILD-SNAPSHOT</version>
 	</parent>
 
-	<artifactId>spring-boot-thin-launcher-tools</artifactId>
+	<artifactId>spring-boot-thin-tools</artifactId>
 	<packaging>pom</packaging>
 	<name>Tools Parent</name>
 

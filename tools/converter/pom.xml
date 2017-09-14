@@ -5,14 +5,14 @@
 
 	<parent>
 		<groupId>org.springframework.boot.experimental</groupId>
-		<artifactId>spring-boot-thin-launcher-tools</artifactId>
+		<artifactId>spring-boot-thin-tools</artifactId>
 		<version>1.0.7.BUILD-SNAPSHOT</version>
 	</parent>
 
-	<artifactId>spring-boot-thin-converter</artifactId>
+	<artifactId>spring-boot-thin-tools-converter</artifactId>
 	<packaging>jar</packaging>
 
-	<name>spring-boot-thin-converter</name>
+	<name>spring-boot-thin-tools-converter</name>
 	<description>Converts thin jars to fat jars</description>
 
 	<dependencies>
