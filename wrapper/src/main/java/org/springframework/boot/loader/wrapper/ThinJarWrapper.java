@@ -78,11 +78,6 @@ public class ThinJarWrapper {
 
 	private static final String DEFAULT_LIBRARY = "org.springframework.boot.experimental:spring-boot-thin-launcher:jar:exec:1.0.7.BUILD-SNAPSHOT";
 
-	/**
-	 * The file path of the library to launch (relative to the repository root).
-	 */
-	private String library;
-
 	private Properties properties;
 
 	public static void main(String[] args) throws Exception {
@@ -97,7 +92,6 @@ public class ThinJarWrapper {
 
 	ThinJarWrapper(String... args) {
 		this.properties = properties(args);
-		this.library = library();
 	}
 
 	private static Properties properties(String[] args) {
@@ -113,24 +107,42 @@ public class ThinJarWrapper {
 		return properties;
 	}
 
-	private String coordinates(String library) {
-		if (library == null) {
-			return DEFAULT_LIBRARY;
-		}
-		if (library.startsWith("maven://")) {
-			library = library.substring("maven://".length());
-		}
-		return library;
-	}
-
 	private void launch(String... args) throws Exception {
-		String repo = getProperty(THIN_REPO);
-		repo = repo != null ? repo : "https://repo.spring.io/libs-snapshot";
-		download(repo, this.library);
-		ClassLoader classLoader = getClassLoader();
-		String launcherClass = launcherClass();
+		String target = download();
+		ClassLoader classLoader = getClassLoader(target);
+		String launcherClass = launcherClass(target);
 		Class<?> launcher = classLoader.loadClass(launcherClass);
 		findMainMethod(launcher).invoke(null, new Object[] { args(launcherClass, args) });
+	}
+
+	private String download() {
+		String file = library();
+		String parent = mavenLocal();
+		File target = new File(parent + file);
+		if (!target.exists()) {
+			if (!target.getParentFile().exists() && !target.getParentFile().mkdirs()) {
+				throw new IllegalStateException(
+						"Cannot create directory for library at " + target);
+			}
+			boolean result = false;
+			String defaultPath = mavenLocal(null);
+			if (!defaultPath.equals(parent)) {
+				// Try local repo first
+				result = downloadFromUrl(getUrl(defaultPath) + file, target);
+			}
+			if (!result) {
+				String repo = getProperty(THIN_REPO);
+				repo = repo != null ? repo : "https://repo.spring.io/libs-snapshot";
+				if (repo.endsWith("/")) {
+					repo = repo.substring(0, repo.length() - 1);
+				}
+				result = downloadFromUrl(repo + file, target);
+			}
+			if (!result) {
+				throw new IllegalStateException("Cannot download library: " + target);
+			}
+		}
+		return parent + file;
 	}
 
 	private String[] args(String launcherClass, String[] args) {
@@ -157,51 +169,46 @@ public class ThinJarWrapper {
 		return result.toArray(new String[result.size()]);
 	}
 
-	private String launcherClass() {
+	private String launcherClass(String library) {
 		String launcher = getProperty(THIN_LAUNCHER);
-		return launcher == null ? findLauncherClass() : launcher;
-	}
-
-	private String findLauncherClass() {
-		JarFile jar = null;
-		try {
-			jar = new JarFile(mavenLocal() + this.library);
-			Manifest manifest = jar.getManifest();
-			if (manifest != null) {
-				String mainClass = manifest.getMainAttributes().getValue("Main-Class");
-				if (mainClass != null) {
-					return mainClass;
+		if (launcher == null) {
+			JarFile jar = null;
+			try {
+				jar = new JarFile(library);
+				Manifest manifest = jar.getManifest();
+				if (manifest != null) {
+					String mainClass = manifest.getMainAttributes()
+							.getValue("Main-Class");
+					if (mainClass != null) {
+						return mainClass;
+					}
+				}
+			}
+			catch (IOException e) {
+			}
+			finally {
+				if (jar != null) {
+					try {
+						jar.close();
+					}
+					catch (IOException e) {
+					}
 				}
 			}
 		}
-		catch (IOException e) {
-		}
-		finally {
-			if (jar != null) {
-				try {
-					jar.close();
-				}
-				catch (IOException e) {
-				}
-			}
-		}
-		return DEFAULT_LAUNCHER_CLASS;
+		return launcher == null ? DEFAULT_LAUNCHER_CLASS : launcher;
 	}
 
 	private Method findMainMethod(Class<?> launcher) throws NoSuchMethodException {
 		return launcher.getMethod("main", String[].class);
 	}
 
-	private ClassLoader getClassLoader() throws Exception {
-		URL[] urls = getUrls();
+	private ClassLoader getClassLoader(String library) throws Exception {
+		URL[] urls = new URL[] { new File(library).toURI().toURL() };
 		URLClassLoader classLoader = new URLClassLoader(urls,
 				ThinJarWrapper.class.getClassLoader().getParent());
 		Thread.currentThread().setContextClassLoader(classLoader);
 		return classLoader;
-	}
-
-	private URL[] getUrls() throws Exception {
-		return new URL[] { new File(mavenLocal() + this.library).toURI().toURL() };
 	}
 
 	String mavenLocal() {
@@ -253,35 +260,22 @@ public class ThinJarWrapper {
 		return path;
 	}
 
+	private String coordinates(String library) {
+		if (library == null) {
+			return DEFAULT_LIBRARY;
+		}
+		if (library.startsWith("maven://")) {
+			library = library.substring("maven://".length());
+		}
+		return library;
+	}
+
 	private String get(String value, String defaultValue) {
 		return (value == null || value.length() <= 0) ? defaultValue : value;
 	}
 
-	private void download(String repo, String file) {
-		String path = mavenLocal();
-		String defaultPath = mavenLocal(null);
-		File target = new File(path + file);
-		if (!target.exists()) {
-			if (!target.getParentFile().exists() && !target.getParentFile().mkdirs()) {
-				throw new IllegalStateException(
-						"Cannot create directory launcher at " + target);
-			}
-			boolean result = false;
-			if (!defaultPath.equals(path)) {
-				// Try local repo first
-				result = downloadFromUrl(getUrl(defaultPath) + file, target);
-			}
-			if (!result) {
-				result = downloadFromUrl(repo + file, target);
-			}
-			if (!result) {
-				throw new IllegalStateException("Cannot download library: " + path);
-			}
-		}
-	}
-
 	private String getUrl(String file) {
-		if (!file.startsWith(".") && !file.startsWith("/")) {
+		if (!file.startsWith("./") && !file.startsWith("/")) {
 			file = "./" + file;
 		}
 		return "file://" + file;
