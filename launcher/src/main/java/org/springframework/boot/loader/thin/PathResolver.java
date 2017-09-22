@@ -101,8 +101,19 @@ public class PathResolver {
 		Resource pom;
 		String artifactId;
 		try {
-			pom = new UrlResource(archive.getUrl() + "pom.xml");
+			String base = archive.getUrl().toString();
+			pom = new UrlResource(base + "pom.xml");
 			artifactId = extractArtifactId(archive);
+			if (!pom.exists()) {
+				// Running from project (i.e. exploded but with pom.xml in the wrong
+				// place). Sadly only works with Maven because Gradle splits the archive
+				// over multiple directories.
+				String path = "target/classes/";
+				if (base.endsWith(path)) {
+					pom = new UrlResource(
+							base.substring(0, base.length() - path.length()));
+				}
+			}
 		}
 		catch (MalformedURLException e) {
 			throw new IllegalStateException("Cannot locate archive", e);
@@ -270,17 +281,18 @@ public class PathResolver {
 			if (!"true".equals(added.get("computed"))) {
 				// Ensure there are no added dependencies since they are not computed
 				for (Object key : added.keySet()) {
-					String name = (String)key;
+					String name = (String) key;
 					if (name.startsWith("dependencies.") || name.startsWith("boms.")) {
 						added.remove(key);
 					}
 				}
 			}
-		} else {
+		}
+		else {
 			if ("true".equals(added.get("computed"))) {
 				// Ensure there are no added dependencies since they are not computed
 				for (Object key : props.keySet()) {
-					String name = (String)key;
+					String name = (String) key;
 					if (name.startsWith("dependencies.") || name.startsWith("boms.")) {
 						props.remove(key);
 					}
