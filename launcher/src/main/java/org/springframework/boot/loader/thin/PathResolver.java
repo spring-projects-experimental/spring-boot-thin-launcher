@@ -99,11 +99,9 @@ public class PathResolver {
 
 	public Resource getPom(Archive archive) {
 		Resource pom;
-		String artifactId;
 		try {
 			String base = archive.getUrl().toString();
 			pom = new UrlResource(base + "pom.xml");
-			artifactId = extractArtifactId(archive);
 			if (!pom.exists()) {
 				// Running from project (i.e. exploded but with pom.xml in the wrong
 				// place). Sadly only works with Maven because Gradle splits the archive
@@ -113,12 +111,27 @@ public class PathResolver {
 					pom = new UrlResource(
 							base.substring(0, base.length() - path.length()) + "pom.xml");
 				}
+				if (!pom.exists()) {
+					path = "target/test-classes/";
+					if (base.endsWith(path)) {
+						pom = new UrlResource(
+								base.substring(0, base.length() - path.length())
+										+ "pom.xml");
+					}
+				}
 			}
 		}
 		catch (MalformedURLException e) {
 			throw new IllegalStateException("Cannot locate archive", e);
 		}
 		if (!pom.exists()) {
+			String artifactId;
+			try {
+				artifactId = extractArtifactId(archive);
+			}
+			catch (MalformedURLException e) {
+				throw new IllegalStateException("Cannot locate archive", e);
+			}
 			String pattern = "META-INF/maven/**"
 					+ (artifactId == null ? "" : "/" + artifactId) + "/pom.xml";
 			Resource resource = findResource(archive, pattern);

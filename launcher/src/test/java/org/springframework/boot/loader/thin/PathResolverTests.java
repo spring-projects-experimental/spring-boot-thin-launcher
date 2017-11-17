@@ -79,6 +79,15 @@ public class PathResolverTests {
 	}
 
 	@Test
+	public void testSource() throws Exception {
+		Archive parent = new ExplodedArchive(
+				new File("src/test/resources/apps/source/target/test-classes"));
+		Resource pom = resolver.getPom(parent);
+		assertThat(pom.exists()).isTrue();
+		assertThat(pom.getFilename()).isEqualTo("pom.xml");
+	}
+
+	@Test
 	public void propertiesPreresolved() throws Exception {
 		Archive parent = new ExplodedArchive(
 				new File("src/test/resources/apps/preresolved"));
