@@ -19,6 +19,7 @@ package org.springframework.cloud.deployer.thin;
 import java.sql.SQLException;
 import java.util.Map;
 
+import org.springframework.boot.SpringApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.core.env.MapPropertySource;
@@ -50,8 +51,14 @@ public class ContextRunner {
 					environment.getPropertySources().addAfter(
 							StandardEnvironment.SYSTEM_ENVIRONMENT_PROPERTY_SOURCE_NAME,
 							new MapPropertySource("appDeployer", properties));
-					context = new SpringApplicationBuilder(source)
-							.environment(environment).run(args);
+					SpringApplicationBuilder builder = new SpringApplicationBuilder()
+							.environment(environment);
+					if (source!=null) {
+						builder.sources(source);
+					} else {
+						builder.sources(SpringApplication.class.getName());
+					}
+					context = builder.run(args);
 				}
 				catch (Throwable ex) {
 					error = ex;

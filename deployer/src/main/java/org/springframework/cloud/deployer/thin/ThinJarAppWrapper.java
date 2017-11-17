@@ -34,6 +34,7 @@ import java.util.jar.Manifest;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
 import org.springframework.boot.loader.archive.Archive;
 import org.springframework.boot.loader.archive.ExplodedArchive;
 import org.springframework.boot.loader.archive.JarFileArchive;
@@ -83,7 +84,7 @@ public class ThinJarAppWrapper {
 			this.state = LaunchState.launching;
 			ClassLoader contextLoader = Thread.currentThread().getContextClassLoader();
 			try {
-				Archive child = new JarFileArchive(resource.getFile());
+				Archive child = getRootArchive();
 				Class<?> cls = createContextRunnerClass(child, args);
 				this.app = cls.newInstance();
 				runContext(getMainClass(child), properties, args.toArray(new String[0]));
@@ -100,6 +101,14 @@ public class ThinJarAppWrapper {
 				ClassUtils.overrideThreadContextClassLoader(contextLoader);
 			}
 		}
+	}
+
+	private Archive getRootArchive() throws IOException {
+		File file = resource.getFile();
+		if (file.isDirectory()) {
+			return new ExplodedArchive(file);
+		}
+		return new JarFileArchive(file);
 	}
 
 	private boolean isRunning() {
@@ -233,12 +242,14 @@ public class ThinJarAppWrapper {
 		catch (Exception e) {
 			try {
 				File root = new File(archive.getUrl().toURI());
+				String mainClass = null;
 				if (archive instanceof ExplodedArchive) {
-					return MainClassFinder.findSingleMainClass(root);
+					mainClass = MainClassFinder.findSingleMainClass(root);
 				}
 				else {
-					return MainClassFinder.findSingleMainClass(new JarFile(root), "/");
+					mainClass = MainClassFinder.findSingleMainClass(new JarFile(root), "/");
 				}
+				return mainClass;
 			}
 			catch (Exception ex) {
 				throw new IllegalStateException("Cannot find main class", e);

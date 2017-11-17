@@ -111,7 +111,7 @@ public class PathResolver {
 				String path = "target/classes/";
 				if (base.endsWith(path)) {
 					pom = new UrlResource(
-							base.substring(0, base.length() - path.length()));
+							base.substring(0, base.length() - path.length()) + "pom.xml");
 				}
 			}
 		}

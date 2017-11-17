@@ -75,6 +75,7 @@ public class PathResolverTests {
 				new File("src/test/resources/apps/source/target/classes"));
 		Resource pom = resolver.getPom(parent);
 		assertThat(pom.exists()).isTrue();
+		assertThat(pom.getFilename()).isEqualTo("pom.xml");
 	}
 
 	@Test
