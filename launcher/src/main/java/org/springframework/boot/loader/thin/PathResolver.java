@@ -20,6 +20,7 @@ import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -293,7 +294,7 @@ public class PathResolver {
 		if ("true".equals(props.get("computed"))) {
 			if (!"true".equals(added.get("computed"))) {
 				// Ensure there are no added dependencies since they are not computed
-				for (Object key : added.keySet()) {
+				for (Object key : new HashSet<>(added.keySet())) {
 					String name = (String) key;
 					if (name.startsWith("dependencies.") || name.startsWith("boms.")) {
 						added.remove(key);
@@ -304,7 +305,7 @@ public class PathResolver {
 		else {
 			if ("true".equals(added.get("computed"))) {
 				// Ensure there are no added dependencies since they are not computed
-				for (Object key : props.keySet()) {
+				for (Object key : new HashSet<>(props.keySet())) {
 					String name = (String) key;
 					if (name.startsWith("dependencies.") || name.startsWith("boms.")) {
 						props.remove(key);
