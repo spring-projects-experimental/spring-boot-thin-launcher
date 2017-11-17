@@ -1,4 +1,4 @@
-A "thin" jar launcher for java apps. Version 1.0.6.RELEASE is in Maven Central. See https://github.com/spring-projects/spring-boot/issues/1813 for more discussion and ideas.
+A "thin" jar launcher for java apps. Version 1.0.7.RELEASE is in Maven Central. See https://github.com/spring-projects/spring-boot/issues/1813 for more discussion and ideas.
 
 ## Getting Started
 
@@ -78,7 +78,8 @@ is "thin" (a few KB), but executable with `java -jar ...`.
 
 Inspect the app jar that you built (or one of the samples in this
 project) and notice that it is only a few KB. It is just a regular jar
-file with the app classes in it and two extra features:
+file with the app classes in it and one or two extra features. The things
+it needs to operate are:
 
 1. The `ThinJarWrapper` class has been added.
 2. Either a `pom.xml` and/or a `META-INF/thin.properties` which lists the dependencies of the app.
