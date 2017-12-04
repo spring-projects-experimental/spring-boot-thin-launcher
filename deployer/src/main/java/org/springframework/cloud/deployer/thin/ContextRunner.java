@@ -52,6 +52,7 @@ public class ContextRunner {
 							StandardEnvironment.SYSTEM_ENVIRONMENT_PROPERTY_SOURCE_NAME,
 							new MapPropertySource("appDeployer", properties));
 					SpringApplicationBuilder builder = new SpringApplicationBuilder()
+							.registerShutdownHook(false)
 							.environment(environment);
 					if (source!=null) {
 						builder.sources(source);
@@ -69,6 +70,7 @@ public class ContextRunner {
 		this.runThread.start();
 		try {
 			this.runThread.join(timeout);
+			this.runThread.setContextClassLoader(null);
 			this.running = context != null && context.isRunning();
 		}
 		catch (InterruptedException e) {
