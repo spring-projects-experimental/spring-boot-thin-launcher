@@ -30,7 +30,7 @@ and in Gradle
 buildscript {
 	ext {
 		springBootVersion = '1.5.6.RELEASE'
-		wrapperVersion = '1.0.9.RELEASE'
+		wrapperVersion = '1.0.10.BUILD-SNAPSHOT'
 	}
 	repositories {
 		mavenLocal()
@@ -275,7 +275,7 @@ You can set a variety of options on the command line with system properties (`-D
 | `thin.location` | `file:.,classpath:/` | The path to directory containing thin properties files (as per `thin.name`), as a comma-separated list of resource locations (directories). These locations plus relative /META-INF will be searched. |
 | `thin.name` | "thin" | The name of the properties file to search for dependency specifications and overrides. |
 | `thin.profile` |<empty> | Comma-separated list of profiles to use to locate thin properties. E.g. if `thin.profile=foo` the launcher searches for files called `thin.properties` and `thin-foo.properties`. |
-| `thin.library` | `org.springframework.boot.experimental:spring-boot-thin-launcher:1.0.9.RELEASE` | A locator for the launcher library. Can be Maven coordinates (with optional `maven://` prefix), or a file (with optional `file://` prefix). |
+| `thin.library` | `org.springframework.boot.experimental:spring-boot-thin-launcher:1.0.10.BUILD-SNAPSHOT` | A locator for the launcher library. Can be Maven coordinates (with optional `maven://` prefix), or a file (with optional `file://` prefix). |
 | `thin.launcher` | `org.springframework.boot.thin.ThinJarLauncher` | The main class in the `thin.library`. If not specified it is discovered from the manifest `Main-Class` attribute. |
 | `thin.parent.first` | true | Flag to say that the class loader is "parent first" (i.e. the system class loader will be used as the default). This is the "standard" JDK class loader strategy. Setting it to false is similar to what is normally used in web containers and application servers. |
 | `thin.parent.boot` | true | Flag to say that the parent class loader should be the boot class loader not the "system" class loader. The boot loader normally includes the JDK classes, but not the target archive, nor any agent jars added on the command line. |
@@ -413,7 +413,7 @@ There is a converter tool that you can use as a library in place of the launcher
 
 ```
 $ java -jar myapp.jar --thin.dryrun --thin.root=target/thin/root
-$ java -jar myapp.jar --thin.library=org.springframework.boot.experimental:spring-boot-thin-tools-converter:1.0.9.RELEASE
+$ java -jar myapp.jar --thin.library=org.springframework.boot.experimental:spring-boot-thin-tools-converter:1.0.10.BUILD-SNAPSHOT
 $ java -jar myapp-exec.jar
 ```
 
