@@ -21,6 +21,8 @@
 		<module>shadow</module>
 		<module>simple</module>	
 		<module>petclinic</module>	
+		<module>multi</module>
+		<module>pom</module>
 		<module>tests</module>
 	</modules>
 

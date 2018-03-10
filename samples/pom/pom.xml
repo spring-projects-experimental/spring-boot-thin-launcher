@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.example</groupId>
+    <artifactId>pom</artifactId>
+    <version>0.1.0</version>
+    <packaging>pom</packaging>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <java.version>1.8</java.version>
+		<wrapper.version>1.0.10.BUILD-SNAPSHOT</wrapper.version>
+    </properties>
+
+    <build>
+        <plugins>
+			<plugin>
+				<!-- this makes no sense here, but it would be a bug if it broke anything -->
+				<groupId>org.springframework.boot.experimental</groupId>
+				<artifactId>spring-boot-thin-maven-plugin</artifactId>
+				<version>${wrapper.version}</version>
+				<executions>
+					<execution>
+						<id>resolve</id>
+						<goals>
+							<goal>resolve</goal>
+						</goals>
+						<inherited>false</inherited>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-deploy-plugin</artifactId>
+				<configuration>
+					<skip>true</skip>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+
+</project>

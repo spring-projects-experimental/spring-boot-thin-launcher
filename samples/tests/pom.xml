@@ -65,6 +65,15 @@
 							<directory>${basedir}/../other/build</directory>
 						</fileset>
 						<fileset>
+							<directory>${basedir}/../multi/build</directory>
+						</fileset>
+						<fileset>
+							<directory>${basedir}/../multi/application/build</directory>
+						</fileset>
+						<fileset>
+							<directory>${basedir}/../multi/library/build</directory>
+						</fileset>
+						<fileset>
 							<directory>target</directory>
 						</fileset>
 					</filesets>
@@ -127,6 +136,21 @@
 							<arguments>
 								<argument>build</argument>
 								<argument>thinResolve</argument>
+							</arguments>
+						</configuration>
+						<goals>
+							<goal>exec</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>multi</id>
+						<phase>pre-integration-test</phase>
+						<configuration>
+							<workingDirectory>${basedir}/../multi</workingDirectory>
+ 							<executable>./gradlew</executable>
+							<arguments>
+								<argument>build</argument>
+								<argument>:application:thinResolve</argument>
 							</arguments>
 						</configuration>
 						<goals>

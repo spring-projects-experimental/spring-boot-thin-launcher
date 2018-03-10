@@ -61,7 +61,7 @@ public class ResolveMojo extends ThinJarMojo {
 	/**
 	 * Directory containing the downloaded archives.
 	 */
-	@Parameter(defaultValue = "${project.build.directory}/thin/root", required = true, property="thin.outputDirectory")
+	@Parameter(defaultValue = "${project.build.directory}/thin/root", required = true, property = "thin.outputDirectory")
 	private File outputDirectory;
 
 	/**
@@ -73,13 +73,13 @@ public class ResolveMojo extends ThinJarMojo {
 	/**
 	 * A flag to indicate whether to include the current project as a deployable.
 	 */
-	@Parameter(property="thin.includeSelf")
+	@Parameter(property = "thin.includeSelf")
 	private boolean includeSelf = true;
 
 	/**
 	 * A flag to indicate whether to unpack the main archive (self).
 	 */
-	@Parameter(property="thin.unpack")
+	@Parameter(property = "thin.unpack")
 	private boolean unpack = false;
 
 	/**
@@ -100,12 +100,17 @@ public class ResolveMojo extends ThinJarMojo {
 
 		List<File> deployables = new ArrayList<>();
 		File file = this.project.getArtifact().getFile();
-		if (this.includeSelf && !this.unpack) {
+		if (file != null && this.includeSelf && !this.unpack) {
 			deployables.add(file);
 		}
 		if (this.deployables != null) {
 			for (Dependency deployable : this.deployables) {
-				deployables.add(resolveFile(deployable));
+				if (deployable != null) {
+					File resolved = resolveFile(deployable);
+					if (resolved != null) {
+						deployables.add(resolved);
+					}
+				}
 			}
 		}
 
