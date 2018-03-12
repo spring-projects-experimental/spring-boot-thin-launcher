@@ -19,13 +19,13 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-loader-tools</artifactId>
-			<optional>true</optional>
+			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>commons-logging</groupId>
 			<artifactId>commons-logging</artifactId>
 			<version>1.2</version>
-			<optional>true</optional>
+			<scope>provided</scope>
 		</dependency>
 
 		<dependency>
@@ -107,20 +107,6 @@
 							<mainClass>org.springframework.boot.loader.thin.ThinJarLauncher</mainClass>
 						</transformer>
 					</transformers>
-					<filters>
-						<filter>
-							<artifact>org.springframework.boot:*:*</artifact>
-							<includes>
-								<include>org/springframework/boot/**</include>
-							</includes>
-						</filter>
-						<filter>
-							<artifact>commons-logging:commons-logging:*</artifact>
-							<includes>
-								<include>org/apache/**</include>
-							</includes>
-						</filter>
-					</filters>
 				</configuration>
 				<executions>
 					<execution>

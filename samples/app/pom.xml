@@ -22,7 +22,7 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<java.version>1.8</java.version>
-		<spring-boot.version>1.5.2.RELEASE</spring-boot.version>
+		<spring-boot-plugin.version>1.5.10.RELEASE</spring-boot-plugin.version>
 		<wrapper.version>1.0.10.BUILD-SNAPSHOT</wrapper.version>
 	</properties>
 
@@ -66,7 +66,25 @@
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
-				<version>${spring-boot.version}</version>
+				<!-- https://github.com/dsyer/spring-boot-thin-launcher/issues/46 -->
+				<version>${spring-boot-plugin.version}</version>
+				<executions>
+					<execution>
+						<!-- Spring Boot Actuator displays build-related information if a 
+							 META-INF/build-info.properties file is present -->
+						<goals>
+							<goal>build-info</goal>
+						</goals>
+						<configuration>
+							<additionalProperties>
+								<encoding.source>${project.build.sourceEncoding}</encoding.source>
+								<encoding.reporting>${project.reporting.outputEncoding}</encoding.reporting>
+								<java.source>${maven.compiler.source}</java.source>
+								<java.target>${maven.compiler.target}</java.target>
+							</additionalProperties>
+						</configuration>
+					</execution>
+				</executions>
 				<dependencies>
 					<dependency>
 						<groupId>org.springframework.boot.experimental</groupId>
