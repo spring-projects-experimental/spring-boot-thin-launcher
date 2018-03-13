@@ -327,7 +327,7 @@ public class PathResolver {
 				list.add(new JarFileArchive(file, file.toURI().toURL()));
 			}
 			catch (Exception e) {
-				throw new IllegalStateException("Cannot locate archive", e);
+				throw new IllegalStateException("Cannot locate archive: " + file, e);
 			}
 		}
 		return list;
