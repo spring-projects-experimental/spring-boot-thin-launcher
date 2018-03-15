@@ -13,7 +13,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
 
 @Configuration
-@ConditionalOnClass({ Connector.class, ServletContextInitializer.class })
+@ConditionalOnClass({ Connector.class, ServletContextInitializer.class, TomcatEmbeddedServletContainerFactory.class })
 @AutoConfigureBefore(EmbeddedServletContainerAutoConfiguration.class)
 public class ThinJarTomcatAutoConfiguration {
 
