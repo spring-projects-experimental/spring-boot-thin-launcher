@@ -19,11 +19,13 @@ package org.springframework.cloud.deployer.thin;
 import java.sql.SQLException;
 import java.util.Map;
 
+import org.springframework.beans.BeanUtils;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.core.env.MapPropertySource;
 import org.springframework.core.env.StandardEnvironment;
+import org.springframework.util.ClassUtils;
 
 /**
  * Utility class for starting a Spring Boot application in a separate thread. Best used
@@ -51,14 +53,13 @@ public class ContextRunner {
 					environment.getPropertySources().addAfter(
 							StandardEnvironment.SYSTEM_ENVIRONMENT_PROPERTY_SOURCE_NAME,
 							new MapPropertySource("appDeployer", properties));
-					SpringApplicationBuilder builder = new SpringApplicationBuilder()
+					String main = source;
+					if (source==null) {
+						main = SpringApplication.class.getName();
+					}
+					SpringApplicationBuilder builder = builder(main)
 							.registerShutdownHook(false)
 							.environment(environment);
-					if (source!=null) {
-						builder.sources(source);
-					} else {
-						builder.sources(SpringApplication.class.getName());
-					}
 					context = builder.run(args);
 				}
 				catch (Throwable ex) {
@@ -78,6 +79,22 @@ public class ContextRunner {
 			Thread.currentThread().interrupt();
 		}
 
+	}
+
+	static SpringApplicationBuilder builder(String type) {
+		// Defensive reflective builder to work with Boot 1.5 and 2.0
+		if (ClassUtils.hasConstructor(SpringApplicationBuilder.class, Class[].class)) {
+			return BeanUtils
+					.instantiateClass(
+							ClassUtils.getConstructorIfAvailable(
+									SpringApplicationBuilder.class, Class[].class),
+							(Object) new Class<?>[] { ClassUtils.resolveClassName(type, null) });
+		}
+		return BeanUtils
+				.instantiateClass(
+						ClassUtils.getConstructorIfAvailable(
+								SpringApplicationBuilder.class, Object[].class),
+						(Object) new Object[] { type });
 	}
 
 	public void close() {
