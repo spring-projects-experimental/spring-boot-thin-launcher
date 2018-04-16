@@ -65,7 +65,7 @@ public class AppMavenIT {
 		started = builder.start();
 		String output = output(started.getInputStream(), "Started");
 		assertThat(output).contains("Started LauncherApplication");
-		assertThat(output).contains("1.3.8.RELEASE");
+		assertThat(output).contains("2.0.1.BUILD-SNAPSHOT");
 	}
 
 	@Test
@@ -79,7 +79,7 @@ public class AppMavenIT {
 		started = builder.start();
 		String output = output(started.getInputStream(), "Started");
 		assertThat(output).contains("Started LauncherApplication");
-		assertThat(output).contains("1.4.0.RELEASE");
+		assertThat(output).contains("2.0.1.RELEASE");
 	}
 
 	@Test
@@ -94,7 +94,7 @@ public class AppMavenIT {
 		started = builder.start();
 		String output = output(started.getInputStream(), "Started");
 		assertThat(output).contains("Started LauncherApplication");
-		assertThat(output).contains("1.3.5.RELEASE");
+		assertThat(output).contains("2.0.1.RELEASE");
 	}
 
 	@Test
@@ -109,7 +109,7 @@ public class AppMavenIT {
 		started = builder.start();
 		String output = output(started.getInputStream(), "Started");
 		assertThat(output).contains("Started LauncherApplication");
-		assertThat(output).contains("1.3.5.RELEASE");
+		assertThat(output).contains("2.0.1.RELEASE");
 	}
 
 	@Test

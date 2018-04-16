@@ -1,6 +1,6 @@
 buildscript {
 	ext {
-		springBootVersion = '1.5.1.RELEASE'
+		springBootVersion = '2.0.0.RELEASE'
 		wrapperVersion = '1.0.10.BUILD-SNAPSHOT'
 	}
 	repositories {
@@ -10,7 +10,7 @@ buildscript {
 		maven { url "https://repo.spring.io/milestone" }
 	}
 	dependencies {
-		classpath("org.springframework.boot.experimental:spring-boot-thin-layout:${wrapperVersion}")
+		classpath("org.springframework.boot.experimental:spring-boot-thin-gradle-plugin:${wrapperVersion}")
 		classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
 	}
 }
@@ -18,7 +18,9 @@ buildscript {
 apply plugin: 'java'
 apply plugin: 'maven'
 apply plugin: 'eclipse'
+apply plugin: 'io.spring.dependency-management'
 apply plugin: 'org.springframework.boot'
+apply plugin: 'org.springframework.boot.experimental.thin-launcher'
 
 group = 'com.example'
 version = '0.0.1-SNAPSHOT'
@@ -32,7 +34,23 @@ repositories {
 	maven { url "https://repo.spring.io/milestone" }
 }
 
+configurations {
+	thinLauncher
+}
+
 dependencies {
 	compile('org.springframework.boot:spring-boot-starter')
 	testCompile('org.springframework.boot:spring-boot-starter-test')
+	thinLauncher('org.springframework.boot.experimental:spring-boot-thin-wrapper:1.0.10.BUILD-SNAPSHOT')
+}
+
+task thinJar(type: Jar) {
+	from zipTree(configurations.thinLauncher.singleFile)
+	from(sourceSets.main.runtimeClasspath.filter { it.directory })
+	doFirst {
+		manifest {
+			attributes['Main-Class'] = 'org.springframework.boot.loader.wrapper.ThinJarWrapper'
+			attributes['Start-Class'] = bootJar.mainClassName
+		}
+	}
 }

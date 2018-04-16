@@ -92,6 +92,7 @@
 							<executable>./gradlew</executable>
 							<arguments>
 								<argument>build</argument>
+								<argument>thinJar</argument>
 							</arguments>
 						</configuration>
 						<goals>

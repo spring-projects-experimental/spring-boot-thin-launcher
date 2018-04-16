@@ -66,7 +66,7 @@ public class MultiMavenIT {
 		started = builder.start();
 		String output = output(started.getInputStream(), "Started");
 		assertThat(output).contains("Started DemoApplication");
-		assertThat(output).contains("1.5.10.RELEASE");
+		assertThat(output).contains("1.5.11.RELEASE");
 	}
 
 	private static String output(InputStream inputStream, String marker)
