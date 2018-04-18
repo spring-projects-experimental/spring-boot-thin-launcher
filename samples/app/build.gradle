@@ -1,6 +1,6 @@
 buildscript {
 	ext {
-		springBootVersion = '2.0.0.RELEASE'
+		springBootVersion = '2.0.1.RELEASE'
 		wrapperVersion = '1.0.11.BUILD-SNAPSHOT'
 	}
 	repositories {
