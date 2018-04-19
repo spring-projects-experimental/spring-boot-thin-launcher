@@ -30,6 +30,7 @@ import org.gradle.api.InvalidUserDataException;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 import org.gradle.api.Task;
+import org.gradle.api.plugins.BasePlugin;
 import org.gradle.api.plugins.JavaPlugin;
 import org.gradle.api.plugins.JavaPluginConvention;
 import org.gradle.api.specs.Spec;
@@ -138,6 +139,10 @@ public class ThinLauncherPlugin implements Plugin<Project> {
 							public void execute(final Jar thin) {
 								final Jar bootJar = (Jar) project.getTasks()
 										.getByName("bootJar");
+								thin.dependsOn(bootJar);
+								project.getTasks()
+										.getByName(BasePlugin.ASSEMBLE_TASK_NAME)
+										.dependsOn(thin);
 								thin.doFirst(new Action<Task>() {
 									@Override
 									public void execute(Task t) {
@@ -146,6 +151,7 @@ public class ThinLauncherPlugin implements Plugin<Project> {
 												"org.springframework.boot.loader.wrapper.ThinJarWrapper");
 										attrs.put("Start-Class",
 												bootJar.property("mainClassName"));
+										thin.setManifest(bootJar.getManifest());
 										thin.getManifest().attributes(attrs);
 										SourceSetContainer sources = (SourceSetContainer) project
 												.getProperties().get("sourceSets");
@@ -177,6 +183,10 @@ public class ThinLauncherPlugin implements Plugin<Project> {
 									}
 
 								});
+								thin.setDescription(
+										"Assembles a thin executable jar archive containing the main"
+												+ " classes and the thin wrapper.");
+								thin.setGroup(BasePlugin.BUILD_GROUP);
 							}
 						});
 			}

@@ -85,14 +85,28 @@
 				<configuration><skip>${skipExec}</skip></configuration>
 				<executions>
 					<execution>
+						<id>app-resolve</id>
+						<phase>pre-integration-test</phase>
+						<configuration>
+							<workingDirectory>${basedir}/../app</workingDirectory>
+							<executable>${basedir}/../app/gradlew</executable>
+							<arguments>
+								<argument>thinResolve</argument>
+							</arguments>
+						</configuration>
+						<goals>
+							<goal>exec</goal>
+						</goals>
+					</execution>
+					<execution>
 						<id>app</id>
 						<phase>pre-integration-test</phase>
 						<configuration>
 							<workingDirectory>${basedir}/../app</workingDirectory>
-							<executable>./gradlew</executable>
+							<executable>${basedir}/../app/gradlew</executable>
 							<arguments>
+								<argument>clean</argument>
 								<argument>build</argument>
-								<argument>thinJar</argument>
 							</arguments>
 						</configuration>
 						<goals>

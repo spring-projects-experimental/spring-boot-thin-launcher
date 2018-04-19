@@ -38,3 +38,11 @@ dependencies {
 	compile('org.springframework.boot:spring-boot-starter')
 	testCompile('org.springframework.boot:spring-boot-starter-test')
 }
+
+// Optional manipulation of the jar file
+bootJar {
+	classifier = 'boot' // creates a fat jar as well
+	manifest {
+		attributes 'Marker': 'Boot' // adds an attribute to the manifest
+	}
+}

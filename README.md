@@ -45,7 +45,7 @@ apply plugin: 'maven'
 apply plugin: 'org.springframework.boot.experimental.thin-launcher'
 ```
 
-and for Spring Boot 2.0.x (you need to run `gradle thinJar` to build the thin jar):
+and for Spring Boot 2.0.x:
 
 
 ```groovy
@@ -67,6 +67,31 @@ apply plugin: 'maven'
 apply plugin: 'io.spring.dependency-management'
 apply plugin: 'org.springframework.boot'
 apply plugin: 'org.springframework.boot.experimental.thin-launcher'
+```
+
+If you are using the 1.0.10.RELEASE version of the plugin, you need to create a `thinJar` task manually (and `thinResolve` will not work). Example:
+
+```groovy
+configurations {
+	thinLauncher
+}
+
+dependencies {
+	compile('org.springframework.boot:spring-boot-starter')
+	testCompile('org.springframework.boot:spring-boot-starter-test')
+	thinLauncher('org.springframework.boot.experimental:spring-boot-thin-wrapper:1.0.10.RELEASE')
+}
+
+task thinJar(type: Jar) {
+	from zipTree(configurations.thinLauncher.singleFile)
+	from(sourceSets.main.runtimeClasspath.filter { it.directory })
+	doFirst {
+		manifest {
+			attributes['Main-Class'] = 'org.springframework.boot.loader.wrapper.ThinJarWrapper'
+			attributes['Start-Class'] = bootJar.mainClassName
+		}
+	}
+}
 ```
 
 In Gradle you also need to generate a `pom.xml` or a `thin.properties` (unless you want to maintain it by hand). A `pom.xml` will be generated automatically by the "thinPom" task in the Thin Gradle plugin. It does this by calling out to the maven plugin and the dependency management plugin; the maven plugin is always present, and the dependency management plugin is present if you are using the Spring Boot plugin. To generate a `pom.xml` remember to apply the maven and Thin Gradle plugins.
@@ -121,8 +146,7 @@ with that class loader. The `pom.xml` can be in the root of the jar or
 in the standard `META-INF/maven` location.
 
 The app jar in the demo is built using the Spring Boot plugin and a
-custom `Layout` (so it only builds with Spring Boot 1.5.x and above, and for Gradle
-with Spring Boot 2.0.x you have to explicitly execute the `thinJar` task).
+custom `Layout` (so it only builds with Spring Boot 1.5.x and above).
 
 ## Caching JARs
 

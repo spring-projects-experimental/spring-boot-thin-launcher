@@ -70,7 +70,7 @@
 			<groupId>io.spring.gradle</groupId>
 			<artifactId>dependency-management-plugin</artifactId>
 			<scope>provided</scope>
-			<version>1.0.0.RELEASE</version>
+			<version>1.0.4.RELEASE</version>
 		</dependency>
 	</dependencies>
 
