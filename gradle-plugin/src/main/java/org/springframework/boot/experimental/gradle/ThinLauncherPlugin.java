@@ -118,11 +118,32 @@ public class ThinLauncherPlugin implements Plugin<Project> {
 	}
 
 	private void createCopyTask(final Project project, final Jar jar) {
+		String task = "bootRepackage";
+		if (project.getTasksByName(task, true).isEmpty()) {
+			task = "thinJar" + suffix(jar);
+			if (suffix(jar).startsWith("ThinJar")) {
+				return;
+			}
+			final String jarTask = task;
+			project.afterEvaluate(new Action<Project>() {
+
+				@Override
+				public void execute(Project t) {
+					if (t.getTasksByName(jarTask, true).isEmpty()) {
+						throw new IllegalStateException(
+								"With Spring Boot 2.0 you need to define a task named "
+										+ jarTask + " that builds a thin jar");
+					}
+				}
+
+			});
+		}
+		final String bootJarTask = task;
 		create(project.getTasks(), "thinResolvePrepare" + suffix(jar), Copy.class,
 				new Action<Copy>() {
 					@Override
 					public void execute(Copy copy) {
-						copy.dependsOn("bootRepackage");
+						copy.dependsOn(bootJarTask);
 						copy.from(jar.getOutputs().getFiles());
 						copy.into(new File(project.getBuildDir(), "thin/root"));
 					}
@@ -130,8 +151,8 @@ public class ThinLauncherPlugin implements Plugin<Project> {
 	}
 
 	private void createResolveTask(final Project project, final Jar jar) {
-		create(project.getTasks(), "thinResolve" + suffix(jar),
-				Exec.class, new Action<Exec>() {
+		create(project.getTasks(), "thinResolve" + suffix(jar), Exec.class,
+				new Action<Exec>() {
 					@Override
 					public void execute(final Exec exec) {
 						final String prepareTask = "thinResolvePrepare" + suffix(jar);
@@ -155,7 +176,8 @@ public class ThinLauncherPlugin implements Plugin<Project> {
 
 	private String suffix(Jar jar) {
 		String name = jar.getName();
-		return "jar".equals(name) ? "" : StringUtils.capitalize(name);
+		return "jar".equals(name) || "bootJar".equals(name) ? ""
+				: StringUtils.capitalize(name);
 	}
 
 	@SuppressWarnings("unchecked")
