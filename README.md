@@ -24,7 +24,7 @@ means adding it to the Spring Boot plugin declaration:
 </plugin>
 ```
 
-and in Gradle
+and in Gradle for Spring Boot up to 1.5.x:
 
 ```groovy
 buildscript {
@@ -42,6 +42,30 @@ buildscript {
 	}
 }
 apply plugin: 'maven'
+apply plugin: 'org.springframework.boot.experimental.thin-launcher'
+```
+
+and for Spring Boot 2.0.x (you need to run `gradle thinJar` to build the thin jar):
+
+
+```groovy
+buildscript {
+	ext {
+		springBootVersion = '2.0.1.RELEASE'
+		wrapperVersion = '1.0.11.BUILD-SNAPSHOT'
+	}
+	repositories {
+		mavenLocal()
+		mavenCentral()
+	}
+	dependencies {
+		classpath("org.springframework.boot.experimental:spring-boot-thin-gradle-plugin:${wrapperVersion}")
+		classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+	}
+}
+apply plugin: 'maven'
+apply plugin: 'io.spring.dependency-management'
+apply plugin: 'org.springframework.boot'
 apply plugin: 'org.springframework.boot.experimental.thin-launcher'
 ```
 
@@ -97,7 +121,8 @@ with that class loader. The `pom.xml` can be in the root of the jar or
 in the standard `META-INF/maven` location.
 
 The app jar in the demo is built using the Spring Boot plugin and a
-custom `Layout` (so it only builds with Spring Boot 1.5.x and above).
+custom `Layout` (so it only builds with Spring Boot 1.5.x and above, and for Gradle
+with Spring Boot 2.0.x you have to explicitly execute the `thinJar` task).
 
 ## Caching JARs
 

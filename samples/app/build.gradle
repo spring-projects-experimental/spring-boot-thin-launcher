@@ -34,23 +34,7 @@ repositories {
 	maven { url "https://repo.spring.io/milestone" }
 }
 
-configurations {
-	thinLauncher
-}
-
 dependencies {
 	compile('org.springframework.boot:spring-boot-starter')
 	testCompile('org.springframework.boot:spring-boot-starter-test')
-	thinLauncher('org.springframework.boot.experimental:spring-boot-thin-wrapper:1.0.11.BUILD-SNAPSHOT')
-}
-
-task thinJar(type: Jar) {
-	from zipTree(configurations.thinLauncher.singleFile)
-	from(sourceSets.main.runtimeClasspath.filter { it.directory })
-	doFirst {
-		manifest {
-			attributes['Main-Class'] = 'org.springframework.boot.loader.wrapper.ThinJarWrapper'
-			attributes['Start-Class'] = bootJar.mainClassName
-		}
-	}
 }

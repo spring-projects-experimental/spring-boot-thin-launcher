@@ -18,6 +18,12 @@ package org.springframework.boot.experimental.gradle;
 
 import java.io.File;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.Callable;
+
+import io.spring.gradle.dependencymanagement.org.codehaus.plexus.util.FileUtils;
+import io.spring.gradle.dependencymanagement.org.codehaus.plexus.util.io.URLInputStreamFacade;
 
 import org.gradle.api.Action;
 import org.gradle.api.InvalidUserDataException;
@@ -26,6 +32,7 @@ import org.gradle.api.Project;
 import org.gradle.api.Task;
 import org.gradle.api.plugins.JavaPlugin;
 import org.gradle.api.plugins.JavaPluginConvention;
+import org.gradle.api.specs.Spec;
 import org.gradle.api.tasks.Copy;
 import org.gradle.api.tasks.Exec;
 import org.gradle.api.tasks.SourceSetContainer;
@@ -123,6 +130,55 @@ public class ThinLauncherPlugin implements Plugin<Project> {
 			task = "thinJar" + suffix(jar);
 			if (suffix(jar).startsWith("ThinJar")) {
 				return;
+			}
+			if (suffix(jar).isEmpty()) {
+				create(project.getTasks(), "thinJar" + suffix(jar), Jar.class,
+						new Action<Jar>() {
+							@Override
+							public void execute(final Jar thin) {
+								final Jar bootJar = (Jar) project.getTasks()
+										.getByName("bootJar");
+								thin.doFirst(new Action<Task>() {
+									@Override
+									public void execute(Task t) {
+										Map<String, Object> attrs = new HashMap<>();
+										attrs.put("Main-Class",
+												"org.springframework.boot.loader.wrapper.ThinJarWrapper");
+										attrs.put("Start-Class",
+												bootJar.property("mainClassName"));
+										thin.getManifest().attributes(attrs);
+										SourceSetContainer sources = (SourceSetContainer) project
+												.getProperties().get("sourceSets");
+										thin.from(project.zipTree(new Callable<File>() {
+											@Override
+											public File call() throws Exception {
+												File file = FileUtils.createTempFile(
+														"tmp", ".jar",
+														project.getBuildDir());
+												FileUtils.copyStreamToFile(
+														new URLInputStreamFacade(
+																getClass()
+																		.getClassLoader()
+																		.getResource(
+																				"META-INF/loader/spring-boot-thin-wrapper.jar")),
+														file);
+												return file;
+											}
+										}));
+										thin.from((Object) sources.findByName("main")
+												.getRuntimeClasspath()
+												.filter(new Spec<File>() {
+													@Override
+													public boolean isSatisfiedBy(
+															File element) {
+														return element.isDirectory();
+													}
+												}).getFiles().toArray(new File[0]));
+									}
+
+								});
+							}
+						});
 			}
 			final String jarTask = task;
 			project.afterEvaluate(new Action<Project>() {
