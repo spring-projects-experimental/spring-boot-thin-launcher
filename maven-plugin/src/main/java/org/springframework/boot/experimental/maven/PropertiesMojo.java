@@ -43,12 +43,6 @@ import org.apache.maven.project.MavenProject;
 public class PropertiesMojo extends ThinJarMojo {
 
 	/**
-	 * The Maven project.
-	 */
-	@Parameter(defaultValue = "${project}", readonly = true, required = true)
-	private MavenProject project;
-
-	/**
 	 * Directory containing the generated file.
 	 */
 	@Parameter(defaultValue = "src/main/resources/META-INF", required = true, property = "thin.output")
@@ -97,7 +91,8 @@ public class PropertiesMojo extends ThinJarMojo {
 							coordinates(artifact));
 				}
 			}
-			props.store(new FileOutputStream(target), "Enhanced by thin jar maven plugin");
+			props.store(new FileOutputStream(target),
+					"Enhanced by thin jar maven plugin");
 			getLog().info("Saved thin.properties");
 		}
 		catch (Exception e) {
@@ -128,8 +123,7 @@ public class PropertiesMojo extends ThinJarMojo {
 	}
 
 	private boolean isBom(String artifactId) {
-		return artifactId.endsWith("-dependencies")
-				|| artifactId.endsWith("-bom");
+		return artifactId.endsWith("-dependencies") || artifactId.endsWith("-bom");
 	}
 
 	private String coordinates(Dependency dependency) {

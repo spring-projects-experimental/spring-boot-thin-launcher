@@ -472,6 +472,10 @@ public class DependencyResolver {
 	}
 
 	private File getM2RepoDirectory() {
+		String mavenRoot = System.getProperty("maven.repo.local");
+		if (StringUtils.hasLength(mavenRoot)) {
+			return new File(mavenRoot);
+		}
 		return new File(getDefaultM2HomeDirectory(), "repository");
 	}
 

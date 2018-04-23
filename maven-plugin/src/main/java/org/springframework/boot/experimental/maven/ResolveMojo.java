@@ -28,7 +28,6 @@ import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
-import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.archiver.UnArchiver;
 import org.codehaus.plexus.archiver.manager.ArchiverManager;
 import org.codehaus.plexus.archiver.manager.NoSuchArchiverException;
@@ -51,12 +50,6 @@ import org.codehaus.plexus.util.FileUtils;
  */
 @Mojo(name = "resolve", defaultPhase = LifecyclePhase.PACKAGE, requiresProject = true, threadSafe = true, requiresDependencyResolution = ResolutionScope.NONE, requiresDependencyCollection = ResolutionScope.NONE)
 public class ResolveMojo extends ThinJarMojo {
-
-	/**
-	 * The Maven project.
-	 */
-	@Parameter(defaultValue = "${project}", readonly = true, required = true)
-	private MavenProject project;
 
 	/**
 	 * Directory containing the downloaded archives.

@@ -310,7 +310,7 @@ The Maven plugin has a "resolve" task with a flag unpack (or `-Dthin.unpack` on 
 
 ## Command Line Options
 
-You can set a variety of options on the command line with system properties (`-D...`). The `thin.*` properties are all removed from the command line before calling the main class, so the main class doesn't have to know how it was launched.
+You can set a variety of options on the command line or with system properties (`-D...`). The `thin.*` properties are all removed from the command line before calling the main class, so the main class doesn't have to know how it was launched.
 
 | Option | Default | Description |
 |--------|---------|-------------|
@@ -567,6 +567,16 @@ flag, but if they both also contain dependencies then only the computed ones wil
 used. Note that this means you can compute a profile using `--thin.classpath=properties`
 and use it as a cache, speeding up startup without affecting any other settings that might
 be in other `thin.properties`.
+
+## How to Change the Maven Local Repository
+
+You can change the location of the local Maven repository, used to
+resolve and cache artifacts, using the standard Maven `settings.xml`
+file (with a top level element called `<localRepository/>`). You can
+also use a system property `maven.repo.local` (or `maven.home` which
+defaults to `${user.home}/.m2`) when you launch the thin jar, but not
+a command line flag. The Maven plugin responds to the `settings.xml`
+and also to `-Dmaven.repo.local` as a Maven command line flag.
 
 ## License
 This project is Open Source software released under the

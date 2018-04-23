@@ -17,6 +17,9 @@
 package org.springframework.boot.experimental.maven;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.resolver.ArtifactResolutionRequest;
@@ -25,7 +28,9 @@ import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Parameter;
+import org.apache.maven.project.MavenProject;
 import org.apache.maven.repository.RepositorySystem;
+import org.apache.maven.settings.Settings;
 
 import org.springframework.boot.loader.tools.JavaExecutable;
 import org.springframework.boot.loader.tools.RunProcess;
@@ -46,6 +51,18 @@ import org.springframework.boot.loader.tools.RunProcess;
  *
  */
 public abstract class ThinJarMojo extends AbstractMojo {
+
+	/**
+	 * The Maven project.
+	 */
+	@Parameter(defaultValue = "${project}", readonly = true, required = true)
+	protected MavenProject project;
+
+	/**
+	 * The Maven settings.
+	 */
+	@Parameter(defaultValue = "${settings}", readonly = true, required = true)
+	protected Settings settings;
 
 	/**
 	 * Skip the execution.
@@ -72,9 +89,15 @@ public abstract class ThinJarMojo extends AbstractMojo {
 			throws MojoExecutionException {
 
 		try {
+			String localRepo = this.settings.getLocalRepository();
+			List<String> cmd = new ArrayList<>(Arrays.asList(
+					new JavaExecutable().toString(), "-Dmaven.repo.local=" + localRepo,
+					"-Dthin.dryrun", "-Dthin.root=.", "-jar", archive.getAbsolutePath()));
+			if (localRepo != null) {
+				cmd.add(1, "-Dmaven.repo.local=" + localRepo);
+			}
 			RunProcess runProcess = new RunProcess(workingDirectory,
-					new JavaExecutable().toString(), "-Dthin.dryrun", "-Dthin.root=.",
-					"-jar", archive.getAbsolutePath());
+					cmd.toArray(new String[0]));
 			Runtime.getRuntime()
 					.addShutdownHook(new Thread(new RunProcessKiller(runProcess)));
 			getLog().debug("Running: " + archive);
