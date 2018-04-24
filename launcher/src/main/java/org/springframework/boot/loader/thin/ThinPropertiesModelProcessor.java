@@ -20,8 +20,10 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -86,6 +88,7 @@ class ThinPropertiesModelProcessor extends DefaultModelProcessor {
 
 	static Model process(Model model, Properties properties) {
 		if (properties != null) {
+			Set<String> exclusions = new HashSet<>();
 			for (String name : properties.stringPropertyNames()) {
 				if (name.startsWith("boms.")) {
 					String bom = properties.getProperty(name);
@@ -123,7 +126,8 @@ class ThinPropertiesModelProcessor extends DefaultModelProcessor {
 								&& artifact.getVersion() != null) {
 							dependency.setVersion(
 									StringUtils.hasLength(artifact.getVersion())
-											? artifact.getVersion() : null);
+											? artifact.getVersion()
+											: null);
 							dependency.setScope("runtime");
 							replaced = true;
 						}
@@ -134,20 +138,22 @@ class ThinPropertiesModelProcessor extends DefaultModelProcessor {
 				}
 				else if (name.startsWith("exclusions.")) {
 					String pom = properties.getProperty(name);
-					Exclusion exclusion = exclusion(pom);
-					Dependency target = dependency(artifact(pom));
-					Dependency excluded = null;
-					for (Dependency dependency : model.getDependencies()) {
-						dependency.addExclusion(exclusion);
-						if (dependency.getGroupId().equals(target.getGroupId())
-								&& dependency.getArtifactId()
-										.equals(target.getArtifactId())) {
-							excluded = dependency;
-						}
+					exclusions.add(pom);
+				}
+			}
+			for (String pom : exclusions) {
+				Exclusion exclusion = exclusion(pom);
+				Dependency target = dependency(artifact(pom));
+				Dependency excluded = null;
+				for (Dependency dependency : model.getDependencies()) {
+					dependency.addExclusion(exclusion);
+					if (dependency.getGroupId().equals(target.getGroupId()) && dependency
+							.getArtifactId().equals(target.getArtifactId())) {
+						excluded = dependency;
 					}
-					if (excluded != null) {
-						model.getDependencies().remove(excluded);
-					}
+				}
+				if (excluded != null) {
+					model.getDependencies().remove(excluded);
 				}
 			}
 		}
@@ -192,10 +198,12 @@ class ThinPropertiesModelProcessor extends DefaultModelProcessor {
 		Dependency dependency = new Dependency();
 		dependency.setGroupId(artifact.getGroupId());
 		dependency.setArtifactId(artifact.getArtifactId());
-		dependency.setVersion(StringUtils.hasLength(artifact.getVersion())
-				? artifact.getVersion() : null);
-		dependency.setClassifier(StringUtils.hasLength(artifact.getClassifier())
-				? artifact.getClassifier() : null);
+		dependency.setVersion(
+				StringUtils.hasLength(artifact.getVersion()) ? artifact.getVersion()
+						: null);
+		dependency.setClassifier(
+				StringUtils.hasLength(artifact.getClassifier()) ? artifact.getClassifier()
+						: null);
 		dependency.setType(artifact.getExtension());
 		return dependency;
 	}
