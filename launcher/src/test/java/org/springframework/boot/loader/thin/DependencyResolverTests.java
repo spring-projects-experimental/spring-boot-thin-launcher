@@ -62,6 +62,9 @@ public class DependencyResolverTests {
 		// Transitive from a starter
 		assertThat(dependencies).filteredOn("artifact.artifactId", "spring-boot-starter")
 				.first().is(version("1.4.2.RELEASE"));
+		// Test scope
+		assertThat(dependencies)
+				.filteredOn("artifact.artifactId", "spring-boot-starter-test").isEmpty();
 	}
 
 	@Test

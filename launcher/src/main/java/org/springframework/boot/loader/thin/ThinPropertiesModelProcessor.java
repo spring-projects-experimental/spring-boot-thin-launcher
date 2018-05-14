@@ -20,6 +20,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Properties;
@@ -155,6 +156,12 @@ class ThinPropertiesModelProcessor extends DefaultModelProcessor {
 				if (excluded != null) {
 					model.getDependencies().remove(excluded);
 				}
+			}
+		}
+		for (Dependency dependency : new ArrayList<>(model.getDependencies())) {
+			if ("test".equals(dependency.getScope())
+					|| "provided".equals(dependency.getScope())) {
+				model.getDependencies().remove(dependency);
 			}
 		}
 		return model;

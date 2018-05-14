@@ -34,7 +34,7 @@ public class ThinJarLauncherTests {
 
 	@Rule
 	public ExpectedException expected = ExpectedException.none();
-	
+
 	@Rule
 	public OutputCapture output = new OutputCapture();
 
@@ -48,30 +48,50 @@ public class ThinJarLauncherTests {
 	@Test
 	public void classpath() throws Exception {
 		String[] args = new String[] { "--thin.classpath",
-				"--thin.archive=src/test/resources/apps/basic"};
+				"--thin.archive=src/test/resources/apps/basic" };
 		ThinJarLauncher.main(args);
-		assertThat(output.toString()).contains("spring-web-4.3.3.RELEASE.jar" + File.pathSeparator);
+		assertThat(output.toString())
+				.contains("spring-web-4.3.3.RELEASE.jar" + File.pathSeparator);
 	}
 
 	@Test
 	public void compute() throws Exception {
 		String[] args = new String[] { "--thin.classpath=properties",
-				"--thin.archive=src/test/resources/apps/basic"};
+				"--thin.archive=src/test/resources/apps/basic" };
 		ThinJarLauncher.main(args);
-		assertThat(output.toString()).contains("dependencies.spring-web=org.springframework:spring-web:4.3.3.RELEASE\n");
+		assertThat(output.toString()).contains(
+				"dependencies.spring-web=org.springframework:spring-web:4.3.3.RELEASE\n");
 	}
 
 	@Test
 	public void thinRoot() throws Exception {
 		FileSystemUtils.deleteRecursively(
 				new File("target/thin/test/repository/org/springframework/spring-core"));
+		FileSystemUtils.deleteRecursively(new File("target/thin/test/repository/junit"));
 		String[] args = new String[] { "--thin.dryrun=true",
 				"--thin.root=target/thin/test",
 				"--thin.location=file:src/test/resources/apps/db/META-INF",
 				"--thin.archive=src/test/resources/apps", "--debug" };
 		ThinJarLauncher.main(args);
-		assertThat(new File("target/thin/test/repository/org/springframework/spring-core")
-				.exists()).isTrue();
+		assertThat(
+				new File("target/thin/test/repository/org/springframework/spring-core"))
+						.exists();
+		assertThat(new File("target/thin/test/repository/junit/junit")).doesNotExist();
+	}
+
+	@Test
+	public void thinRootWithPom() throws Exception {
+		FileSystemUtils.deleteRecursively(
+				new File("target/thin/test/repository/org/springframework/spring-core"));
+		FileSystemUtils.deleteRecursively(new File("target/thin/test/repository/junit"));
+		String[] args = new String[] { "--thin.dryrun=true",
+				"--thin.root=target/thin/test",
+				"--thin.archive=src/test/resources/apps/petclinic", "--debug" };
+		ThinJarLauncher.main(args);
+		assertThat(
+				new File("target/thin/test/repository/org/springframework/spring-core"))
+						.exists();
+		assertThat(new File("target/thin/test/repository/junit/junit")).doesNotExist();
 	}
 
 	@Test
