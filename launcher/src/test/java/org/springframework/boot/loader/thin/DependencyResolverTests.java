@@ -170,6 +170,18 @@ public class DependencyResolverTests {
 	}
 
 	@Test
+	public void propertiesInline() throws Exception {
+		Resource resource = new ClassPathResource("apps/inline/pom.xml");
+		List<Dependency> dependencies = resolver.dependencies(resource,
+				PropertiesLoaderUtils.loadProperties(
+						new ClassPathResource("apps/inline/META-INF/thin.properties")));
+		assertThat(dependencies).size().isGreaterThan(3);
+		// thin.properties has placeholder for bom version
+		assertThat(dependencies).filteredOn("artifact.artifactId", "spring-boot").first()
+				.is(version("1.3.8.RELEASE"));
+	}
+
+	@Test
 	public void libsWithProfile() throws Exception {
 		Resource resource = new UrlResource(ArchiveUtils
 				.getArchive("src/test/resources/app-with-web-and-cloud-config.jar")

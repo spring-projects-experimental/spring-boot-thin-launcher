@@ -37,6 +37,7 @@ import org.eclipse.aether.artifact.DefaultArtifact;
 
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
+import org.springframework.util.PropertyPlaceholderHelper;
 import org.springframework.util.StringUtils;
 
 /**
@@ -92,7 +93,8 @@ class ThinPropertiesModelProcessor extends DefaultModelProcessor {
 			Set<String> exclusions = new HashSet<>();
 			for (String name : properties.stringPropertyNames()) {
 				if (name.startsWith("boms.")) {
-					String bom = properties.getProperty(name);
+					String bom = replacePlaceholder(properties,
+							properties.getProperty(name));
 					DefaultArtifact artifact = artifact(bom);
 					if (model.getDependencyManagement() == null) {
 						model.setDependencyManagement(new DependencyManagement());
@@ -116,7 +118,8 @@ class ThinPropertiesModelProcessor extends DefaultModelProcessor {
 					}
 				}
 				else if (name.startsWith("dependencies.")) {
-					String pom = properties.getProperty(name);
+					String pom = replacePlaceholder(properties,
+							properties.getProperty(name));
 					DefaultArtifact artifact = artifact(pom);
 					boolean replaced = false;
 					for (Dependency dependency : model.getDependencies()) {
@@ -138,7 +141,8 @@ class ThinPropertiesModelProcessor extends DefaultModelProcessor {
 					}
 				}
 				else if (name.startsWith("exclusions.")) {
-					String pom = properties.getProperty(name);
+					String pom = replacePlaceholder(properties,
+							properties.getProperty(name));
 					exclusions.add(pom);
 				}
 			}
@@ -165,6 +169,11 @@ class ThinPropertiesModelProcessor extends DefaultModelProcessor {
 			}
 		}
 		return model;
+	}
+
+	private static String replacePlaceholder(Properties properties, String value) {
+		PropertyPlaceholderHelper helper = new PropertyPlaceholderHelper("${", "}");
+		return helper.replacePlaceholders(value, properties);
 	}
 
 	private static Exclusion exclusion(String pom) {
