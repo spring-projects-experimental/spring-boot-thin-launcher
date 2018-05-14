@@ -285,15 +285,7 @@ thinResolvePrepare {
 
 ## Deploying to Cloud Foundry (or Heroku)
 
-The thin launcher (1.0.4 and above) adds an empty "lib" entry to the jar so that it matches the default detection algorithm for a Java application with the standard Java buildpack.
-
-Or you can use a custom buildpack:
-
-```
-$ cf push myapp -p target/demo-0.0.1.jar -b https://github.com/dsyer/java-buildpack.git
-```
-
-This fork of the `java-buildpack` not only adds the missing lib directory if it isn't there, it also downloads and caches the dependencies during staging (in the "compile" step of the buildpack), so you don't incur that cost on startup.
+The thin launcher (1.0.4 and above) adds an empty "lib" entry to the jar so that it matches the default detection algorithm for a Java application with the standard Java buildpack. As of version v4.12 of the Java buildpack the dependencies will be computed during staging (in the "compile" step of the buildpack), so you don't incur that cost on startup.
 
 You can also save the staging cost, and resolve the dependencies locally before you push the app.
 
