@@ -308,12 +308,12 @@ You can set a variety of options on the command line or with system properties (
 |--------|---------|-------------|
 | `thin.main` | Start-Class in MANIFEST.MF| The main class to launch (for a Spring Boot app, usually the one with `@SpringBootApplication`)|
 | `thin.dryrun` | false | Only resolve and download the dependencies. Don't run any main class. N.B. any value other than "false" (even empty) is true. |
-| `thin.offline` | false | Switch to "offline" mode. All dependencies must be avalailable locally (e.g. via a previous dry run) or there will be an exception. |
+| `thin.offline` | false | Switch to "offline" mode. All dependencies must be available locally (e.g. via a previous dry run) or there will be an exception. |
 | `thin.classpath` | false | Only print the classpath. Don't run the main class. Two formats are supported: "path" and "properties". For backwards compatibility "true" or empty are equivalent to "path". |
 | `thin.root` | `${user.home}/.m2` | The location of the local jar cache, laid out as a maven repository. The launcher creates a new directory here called "repository" if it doesn't exist. |
 | `thin.archive` | the same as the target archive | The archive to launch. Can be used to launch a JAR file that was build with a different version of the thin launcher, for instance, or a fat jar built by Spring Boot without the thin launcher. |
 | `thin.parent` | `<empty>` | A parent archive to use for dependency management and common classpath entries. If you run two apps with the same parent, they will have a classpath that is the same, reading from left to right, until they actually differ. |
-| `thin.location` | `file:.,classpath:/` | The path to directory containing thin properties files (as per `thin.name`), as a comma-separated list of resource locations (directories). These locations plus relative /META-INF will be searched. |
+| `thin.location` | `file:.,classpath:/` | The path to directory containing thin properties files (as per `thin.name`), as a comma-separated list of resource locations (directories). These locations plus the same paths relative /META-INF will be searched. |
 | `thin.name` | "thin" | The name of the properties file to search for dependency specifications and overrides. |
 | `thin.profile` |<empty> | Comma-separated list of profiles to use to locate thin properties. E.g. if `thin.profile=foo` the launcher searches for files called `thin.properties` and `thin-foo.properties`. |
 | `thin.library` | `org.springframework.boot.experimental:spring-boot-thin-launcher:1.0.12.BUILD-SNAPSHOT` | A locator for the launcher library. Can be Maven coordinates (with optional `maven://` prefix), or a file (with optional `file://` prefix). |
@@ -380,7 +380,7 @@ property `thin.name` to change the local file name (defaults to
 is appended to `thin.name`, so additional libraries can be added using
 `thin-{profile}.properties`. Profile-specific properties are loaded
 last so they take precedence. Example to pick up an extra set of
-dependencies in `thin.-rabbit.properties`:
+dependencies in `thin-rabbit.properties`:
 
 ```
 $ java -jar myapp.jar --thin.profile=rabbit
