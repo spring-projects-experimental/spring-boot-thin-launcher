@@ -194,13 +194,23 @@ public class ThinConverterApplication {
 			@Override
 			public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
 					throws IOException {
-				if (file.getFileName().toString().endsWith(".jar")) {
+				String name = file.getFileName().toString();
+				if (name.endsWith(".jar") && !name.startsWith("spring-boot-thin-launcher") && !isDuplicate(file)) {
 					files.add(file);
 				}
 				return FileVisitResult.CONTINUE;
 			}
 		});
 		return files;
+	}
+
+	private boolean isDuplicate(Path file) {
+		String name = file.getFileName().toString();
+		String alt = name.replaceAll("[0-9]*\\.[0-9]*-[0-9]*", "SNAPSHOT");
+		if (!name.equals(alt) && file.getParent().resolve(alt).toFile().exists()) {
+			return true;
+		}
+		return false;
 	}
 
 	private File getTarget(File jarfile) {
