@@ -95,6 +95,36 @@ public class ThinJarLauncherTests {
 	}
 
 	@Test
+	public void thinRootWithProperties() throws Exception {
+		FileSystemUtils.deleteRecursively(
+				new File("target/thin/test/repository/org/springframework/spring-core"));
+		FileSystemUtils.deleteRecursively(new File("target/thin/test/repository/junit"));
+		String[] args = new String[] { "--thin.dryrun=true",
+				"--thin.root=target/thin/test",
+				"--thin.archive=src/test/resources/apps/petclinic-preresolved", "--debug" };
+		ThinJarLauncher.main(args);
+		assertThat(
+				new File("target/thin/test/repository/org/springframework/spring-core"))
+						.exists();
+		assertThat(new File("target/thin/test/repository/junit/junit")).doesNotExist();
+	}
+
+	@Test
+	public void thinRootWithForce() throws Exception {
+		FileSystemUtils.deleteRecursively(
+				new File("target/thin/test/repository/org/springframework/spring-core"));
+		FileSystemUtils.deleteRecursively(new File("target/thin/test/repository/junit"));
+		String[] args = new String[] { "--thin.dryrun=true", "--thin.force=true",
+				"--thin.root=target/thin/test",
+				"--thin.archive=src/test/resources/apps/petclinic-preresolved", "--debug" };
+		ThinJarLauncher.main(args);
+		assertThat(
+				new File("target/thin/test/repository/org/springframework/spring-core"))
+						.exists();
+		assertThat(new File("target/thin/test/repository/junit/junit")).doesNotExist();
+	}
+
+	@Test
 	public void overrideLocalRepository() throws Exception {
 		FileSystemUtils.deleteRecursively(
 				new File("target/thin/test/repository/org/springframework/spring-core"));

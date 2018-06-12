@@ -60,6 +60,12 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 	public static final String THIN_DRYRUN = "thin.dryrun";
 
 	/**
+	 * System property to signal that dependency resolution should be attempted even if
+	 * there is a "computed" flag in thin.properties.
+	 */
+	public static final String THIN_FORCE = "thin.force";
+
+	/**
 	 * System property to signal offline execution (all dependencies can be resolved
 	 * locally). Defaults to "false" and any value other than "false" is equivalent to
 	 * "true".
@@ -337,6 +343,7 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 				.resolvePlaceholders("${" + ThinJarLauncher.THIN_LOCATION + ":}");
 		String root = environment.resolvePlaceholders("${" + THIN_ROOT + ":}");
 		String offline = environment.resolvePlaceholders("${" + THIN_OFFLINE + ":false}");
+		String force = environment.resolvePlaceholders("${" + THIN_DRYRUN + ":${" + THIN_FORCE + "false}}");
 		PathResolver resolver = new PathResolver(DependencyResolver.instance());
 		if (StringUtils.hasText(locations)) {
 			resolver.setLocations(locations.split(","));
@@ -346,6 +353,9 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 		}
 		if (!"false".equals(offline)) {
 			resolver.setOffline(true);
+		}
+		if (!"false".equals(force)) {
+			resolver.setForce(true);
 		}
 		resolver.setOverrides(getSystemProperties());
 		return resolver;

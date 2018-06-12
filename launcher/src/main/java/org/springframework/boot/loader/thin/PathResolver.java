@@ -60,6 +60,8 @@ public class PathResolver {
 
 	private boolean offline;
 
+	private boolean force;
+
 	public PathResolver(DependencyResolver engine) {
 		this.engine = engine;
 	}
@@ -74,7 +76,10 @@ public class PathResolver {
 
 	public void setOverrides(Properties overrides) {
 		this.overrides = overrides;
+	}
 
+	public void setForce(boolean force) {
+		this.force = force;
 	}
 
 	public void setOffline(boolean offline) {
@@ -216,6 +221,9 @@ public class PathResolver {
 		}
 		if (offline) {
 			properties.setProperty("thin.offline", "true");
+		}
+		if (force) {
+			properties.remove("computed");
 		}
 		addOverrideProperties(properties);
 		return properties;
