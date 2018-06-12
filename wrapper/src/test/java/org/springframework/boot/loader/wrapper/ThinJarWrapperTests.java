@@ -48,6 +48,7 @@ public class ThinJarWrapperTests {
 	@After
 	public void init() {
 		System.setOut(out);
+		System.clearProperty("maven.repo.local");
 		System.clearProperty("thin.root");
 		System.clearProperty("thin.repo");
 		System.clearProperty("thin.library");
@@ -74,7 +75,7 @@ public class ThinJarWrapperTests {
 	@Test
 	public void testCustomLibraryFilePrefix() throws Exception {
 		ThinJarWrapper wrapper = new ThinJarWrapper();
-		System.setProperty("thin.library", "file:" + wrapper.mavenLocal()
+		System.setProperty("thin.library", "file:" + wrapper.thinRootRepository()
 				+ "/com/example/main/0.0.1-SNAPSHOT/main-0.0.1-SNAPSHOT.jar");
 		assertThat(wrapper.download(), containsString("com/example/main"));
 	}
@@ -88,16 +89,48 @@ public class ThinJarWrapperTests {
 	}
 
 	@Test
-	public void testMavenLocalOverride() throws Exception {
-		System.setProperty("thin.root", "target");
+	public void testMavenLocalRepo() throws Exception {
 		ThinJarWrapper wrapper = new ThinJarWrapper();
-		assertEquals("target/repository", wrapper.mavenLocal());
+		System.setProperty("maven.repo.local", "target/local");
+		assertThat(wrapper.mavenLocal(), containsString("target/local"));
+		assertThat(wrapper.thinRootRepository(), containsString("target/local"));
 	}
 
 	@Test
-	public void testMavenLocalOverrideOnCommandLine() throws Exception {
+	public void testMavenLocalRepoDifferentFromThinRoot() throws Exception {
+		ThinJarWrapper wrapper = new ThinJarWrapper();
+		System.setProperty("thin.root", "target");
+		System.setProperty("maven.repo.local", "target/local");
+		assertThat(wrapper.mavenLocal(), containsString("target/local"));
+		assertThat(wrapper.thinRootRepository(), containsString("target/repository"));
+	}
+
+	@Test
+	public void testMavenLocalRepoDownload() throws Exception {
+		System.setProperty("thin.root", "target");
+		// Use the default local repo, to force a copy instead of a download
+		System.setProperty("maven.repo.local", System.getProperty("user.home") + "/.m2/repository");
+		ThinJarWrapper wrapper = new ThinJarWrapper();
+		// puts the launcher in target/repository (faster than downloading from internet)
+		wrapper.download();
+		FileSystemUtils.copyRecursively(new File("target/repository"), new File("target/local"));
+		FileSystemUtils.deleteRecursively(new File("target/repository"));
+		System.setProperty("maven.repo.local", "target/local");
+		// Now it will download *from* the local repo to the thin.root
+		assertThat(wrapper.download(), containsString("target/repository"));
+	}
+
+	@Test
+	public void testThinRootOverride() throws Exception {
+		System.setProperty("thin.root", "target");
+		ThinJarWrapper wrapper = new ThinJarWrapper();
+		assertEquals("target/repository", wrapper.thinRootRepository());
+	}
+
+	@Test
+	public void testThinRootOverrideOnCommandLine() throws Exception {
 		ThinJarWrapper wrapper = new ThinJarWrapper("--thin.root=target");
-		assertEquals("target/repository", wrapper.mavenLocal());
+		assertEquals("target/repository", wrapper.thinRootRepository());
 	}
 
 	@Test

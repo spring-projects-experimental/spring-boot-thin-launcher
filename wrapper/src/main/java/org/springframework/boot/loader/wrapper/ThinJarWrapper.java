@@ -74,6 +74,13 @@ public class ThinJarWrapper {
 	 */
 	public static final String THIN_LAUNCHER = "thin.launcher";
 
+	/**
+	 * Property key to override the location of local Maven cache. If the launcher jar is
+	 * available here it will be used before trying the remote repo. Useful in cases where
+	 * the local cache location is different from the target root.
+	 */
+	private static final String MAVEN_REPO_LOCAL = "maven.repo.local";
+
 	private static final String DEFAULT_LAUNCHER_CLASS = "org.springframework.boot.loader.thin.ThinJarLauncher";
 
 	private static final String DEFAULT_LIBRARY = "org.springframework.boot.experimental:spring-boot-thin-launcher:jar:exec:1.0.12.BUILD-SNAPSHOT";
@@ -130,7 +137,7 @@ public class ThinJarWrapper {
 			}
 			if (library.contains("//")) {
 				// it's a real URL, so download it
-				String parent = mavenLocal();
+				String parent = thinRootRepository();
 				String file = "/" + new File(library).getName();
 				File target = new File(parent + file);
 				downloadFromUrl(library, target);
@@ -141,7 +148,7 @@ public class ThinJarWrapper {
 			}
 		}
 		String file = getArtifactPath(coordinates(library));
-		String parent = mavenLocal();
+		String parent = thinRootRepository();
 		File target = new File(parent + file);
 		if (!target.exists()) {
 			if (!target.getParentFile().exists() && !target.getParentFile().mkdirs()) {
@@ -149,9 +156,9 @@ public class ThinJarWrapper {
 						"Cannot create directory for library at " + target);
 			}
 			boolean result = false;
-			String defaultPath = mavenLocal(null);
+			String defaultPath = mavenLocal();
 			if (!defaultPath.equals(parent)) {
-				// Try local repo first
+				// Try default local repo first
 				result = downloadFromUrl(getUrl(defaultPath) + file, target);
 			}
 			if (!result) {
@@ -242,8 +249,20 @@ public class ThinJarWrapper {
 		return classLoader;
 	}
 
+	String thinRootRepository() {
+		String root = getProperty(THIN_ROOT);
+		if (root==null) {
+			return mavenLocal();
+		}
+		return mavenLocal(root);
+	}
+
 	String mavenLocal() {
-		return mavenLocal(getProperty(THIN_ROOT));
+		String repo = getProperty(MAVEN_REPO_LOCAL);
+		if (repo != null) {
+			return repo;
+		}
+		return mavenLocal(null);
 	}
 
 	private String mavenLocal(String home) {
@@ -276,11 +295,12 @@ public class ThinJarWrapper {
 		return (value == null || value.length() <= 0) ? defaultValue : value;
 	}
 
-	private String getUrl(String file) {
-		if (!file.startsWith("./") && !file.startsWith("/")) {
-			file = "./" + file;
+	private String getUrl(String path) {
+		if (!path.startsWith("./") && !path.startsWith("/")) {
+			path = "./" + path;
 		}
-		return "file://" + file;
+		File file = new File(path);
+		return "file://" + file.getAbsolutePath();
 	}
 
 	private boolean downloadFromUrl(String path, File target) {
