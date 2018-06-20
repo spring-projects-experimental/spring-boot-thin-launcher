@@ -324,7 +324,7 @@ public class ThinJarLauncherTests {
 			}
 			return deleted;
 		}
-		System.err.println("Cannot delete: " + root);
+		System.err.println("Did not delete: " + root);
 		return false;
 	}
 
