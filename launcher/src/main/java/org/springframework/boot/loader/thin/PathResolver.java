@@ -30,7 +30,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import org.springframework.boot.loader.archive.Archive;
-import org.springframework.boot.loader.archive.JarFileArchive;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.io.Resource;
@@ -332,7 +331,9 @@ public class PathResolver {
 				continue;
 			}
 			try {
-				list.add(new JarFileArchive(file, file.toURI().toURL()));
+				// Archive is kind of the wrong abstraction here. We only need the URL, so
+				// make that explicit.
+				list.add(new UrlArchive(file.toURI().toURL()));
 			}
 			catch (Exception e) {
 				throw new IllegalStateException("Cannot locate archive: " + file, e);
