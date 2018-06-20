@@ -22,6 +22,7 @@
 		<java.version>1.8</java.version>
 		<spring-boot.version>1.5.2.RELEASE</spring-boot.version>
 		<wrapper.version>1.0.12.BUILD-SNAPSHOT</wrapper.version>
+		<gradle.exec>./gradlew</gradle.exec>
 	</properties>
 
 	<dependencies>
@@ -89,7 +90,7 @@
 						<phase>pre-integration-test</phase>
 						<configuration>
 							<workingDirectory>${basedir}/../app</workingDirectory>
-							<executable>${basedir}/../app/gradlew</executable>
+							<executable>${gradle.exec}</executable>
 							<arguments>
 								<argument>thinResolve</argument>
 							</arguments>
@@ -103,7 +104,7 @@
 						<phase>pre-integration-test</phase>
 						<configuration>
 							<workingDirectory>${basedir}/../app</workingDirectory>
-							<executable>${basedir}/../app/gradlew</executable>
+							<executable>${gradle.exec}</executable>
 							<arguments>
 								<argument>clean</argument>
 								<argument>build</argument>
@@ -118,7 +119,7 @@
 						<phase>pre-integration-test</phase>
 						<configuration>
 							<workingDirectory>${basedir}/../other</workingDirectory>
-							<executable>./gradlew</executable>
+							<executable>${gradle.exec}</executable>
 							<arguments>
 								<argument>build</argument>
 								<argument>thinResolve</argument>
@@ -133,7 +134,7 @@
 						<phase>pre-integration-test</phase>
 						<configuration>
 							<workingDirectory>${basedir}/../shadow</workingDirectory>
-							<executable>./gradlew</executable>
+							<executable>${gradle.exec}</executable>
 							<arguments>
 								<argument>build</argument>
 							</arguments>
@@ -147,7 +148,7 @@
 						<phase>pre-integration-test</phase>
 						<configuration>
 							<workingDirectory>${basedir}/../simple</workingDirectory>
- 							<executable>./gradlew</executable>
+ 							<executable>${gradle.exec}</executable>
 							<arguments>
 								<argument>build</argument>
 								<argument>thinResolve</argument>
@@ -162,7 +163,7 @@
 						<phase>pre-integration-test</phase>
 						<configuration>
 							<workingDirectory>${basedir}/../multi</workingDirectory>
- 							<executable>./gradlew</executable>
+ 							<executable>${gradle.exec}</executable>
 							<arguments>
 								<argument>build</argument>
 								<argument>:application:thinResolve</argument>
@@ -187,6 +188,17 @@
 			</activation>
 			<properties>
 				<skipExec>true</skipExec>
+			</properties>
+		</profile>
+		<profile>
+			<id>gradle</id>
+			<activation>
+				<os>
+					<family>windows</family>
+				</os>
+			</activation>
+			<properties>
+				<gradle.exec>.\gradlew.bat</gradle.exec>
 			</properties>
 		</profile>
 	</profiles>
