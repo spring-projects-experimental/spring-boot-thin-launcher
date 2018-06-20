@@ -218,9 +218,8 @@ public class ThinJarLauncherTests {
 		System.setProperty("user.home",
 				new File("src/test/resources/settings/local").getAbsolutePath());
 		try {
-			assertThat(deleteRecursively(new File(
-					"target/thin/test/repository/org/springframework/spring-core")))
-							.isTrue();
+			deleteRecursively(new File(
+					"target/thin/test/repository/org/springframework/spring-core"));
 			String[] args = new String[] { "--thin.dryrun=true",
 					"--thin.archive=src/test/resources/apps/snapshots-with-repos",
 					"--debug" };
