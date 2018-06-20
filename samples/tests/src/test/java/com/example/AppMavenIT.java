@@ -65,7 +65,7 @@ public class AppMavenIT {
 		started = builder.start();
 		String output = output(started.getInputStream(), "Started");
 		assertThat(output).contains("Started LauncherApplication");
-		assertThat(output).contains("2.0.3.BUILD-SNAPSHOT");
+		assertThat(output).contains("2.0.4.BUILD-SNAPSHOT");
 	}
 
 	@Test
