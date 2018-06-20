@@ -129,7 +129,21 @@ public class DependencyResolver {
 	}
 
 	public static void close() {
+		if (instance != null) {
+			instance.dispose();
+		}
 		instance = new DependencyResolver();
+	}
+
+	private void dispose() {
+		try {
+			if (this.container != null) {
+				this.container.dispose();
+			}
+		}
+		catch (Exception e) {
+			// swallow
+		}
 	}
 
 	private DependencyResolver() {
