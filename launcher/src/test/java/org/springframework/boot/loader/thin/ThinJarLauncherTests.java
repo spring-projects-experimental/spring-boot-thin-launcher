@@ -65,9 +65,9 @@ public class ThinJarLauncherTests {
 
 	@Test
 	public void thinRoot() throws Exception {
-		FileSystemUtils.deleteRecursively(
+		deleteRecursively(
 				new File("target/thin/test/repository/org/springframework/spring-core"));
-		FileSystemUtils.deleteRecursively(new File("target/thin/test/repository/junit"));
+		deleteRecursively(new File("target/thin/test/repository/junit"));
 		String[] args = new String[] { "--thin.dryrun=true",
 				"--thin.root=target/thin/test",
 				"--thin.location=file:src/test/resources/apps/db/META-INF",
@@ -81,9 +81,9 @@ public class ThinJarLauncherTests {
 
 	@Test
 	public void thinRootWithPom() throws Exception {
-		FileSystemUtils.deleteRecursively(
+		deleteRecursively(
 				new File("target/thin/test/repository/org/springframework/spring-core"));
-		FileSystemUtils.deleteRecursively(new File("target/thin/test/repository/junit"));
+		deleteRecursively(new File("target/thin/test/repository/junit"));
 		String[] args = new String[] { "--thin.dryrun=true",
 				"--thin.root=target/thin/test",
 				"--thin.archive=src/test/resources/apps/petclinic", "--debug" };
@@ -96,12 +96,13 @@ public class ThinJarLauncherTests {
 
 	@Test
 	public void thinRootWithProperties() throws Exception {
-		FileSystemUtils.deleteRecursively(
+		deleteRecursively(
 				new File("target/thin/test/repository/org/springframework/spring-core"));
-		FileSystemUtils.deleteRecursively(new File("target/thin/test/repository/junit"));
+		deleteRecursively(new File("target/thin/test/repository/junit"));
 		String[] args = new String[] { "--thin.dryrun=true",
 				"--thin.root=target/thin/test",
-				"--thin.archive=src/test/resources/apps/petclinic-preresolved", "--debug" };
+				"--thin.archive=src/test/resources/apps/petclinic-preresolved",
+				"--debug" };
 		ThinJarLauncher.main(args);
 		assertThat(
 				new File("target/thin/test/repository/org/springframework/spring-core"))
@@ -111,12 +112,13 @@ public class ThinJarLauncherTests {
 
 	@Test
 	public void thinRootWithForce() throws Exception {
-		FileSystemUtils.deleteRecursively(
+		deleteRecursively(
 				new File("target/thin/test/repository/org/springframework/spring-core"));
-		FileSystemUtils.deleteRecursively(new File("target/thin/test/repository/junit"));
+		deleteRecursively(new File("target/thin/test/repository/junit"));
 		String[] args = new String[] { "--thin.dryrun=true", "--thin.force=true",
 				"--thin.root=target/thin/test",
-				"--thin.archive=src/test/resources/apps/petclinic-preresolved", "--debug" };
+				"--thin.archive=src/test/resources/apps/petclinic-preresolved",
+				"--debug" };
 		ThinJarLauncher.main(args);
 		assertThat(
 				new File("target/thin/test/repository/org/springframework/spring-core"))
@@ -126,7 +128,7 @@ public class ThinJarLauncherTests {
 
 	@Test
 	public void overrideLocalRepository() throws Exception {
-		FileSystemUtils.deleteRecursively(
+		deleteRecursively(
 				new File("target/thin/test/repository/org/springframework/spring-core"));
 		String[] args = new String[] { "--thin.root=target/thin/test",
 				"--thin.dryrun=true", "--thin.archive=src/test/resources/apps/basic",
@@ -139,7 +141,7 @@ public class ThinJarLauncherTests {
 
 	@Test
 	public void missingThinRootWithPom() throws Exception {
-		FileSystemUtils.deleteRecursively(
+		deleteRecursively(
 				new File("target/thin/test/repository/org/springframework/spring-core"));
 		expected.expect(RuntimeException.class);
 		expected.expectMessage("spring-web:jar:X.X.X");
@@ -154,7 +156,7 @@ public class ThinJarLauncherTests {
 
 	@Test
 	public void missingThinRootWithoutPom() throws Exception {
-		FileSystemUtils.deleteRecursively(
+		deleteRecursively(
 				new File("target/thin/test/repository/org/springframework/spring-core"));
 		expected.expect(RuntimeException.class);
 		expected.expectMessage("nonexistent:jar:0.0.1");
@@ -169,7 +171,7 @@ public class ThinJarLauncherTests {
 
 	@Test
 	public void overrideExistingRepository() throws Exception {
-		FileSystemUtils.deleteRecursively(
+		deleteRecursively(
 				new File("target/thin/test/repository/org/springframework/spring-core"));
 		String[] args = new String[] { "--thin.root=target/thin/test",
 				"--thin.dryrun=true",
@@ -182,9 +184,9 @@ public class ThinJarLauncherTests {
 
 	@Test
 	public void overrideSnapshotVersion() throws Exception {
-		FileSystemUtils.deleteRecursively(
+		deleteRecursively(
 				new File("target/thin/test/repository/org/springframework/spring-core"));
-		FileSystemUtils.deleteRecursively(new File(
+		deleteRecursively(new File(
 				"target/thin/test/repository/org/springframework/boot/spring-boot-starter-parent"));
 		String[] args = new String[] { "--thin.root=target/thin/test",
 				"--thin.dryrun=true", "--thin.archive=src/test/resources/apps/snapshots",
@@ -197,7 +199,7 @@ public class ThinJarLauncherTests {
 
 	@Test
 	public void declareSnapshotRepository() throws Exception {
-		FileSystemUtils.deleteRecursively(
+		deleteRecursively(
 				new File("target/thin/test/repository/org/springframework/spring-core"));
 		String[] args = new String[] { "--thin.root=target/thin/test",
 				"--thin.dryrun=true",
@@ -216,8 +218,9 @@ public class ThinJarLauncherTests {
 		System.setProperty("user.home",
 				new File("src/test/resources/settings/local").getAbsolutePath());
 		try {
-			FileSystemUtils.deleteRecursively(new File(
-					"target/thin/test/repository/org/springframework/spring-core"));
+			assertThat(deleteRecursively(new File(
+					"target/thin/test/repository/org/springframework/spring-core")))
+							.isTrue();
 			String[] args = new String[] { "--thin.dryrun=true",
 					"--thin.archive=src/test/resources/apps/snapshots-with-repos",
 					"--debug" };
@@ -239,8 +242,9 @@ public class ThinJarLauncherTests {
 				"--thin.dryrun=true", "--thin.offline=true",
 				"--thin.archive=src/test/resources/apps/snapshots-with-repos",
 				"--debug" };
-		FileSystemUtils.deleteRecursively(
-				new File("target/thin/test/repository/org/springframework/spring-core"));
+		assertThat(deleteRecursively(
+				new File("target/thin/test/repository/org/springframework/spring-core")))
+						.isTrue();
 		expected.expect(RuntimeException.class);
 		expected.expectMessage("spring-core");
 		ThinJarLauncher.main(args);
@@ -271,7 +275,7 @@ public class ThinJarLauncherTests {
 	@Test
 	public void repositorySettingsMissing() throws Exception {
 		DependencyResolver.close();
-		FileSystemUtils.deleteRecursively(
+		deleteRecursively(
 				new File("target/thin/test/repository/com/github/jitpack"));
 		String[] args = new String[] { "--thin.root=target/thin/test",
 				"--thin.dryrun=true", "--thin.archive=src/test/resources/apps/jitpack",
@@ -290,7 +294,7 @@ public class ThinJarLauncherTests {
 		System.setProperty("user.home",
 				new File("src/test/resources/settings/profile").getAbsolutePath());
 		try {
-			FileSystemUtils.deleteRecursively(
+			deleteRecursively(
 					new File("target/thin/test/repository/com/github/jitpack"));
 			String[] args = new String[] { "--thin.root=target/thin/test",
 					"--thin.dryrun=true",
@@ -303,6 +307,26 @@ public class ThinJarLauncherTests {
 		assertThat(new File("target/thin/test/repository").exists()).isTrue();
 		assertThat(new File("target/thin/test/repository/com/github/jitpack/maven-simple")
 				.exists()).isTrue();
+	}
+
+	public static boolean deleteRecursively(File root) {
+		if (root != null && root.exists()) {
+			if (root.isDirectory()) {
+				File[] children = root.listFiles();
+				if (children != null) {
+					for (File child : children) {
+						deleteRecursively(child);
+					}
+				}
+			}
+			boolean deleted = root.delete();
+			if (!deleted) {
+				System.err.println("Cannot delete: " + root);
+			}
+			return deleted;
+		}
+		System.err.println("Cannot delete: " + root);
+		return false;
 	}
 
 }
