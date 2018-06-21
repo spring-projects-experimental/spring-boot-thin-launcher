@@ -21,7 +21,7 @@
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<java.version>1.8</java.version>
 		<spring-boot.version>1.5.2.RELEASE</spring-boot.version>
-		<wrapper.version>1.0.12.RELEASE</wrapper.version>
+		<wrapper.version>1.0.13.BUILD-SNAPSHOT</wrapper.version>
 		<gradle.exec>./gradlew</gradle.exec>
 	</properties>
 
