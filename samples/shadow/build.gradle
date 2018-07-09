@@ -1,6 +1,6 @@
 buildscript {
 	ext {
-		springBootVersion = '1.5.1.RELEASE'
+		springBootVersion = '2.0.3.RELEASE'
 		wrapperVersion = '1.0.13.BUILD-SNAPSHOT'
         shadowVersion = '2.0.1'
 	}
@@ -21,7 +21,8 @@ buildscript {
 apply plugin: 'java'
 apply plugin: 'maven'
 apply plugin: 'eclipse'
-apply plugin: 'spring-boot'
+apply plugin: 'io.spring.dependency-management'
+apply plugin: 'org.springframework.boot'
 apply plugin: 'com.github.johnrengelman.shadow'
 apply plugin: 'org.springframework.boot.experimental.thin-launcher'
 
@@ -30,8 +31,27 @@ version = '0.0.1-SNAPSHOT'
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
-assemble.dependsOn = [shadowJar, bootRepackage]
+assemble.dependsOn = [shadowJar, thinJar]
 
+import com.github.jengelman.gradle.plugins.shadow.transformers.*
+
+jar {
+  manifest {
+    attributes 'Main-Class': 'com.example.LauncherApplication'
+  }
+}
+
+shadowJar {
+  // Required for Spring
+  mergeServiceFiles()
+  append 'META-INF/spring.handlers'
+  append 'META-INF/spring.schemas'
+  append 'META-INF/spring.tooling'
+  transform(PropertiesFileTransformer) {
+    paths = ['META-INF/spring.factories' ]
+    mergeStrategy = "append"
+  }
+}
 repositories {
 	mavenLocal()
 	mavenCentral()
@@ -44,6 +64,6 @@ configurations {
 }
 
 dependencies {
-	compileOnly('org.springframework.boot:spring-boot-starter')
+	compile('org.springframework.boot:spring-boot-starter')
 	testCompile('org.springframework.boot:spring-boot-starter-test')
 }

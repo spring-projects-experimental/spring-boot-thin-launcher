@@ -132,63 +132,58 @@ public class ThinLauncherPlugin implements Plugin<Project> {
 			if (suffix(jar).startsWith("ThinJar")) {
 				return;
 			}
+			if (!project.getTasksByName(task, true).isEmpty()) {
+				return;
+			}
 			if (suffix(jar).isEmpty()) {
-				create(project.getTasks(), "thinJar" + suffix(jar), Jar.class,
-						new Action<Jar>() {
+				create(project.getTasks(), task, Jar.class, new Action<Jar>() {
+					@Override
+					public void execute(final Jar thin) {
+						final Jar bootJar = (Jar) project.getTasks().getByName("bootJar");
+						thin.dependsOn(bootJar);
+						project.getTasks().getByName(BasePlugin.ASSEMBLE_TASK_NAME)
+								.dependsOn(thin);
+						thin.doFirst(new Action<Task>() {
 							@Override
-							public void execute(final Jar thin) {
-								final Jar bootJar = (Jar) project.getTasks()
-										.getByName("bootJar");
-								thin.dependsOn(bootJar);
-								project.getTasks()
-										.getByName(BasePlugin.ASSEMBLE_TASK_NAME)
-										.dependsOn(thin);
-								thin.doFirst(new Action<Task>() {
+							public void execute(Task t) {
+								Map<String, Object> attrs = new HashMap<>();
+								attrs.put("Main-Class",
+										"org.springframework.boot.loader.wrapper.ThinJarWrapper");
+								attrs.put("Start-Class",
+										bootJar.property("mainClassName"));
+								thin.setManifest(bootJar.getManifest());
+								thin.getManifest().attributes(attrs);
+								SourceSetContainer sources = (SourceSetContainer) project
+										.getProperties().get("sourceSets");
+								thin.from(project.zipTree(new Callable<File>() {
 									@Override
-									public void execute(Task t) {
-										Map<String, Object> attrs = new HashMap<>();
-										attrs.put("Main-Class",
-												"org.springframework.boot.loader.wrapper.ThinJarWrapper");
-										attrs.put("Start-Class",
-												bootJar.property("mainClassName"));
-										thin.setManifest(bootJar.getManifest());
-										thin.getManifest().attributes(attrs);
-										SourceSetContainer sources = (SourceSetContainer) project
-												.getProperties().get("sourceSets");
-										thin.from(project.zipTree(new Callable<File>() {
-											@Override
-											public File call() throws Exception {
-												File file = FileUtils.createTempFile(
-														"tmp", ".jar",
-														project.getBuildDir());
-												FileUtils.copyStreamToFile(
-														new URLInputStreamFacade(
-																getClass()
-																		.getClassLoader()
-																		.getResource(
-																				"META-INF/loader/spring-boot-thin-wrapper.jar")),
-														file);
-												return file;
-											}
-										}));
-										thin.from((Object) sources.findByName("main")
-												.getRuntimeClasspath()
-												.filter(new Spec<File>() {
-													@Override
-													public boolean isSatisfiedBy(
-															File element) {
-														return element.isDirectory();
-													}
-												}).getFiles().toArray(new File[0]));
+									public File call() throws Exception {
+										File file = FileUtils.createTempFile("tmp",
+												".jar", project.getBuildDir());
+										FileUtils.copyStreamToFile(
+												new URLInputStreamFacade(getClass()
+														.getClassLoader().getResource(
+																"META-INF/loader/spring-boot-thin-wrapper.jar")),
+												file);
+										return file;
 									}
-
-								});
-								thin.setDescription(
-										"Assembles a thin executable jar archive containing the main"
-												+ " classes and the thin wrapper.");
-								thin.setGroup(BasePlugin.BUILD_GROUP);
+								}));
+								thin.from((Object) sources.findByName("main")
+										.getRuntimeClasspath().filter(new Spec<File>() {
+											@Override
+											public boolean isSatisfiedBy(File element) {
+												return element.isDirectory();
+											}
+										}).getFiles().toArray(new File[0]));
 							}
+
 						});
+						thin.setDescription(
+								"Assembles a thin executable jar archive containing the main"
+										+ " classes and the thin wrapper.");
+						thin.setGroup(BasePlugin.BUILD_GROUP);
+					}
+				});
 			}
 		}
 		final String bootJarTask = task;
