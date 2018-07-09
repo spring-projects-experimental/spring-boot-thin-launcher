@@ -190,19 +190,6 @@ public class ThinLauncherPlugin implements Plugin<Project> {
 							}
 						});
 			}
-			final String jarTask = task;
-			project.afterEvaluate(new Action<Project>() {
-
-				@Override
-				public void execute(Project t) {
-					if (t.getTasksByName(jarTask, true).isEmpty()) {
-						throw new IllegalStateException(
-								"With Spring Boot 2.0 you need to define a task named "
-										+ jarTask + " that builds a thin jar");
-					}
-				}
-
-			});
 		}
 		final String bootJarTask = task;
 		create(project.getTasks(), "thinResolvePrepare" + suffix(jar), Copy.class,

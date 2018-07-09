@@ -44,14 +44,25 @@ public class PomTask extends DefaultTask {
 		try {
 			output.mkdirs();
 			getLogger().info("Output: " + output);
-			PomDependencyManagementConfigurer pomConfigurer = getProject().getExtensions()
-					.findByType(DependencyManagementExtension.class).getPomConfigurer();
-			MavenPluginConvention maven = getProject().getConvention()
-					.findPlugin(MavenPluginConvention.class);
-			if (maven != null) {
-				maven.pom().withXml(pomConfigurer).writeTo(new File(output, "pom.xml"));
-			} else {
-				getLogger().info("Skipping pom generation (maybe you forgot to apply plugin: 'maven'?)");
+			DependencyManagementExtension dependencies = getProject().getExtensions()
+					.findByType(DependencyManagementExtension.class);
+			if (dependencies != null) {
+				PomDependencyManagementConfigurer pomConfigurer = dependencies
+						.getPomConfigurer();
+				MavenPluginConvention maven = getProject().getConvention()
+						.findPlugin(MavenPluginConvention.class);
+				if (maven != null) {
+					maven.pom().withXml(pomConfigurer)
+							.writeTo(new File(output, "pom.xml"));
+				}
+				else {
+					getLogger().info(
+							"Skipping pom generation (maybe you forgot to apply plugin: 'io.spring.dependency-management'?)");
+				}
+			}
+			else {
+				getLogger().info(
+						"Skipping pom generation (maybe you forgot to apply plugin: 'maven'?)");
 			}
 		}
 		catch (Exception e) {
