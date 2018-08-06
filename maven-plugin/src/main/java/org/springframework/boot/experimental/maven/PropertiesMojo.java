@@ -108,14 +108,13 @@ public class PropertiesMojo extends ThinJarMojo {
 		while (project != null) {
 			String artifactId = project.getArtifactId();
 			if (isBom(artifactId)) {
-				props.setProperty("boms." + artifactId,
-						coordinates(project.getArtifact(), true));
+				props.setProperty("boms." + artifactId, coordinates(project.getArtifact(), true));
 			}
-			for (Dependency dependency : project.getDependencyManagement()
-					.getDependencies()) {
-				if ("import".equals(dependency.getScope())) {
-					props.setProperty("boms." + dependency.getArtifactId(),
-							coordinates(dependency));
+			if (project.getDependencyManagement() != null) {
+				for (Dependency dependency : project.getDependencyManagement().getDependencies()) {
+					if ("import".equals(dependency.getScope())) {
+						props.setProperty("boms." + dependency.getArtifactId(), coordinates(dependency));
+					}
 				}
 			}
 			project = project.getParent();
@@ -127,8 +126,7 @@ public class PropertiesMojo extends ThinJarMojo {
 	}
 
 	private String coordinates(Dependency dependency) {
-		return dependency.getGroupId() + ":" + dependency.getArtifactId() + ":"
-				+ dependency.getVersion();
+		return dependency.getGroupId() + ":" + dependency.getArtifactId() + ":" + dependency.getVersion();
 	}
 
 	private String coordinates(Artifact dependency) {
