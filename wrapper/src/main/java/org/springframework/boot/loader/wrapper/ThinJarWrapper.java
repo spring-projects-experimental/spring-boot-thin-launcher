@@ -91,8 +91,9 @@ public class ThinJarWrapper {
 		Class<?> launcher = ThinJarWrapper.class;
 		ThinJarWrapper wrapper = new ThinJarWrapper(args);
 		if (wrapper.getProperty(THIN_ARCHIVE) == null) {
-			System.setProperty(THIN_ARCHIVE, launcher.getProtectionDomain()
-					.getCodeSource().getLocation().toURI().toString());
+			System.setProperty(THIN_ARCHIVE, new File(
+					launcher.getProtectionDomain().getCodeSource().getLocation().toURI())
+							.getAbsolutePath());
 		}
 		wrapper.launch(args);
 	}
@@ -251,7 +252,7 @@ public class ThinJarWrapper {
 
 	String thinRootRepository() {
 		String root = getProperty(THIN_ROOT);
-		if (root==null) {
+		if (root == null) {
 			return mavenLocal();
 		}
 		return mavenLocal(root);
