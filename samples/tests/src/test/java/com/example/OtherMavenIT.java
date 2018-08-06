@@ -28,6 +28,8 @@ import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Test;
 
+import org.springframework.util.FileSystemUtils;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
@@ -79,6 +81,25 @@ public class OtherMavenIT {
 				"-noverify", "-XX:TieredStopAtLevel=1",
 				"-Djava.security.egd=file:/dev/./urandom", "-jar",
 				"../other/target/other-0.0.1-SNAPSHOT.jar", "--server.port=0");
+		builder.redirectErrorStream(true);
+		started = builder.start();
+		String output = output(started.getInputStream(), "Started LauncherApplication");
+		assertThat(output).contains("Started LauncherApplication");
+	}
+
+	@Test
+	public void runJarWithSpaces() throws Exception {
+		File dir = new File("../other/target/Test Me");
+		if (!dir.exists()) {
+			dir.mkdirs();
+		}
+		FileSystemUtils.copyRecursively(
+				new File("../other/target/other-0.0.1-SNAPSHOT.jar"),
+				new File(dir, "app.jar"));
+		ProcessBuilder builder = new ProcessBuilder(Utils.javaCommand(), "-Xmx128m",
+				"-noverify", "-XX:TieredStopAtLevel=1",
+				"-Djava.security.egd=file:/dev/./urandom", "-jar",
+				"../other/target/Test Me/app.jar", "--server.port=0");
 		builder.redirectErrorStream(true);
 		started = builder.start();
 		String output = output(started.getInputStream(), "Started LauncherApplication");
