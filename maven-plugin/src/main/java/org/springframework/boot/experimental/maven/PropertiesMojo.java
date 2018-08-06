@@ -26,7 +26,6 @@ import java.util.Set;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
@@ -39,8 +38,10 @@ import org.apache.maven.project.MavenProject;
  * @author Dave Syer
  *
  */
-@Mojo(name = "properties", defaultPhase = LifecyclePhase.GENERATE_RESOURCES, requiresProject = true, threadSafe = true, requiresDependencyResolution = ResolutionScope.NONE, requiresDependencyCollection = ResolutionScope.COMPILE_PLUS_RUNTIME)
+@Mojo(name = "properties", defaultPhase = LifecyclePhase.GENERATE_RESOURCES, threadSafe = true, requiresDependencyResolution = ResolutionScope.NONE, requiresDependencyCollection = ResolutionScope.COMPILE_PLUS_RUNTIME)
 public class PropertiesMojo extends ThinJarMojo {
+
+    private static final String BOMS = "boms.";
 
 	/**
 	 * Directory containing the generated file.
@@ -55,7 +56,7 @@ public class PropertiesMojo extends ThinJarMojo {
 	private boolean compute;
 
 	@Override
-	public void execute() throws MojoExecutionException, MojoFailureException {
+	public void execute() throws MojoExecutionException {
 
 		if (skip) {
 			getLog().info("Skipping execution");
@@ -76,7 +77,7 @@ public class PropertiesMojo extends ThinJarMojo {
 				if (key.startsWith("dependencies.")) {
 					props.remove(key);
 				}
-				if (key.startsWith("boms.")) {
+				if (key.startsWith(BOMS)) {
 					props.remove(key);
 				}
 			}
@@ -108,12 +109,12 @@ public class PropertiesMojo extends ThinJarMojo {
 		while (project != null) {
 			String artifactId = project.getArtifactId();
 			if (isBom(artifactId)) {
-				props.setProperty("boms." + artifactId, coordinates(project.getArtifact(), true));
+				props.setProperty(BOMS + artifactId, coordinates(project.getArtifact(), true));
 			}
 			if (project.getDependencyManagement() != null) {
 				for (Dependency dependency : project.getDependencyManagement().getDependencies()) {
 					if ("import".equals(dependency.getScope())) {
-						props.setProperty("boms." + dependency.getArtifactId(), coordinates(dependency));
+						props.setProperty(BOMS + dependency.getArtifactId(), coordinates(dependency));
 					}
 				}
 			}
