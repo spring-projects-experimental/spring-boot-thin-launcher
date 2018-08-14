@@ -86,8 +86,10 @@ import org.eclipse.aether.repository.Authentication;
 import org.eclipse.aether.repository.AuthenticationContext;
 import org.eclipse.aether.repository.LocalRepository;
 import org.eclipse.aether.repository.NoLocalRepositoryManagerException;
+import org.eclipse.aether.repository.Proxy;
 import org.eclipse.aether.repository.ProxySelector;
 import org.eclipse.aether.repository.RemoteRepository;
+import org.eclipse.aether.repository.RemoteRepository.Builder;
 import org.eclipse.aether.repository.RepositoryPolicy;
 import org.eclipse.aether.resolution.ArtifactRequest;
 import org.eclipse.aether.resolution.ArtifactResult;
@@ -96,6 +98,7 @@ import org.eclipse.aether.spi.connector.transport.TransporterFactory;
 import org.eclipse.aether.spi.localrepo.LocalRepositoryManagerFactory;
 import org.eclipse.aether.transport.file.FileTransporterFactory;
 import org.eclipse.aether.transport.http.HttpTransporterFactory;
+import org.eclipse.aether.util.repository.AuthenticationBuilder;
 import org.eclipse.aether.util.repository.JreProxySelector;
 import org.eclipse.sisu.inject.DefaultBeanLocator;
 import org.eclipse.sisu.plexus.ClassRealmManager;
@@ -357,9 +360,27 @@ public class DependencyResolver {
 	}
 
 	private RemoteRepository remote(ArtifactRepository input) {
-		return new RemoteRepository.Builder(input.getId(), input.getLayout().getId(),
-				input.getUrl()).setSnapshotPolicy(policy(input.getSnapshots()))
-						.setReleasePolicy(policy(input.getReleases())).build();
+		Proxy proxy = proxy(input);
+		Builder builder = new RemoteRepository.Builder(input.getId(),
+				input.getLayout().getId(), input.getUrl())
+						.setSnapshotPolicy(policy(input.getSnapshots()))
+						.setReleasePolicy(policy(input.getReleases()));
+		if (proxy != null) {
+			builder = builder.setProxy(proxy);
+		}
+		return builder.build();
+	}
+
+	private org.eclipse.aether.repository.Proxy proxy(ArtifactRepository repo) {
+		org.apache.maven.repository.Proxy proxy = repo.getProxy();
+		if (proxy == null) {
+			return null;
+		}
+		Authentication authentication = new AuthenticationBuilder()
+				.addUsername(proxy.getUserName()).addPassword(proxy.getPassword())
+				.build();
+		return new org.eclipse.aether.repository.Proxy(proxy.getProtocol(),
+				proxy.getHost(), proxy.getPort(), authentication);
 	}
 
 	private RepositoryPolicy policy(ArtifactRepositoryPolicy input) {
@@ -405,7 +426,39 @@ public class DependencyResolver {
 			repository.setAuthentication(
 					authentication(settings, session, remote, authentication));
 		}
+		ProxySelector proxy = settings.getProxySelector();
+		if (proxy != null) {
+			org.apache.maven.repository.Proxy value = proxy(settings, session, remote,
+					proxy);
+			if (value != null) {
+				repository.setProxy(value);
+			}
+		}
 		return repository;
+	}
+
+	private org.apache.maven.repository.Proxy proxy(MavenSettings settings,
+			DefaultRepositorySystemSession session, RemoteRepository remote,
+			ProxySelector proxy) {
+		Proxy config = proxy.getProxy(remote);
+		if (config == null) {
+			return null;
+		}
+		org.apache.maven.repository.Proxy result = new org.apache.maven.repository.Proxy();
+		result.setHost(config.getHost());
+		if (config.getAuthentication() != null) {
+			org.apache.maven.artifact.repository.Authentication auth = authentication(
+					settings, session,
+					new RemoteRepository.Builder(remote)
+							.setAuthentication(config.getAuthentication()).build(),
+					config.getAuthentication());
+			result.setUserName(auth.getUsername());
+			result.setPassword(auth.getPassword() != null ? auth.getPassword()
+					: auth.getPassphrase());
+		}
+		result.setProtocol(config.getType());
+		result.setPort(config.getPort());
+		return result;
 	}
 
 	private org.apache.maven.artifact.repository.Authentication authentication(
