@@ -571,6 +571,15 @@ defaults to `${user.home}/.m2`) when you launch the thin jar, but not
 a command line flag. The Maven plugin responds to the `settings.xml`
 and also to `-Dmaven.repo.local` as a Maven command line flag.
 
+## How to Configure a Proxy
+
+The dependency resolution uses Maven libraries, and should respect the
+proxy settings in your `settings.xml`. The initial download of the
+launcher by the `ThinJarWrapper` uses regular JDK libraries so you
+need to specify the normal `-D`
+[args for networking as well](https://docs.oracle.com/javase/8/docs/api/java/net/doc-files/net-properties.html),
+unless you have the launcher already cached locally.
+
 ## License
 This project is Open Source software released under the
 [Apache 2.0 license](http://www.apache.org/licenses/LICENSE-2.0.html).
