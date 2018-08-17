@@ -45,7 +45,7 @@ import org.springframework.util.StringUtils;
 
 /**
  * Gradle {@link Plugin} for Spring Boot's thin launcher.
- * <p>
+ * 
  * If the Java plugin is applied to the project, some tasks are added to the project.
  * <ul>
  * <li>"thinResolve": runs the project jar and download its dependencies. If you have more
@@ -58,7 +58,7 @@ import org.springframework.util.StringUtils;
  * output.</li>
  * <li>"thinPom": runs automatically if you apply the Maven plugin. Generates a pom.xml
  * and puts it in the main build output.</li>
- * </p>
+ * </ul>
  * 
  * @author Andy Wilkinson
  */
