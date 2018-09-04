@@ -110,6 +110,17 @@ public class DependencyResolverTests {
 	}
 
 	@Test
+	public void inclusions() throws Exception {
+		Resource resource = new ClassPathResource("apps/inclusions/pom.xml");
+		List<Dependency> dependencies = resolver.dependencies(resource,
+				PropertiesLoaderUtils.loadProperties(new ClassPathResource(
+						"apps/inclusions/META-INF/thin.properties")));
+		assertThat(dependencies.size()).isGreaterThan(20);
+		assertThat(dependencies).filteredOn("artifact.artifactId", "jackson-core")
+				.isNotEmpty();
+	}
+
+	@Test
 	public void excludeLast() throws Exception {
 		Resource resource = new ClassPathResource("apps/excludelast/pom.xml");
 		List<Dependency> dependencies = resolver.dependencies(resource,
