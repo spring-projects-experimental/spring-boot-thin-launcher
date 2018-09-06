@@ -23,9 +23,9 @@
 				<version>${wrapper.version}</version>
 				<executions>
 					<execution>
-						<id>resolve</id>
+						<id>properties</id>
 						<goals>
-							<goal>resolve</goal>
+							<goal>properties</goal>
 						</goals>
 						<inherited>false</inherited>
 					</execution>

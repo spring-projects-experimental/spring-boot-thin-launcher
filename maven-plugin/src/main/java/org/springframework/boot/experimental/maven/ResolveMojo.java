@@ -107,6 +107,11 @@ public class ResolveMojo extends ThinJarMojo {
 			}
 		}
 
+		if (deployables.isEmpty()) {
+			throw new MojoExecutionException(
+					"No deployables found. If your only deployable is the current project jar, you need to run 'mvn package' at the same time.");
+		}
+
 		for (File deployable : deployables) {
 			getLog().info("Deploying: " + deployable);
 			try {
@@ -136,6 +141,12 @@ public class ResolveMojo extends ThinJarMojo {
 			catch (NoSuchArchiverException e) {
 				throw new MojoExecutionException("Cannot unpack artifact " + file, e);
 			}
+		}
+
+		if (!new File(outputDirectory, "repository").exists()
+				|| new File(outputDirectory, "repository").listFiles().length == 0) {
+			throw new MojoExecutionException(
+					"No dependencies resolved. Is the thin layout applied to the Spring Boot plugin as a dependency?");
 		}
 
 		getLog().info("All deployables and dependencies ready in: " + outputDirectory);

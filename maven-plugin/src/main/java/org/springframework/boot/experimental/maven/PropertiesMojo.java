@@ -41,7 +41,7 @@ import org.apache.maven.project.MavenProject;
 @Mojo(name = "properties", defaultPhase = LifecyclePhase.GENERATE_RESOURCES, threadSafe = true, requiresDependencyResolution = ResolutionScope.NONE, requiresDependencyCollection = ResolutionScope.COMPILE_PLUS_RUNTIME)
 public class PropertiesMojo extends ThinJarMojo {
 
-    private static final String BOMS = "boms.";
+	private static final String BOMS = "boms.";
 
 	/**
 	 * Directory containing the generated file.
@@ -63,9 +63,9 @@ public class PropertiesMojo extends ThinJarMojo {
 			return;
 		}
 
-		File deployable = this.project.getArtifact().getFile();
-		getLog().info("Calculating properties for: " + deployable);
+		getLog().info("Calculating properties for: " + this.project.getArtifact());
 		Properties props = new Properties();
+		outputDirectory.mkdirs();
 		try {
 			File target = new File(outputDirectory, "thin.properties");
 			if (target.exists()) {
@@ -98,7 +98,8 @@ public class PropertiesMojo extends ThinJarMojo {
 		}
 		catch (Exception e) {
 			throw new MojoExecutionException(
-					"Cannot calculate dependencies for: " + deployable, e);
+					"Cannot calculate dependencies for: " + this.project.getArtifact(),
+					e);
 		}
 
 		getLog().info("Properties ready in: " + outputDirectory);
@@ -109,12 +110,15 @@ public class PropertiesMojo extends ThinJarMojo {
 		while (project != null) {
 			String artifactId = project.getArtifactId();
 			if (isBom(artifactId)) {
-				props.setProperty(BOMS + artifactId, coordinates(project.getArtifact(), true));
+				props.setProperty(BOMS + artifactId,
+						coordinates(project.getArtifact(), true));
 			}
 			if (project.getDependencyManagement() != null) {
-				for (Dependency dependency : project.getDependencyManagement().getDependencies()) {
+				for (Dependency dependency : project.getDependencyManagement()
+						.getDependencies()) {
 					if ("import".equals(dependency.getScope())) {
-						props.setProperty(BOMS + dependency.getArtifactId(), coordinates(dependency));
+						props.setProperty(BOMS + dependency.getArtifactId(),
+								coordinates(dependency));
 					}
 				}
 			}
@@ -127,7 +131,8 @@ public class PropertiesMojo extends ThinJarMojo {
 	}
 
 	private String coordinates(Dependency dependency) {
-		return dependency.getGroupId() + ":" + dependency.getArtifactId() + ":" + dependency.getVersion();
+		return dependency.getGroupId() + ":" + dependency.getArtifactId() + ":"
+				+ dependency.getVersion();
 	}
 
 	private String coordinates(Artifact dependency) {
