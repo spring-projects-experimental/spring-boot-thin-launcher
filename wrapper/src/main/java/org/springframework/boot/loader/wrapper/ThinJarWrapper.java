@@ -63,8 +63,10 @@ public class ThinJarWrapper {
 	private static final String THIN_SOURCE = "thin.source";
 
 	/**
-	 * Property key for remote location of main archive (the one that this class is found
-	 * in).
+	 * Property key for remote location of the launcher jar. Defaults to Maven Central
+	 * with a fallback to the public Spring repos for snapshots and milestones. If you
+	 * have a mirror for Maven Central in your local settings, that's the value you need
+	 * here (the thin wrapper does not parse Maven settings).
 	 */
 	public static final String THIN_REPO = "thin.repo";
 
@@ -73,6 +75,11 @@ public class ThinJarWrapper {
 	 * <code>ThinJarLauncher</code>.
 	 */
 	public static final String THIN_LAUNCHER = "thin.launcher";
+
+	/**
+	 * Property key for flag to switch on debug logging to stderr.
+	 */
+	public static final String THIN_DEBUG = "thin.debug";
 
 	/**
 	 * Property key to override the location of local Maven cache. If the launcher jar is
@@ -87,6 +94,8 @@ public class ThinJarWrapper {
 
 	private Properties properties;
 
+	private boolean debug;
+
 	public static void main(String[] args) throws Exception {
 		Class<?> launcher = ThinJarWrapper.class;
 		ThinJarWrapper wrapper = new ThinJarWrapper(args);
@@ -100,6 +109,8 @@ public class ThinJarWrapper {
 
 	ThinJarWrapper(String... args) {
 		this.properties = properties(args);
+		String debug = getProperty(THIN_DEBUG);
+		this.debug = debug != null && !"false".equals(debug);
 	}
 
 	private static Properties properties(String[] args) {
@@ -118,7 +129,10 @@ public class ThinJarWrapper {
 	private void launch(String... args) throws Exception {
 		String target = download();
 		if (!new File(target).exists()) {
-			throw new IllegalStateException("Cannot locate library: " + target);
+			throw new IllegalStateException("Cannot locate launcher: " + target);
+		}
+		if (this.debug) {
+			System.err.println("Using launcher: " + target);
 		}
 		ClassLoader classLoader = getClassLoader(target);
 		String launcherClass = launcherClass(target);
@@ -169,6 +183,11 @@ public class ThinJarWrapper {
 					repo = repo.substring(0, repo.length() - 1);
 				}
 				downloadFromUrl(repo + file, target);
+			}
+		}
+		else {
+			if (this.debug) {
+				System.err.println("Cached launcher found: " + parent);
 			}
 		}
 		return parent + file;
@@ -305,6 +324,9 @@ public class ThinJarWrapper {
 	}
 
 	private boolean downloadFromUrl(String path, File target) {
+		if (this.debug) {
+			System.err.println("Downloading launcher from: " + path);
+		}
 		InputStream input = null;
 		OutputStream output = null;
 		try {
@@ -319,6 +341,9 @@ public class ThinJarWrapper {
 			return true;
 		}
 		catch (Exception e) {
+			if (this.debug) {
+				System.err.println("Failed to download: " + path);
+			}
 		}
 		finally {
 			if (input != null) {

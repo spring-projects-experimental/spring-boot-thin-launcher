@@ -21,10 +21,14 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.concurrent.TimeUnit;
 
 import org.assertj.core.api.Condition;
 import org.junit.After;
 import org.junit.Test;
+
+import org.springframework.util.FileCopyUtils;
+import org.springframework.util.FileSystemUtils;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -69,15 +73,20 @@ public class SimpleMavenIT {
 
 	@Test
 	public void resolveDependencies() throws Exception {
+		FileSystemUtils.deleteRecursively(new File("target/simple"));
+		assertThat(new File("target/simple/root").mkdirs()).isTrue();
+		FileCopyUtils.copy(new File("../simple/target/simple-0.0.1-SNAPSHOT.jar"),
+				new File("target/simple/root/app.jar"));
 		ProcessBuilder builder = new ProcessBuilder(Utils.javaCommand(), "-Dthin.root=.",
 				"-Xmx128m", "-noverify", "-XX:TieredStopAtLevel=1",
-				"-Djava.security.egd=file:/dev/./urandom", "-jar",
-				"simple-0.0.1-SNAPSHOT.jar", "--server.port=0");
-		builder.directory(new File("../simple/target/thin/root"));
+				"-Djava.security.egd=file:/dev/./urandom", "-jar", "app.jar",
+				"--thin.dryrun");
+		builder.directory(new File("target/simple/root"));
 		builder.redirectErrorStream(true);
 		started = builder.start();
-		String output = output(started.getInputStream(), "Started LauncherApplication");
-		assertThat(output).contains("Started LauncherApplication");
+		started.waitFor(10, TimeUnit.SECONDS);
+		assertThat(
+				new File("target/simple/root/repository/org/springframework").exists());
 	}
 
 	private static String output(InputStream inputStream, String marker)

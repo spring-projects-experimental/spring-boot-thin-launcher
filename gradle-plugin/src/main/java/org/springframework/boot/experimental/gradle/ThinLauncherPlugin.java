@@ -19,6 +19,7 @@ package org.springframework.boot.experimental.gradle;
 import java.io.File;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
 
@@ -214,12 +215,31 @@ public class ThinLauncherPlugin implements Plugin<Project> {
 								exec.setWorkingDir(
 										copy.getOutputs().getFiles().getSingleFile());
 								exec.setCommandLine(Jvm.current().getJavaExecutable());
-								exec.args(Arrays.asList("-Dthin.root=.", "-Dthin.dryrun",
-										"-jar", jar.getArchiveName()));
+								List<String> args = Arrays.asList("-Dthin.root=.",
+										"-Dthin.dryrun", "-jar", jar.getArchiveName());
+								String thinRepo = getThinRepo(project);
+								if (thinRepo != null) {
+									args.add(1, "-Dthin.repo=" + thinRepo);
+								}
+								exec.args(args);
 							}
 						});
 					}
 				});
+	}
+
+	private String getThinRepo(Project project) {
+		if (System.getProperty("thin.repo") != null) {
+			return System.getProperty("thin.repo");
+		}
+		if (System.getenv("THIN_REPO") != null) {
+			return System.getProperty("THIN_REPO");
+		}
+		Map<String, ?> properties = project.getProperties();
+		if (properties != null && properties.get("thin.repo") != null) {
+			return (String) properties.get("thin.repo");
+		}
+		return null;
 	}
 
 	private String suffix(Jar jar) {

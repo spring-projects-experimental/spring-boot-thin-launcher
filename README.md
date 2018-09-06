@@ -318,6 +318,7 @@ You can set a variety of options on the command line or with system properties (
 | `thin.name` | "thin" | The name of the properties file to search for dependency specifications and overrides. |
 | `thin.profile` |<empty> | Comma-separated list of profiles to use to locate thin properties. E.g. if `thin.profile=foo` the launcher searches for files called `thin.properties` and `thin-foo.properties`. |
 | `thin.library` | `org.springframework.boot.experimental:spring-boot-thin-launcher:1.0.15.BUILD-SNAPSHOT` | A locator for the launcher library. Can be Maven coordinates (with optional `maven://` prefix), or a file (with optional `file://` prefix). |
+| `thin.repo`    | `https://repo.spring.io/libs-snapshot` (also contains GA releases) | Base URL for the `thin.library` if it is in Maven form (the default). |
 | `thin.launcher` | `org.springframework.boot.thin.ThinJarLauncher` | The main class in the `thin.library`. If not specified it is discovered from the manifest `Main-Class` attribute. |
 | `thin.parent.first` | true | Flag to say that the class loader is "parent first" (i.e. the system class loader will be used as the default). This is the "standard" JDK class loader strategy. Setting it to false is similar to what is normally used in web containers and application servers. |
 | `thin.parent.boot` | true | Flag to say that the parent class loader should be the boot class loader not the "system" class loader. The boot loader normally includes the JDK classes, but not the target archive, nor any agent jars added on the command line. |
@@ -579,6 +580,51 @@ launcher by the `ThinJarWrapper` uses regular JDK libraries so you
 need to specify the normal `-D`
 [args for networking as well](https://docs.oracle.com/javase/8/docs/api/java/net/doc-files/net-properties.html),
 unless you have the launcher already cached locally.
+
+## Using a Mirror for Maven Central
+
+The thin launcher itself parses your local Maven `settings.xml` and
+uses the mirror settings there. To download the launcher itself, and
+bootstrap the process, you need to explicitly provide a `thin.repo` to
+the wrapper (the same as the mirror). You can do this on the command
+line when running the jar, using all the usual mechanisms. To run the
+build plugins `resolve` goals you can make the thin launcher jar 
+a dependency of the plugin, to ensure it is cached locally before the
+plugin runs. E.g.
+
+```
+<pluginManagement>
+    <plugins>
+        <plugin>
+            <groupId>org.springframework.boot.experimental</groupId>
+            <artifactId>spring-boot-thin-maven-plugin</artifactId>
+            <version>${wrapper.version}</version>
+            <dependencies>
+                <dependency>
+                    <groupId>org.springframework.boot.experimental</groupId>
+                    <artifactId>spring-boot-thin-launcher</artifactId>
+                    <classifier>exec</classifier>
+                    <version>${wrapper.version}</version>
+                </dependency>
+            </dependencies>
+        </plugin>
+    </plugins>
+</pluginManagement>
+```
+
+Or else you can set a project, system property or environment variable. E.g.
+
+```
+$ ./mvnw spring-boot-thin:resolve -Dthin.repo=http://localhost:8081/repository/maven-central
+```
+
+or 
+
+```
+$ ./gradlew thinResolve -P thin.repo=http://localhost:8081/repository/maven-central
+```
+
+System properties (`thin.repo`) and environment variables (`THIN_REPO`) work too.
 
 ## License
 This project is Open Source software released under the

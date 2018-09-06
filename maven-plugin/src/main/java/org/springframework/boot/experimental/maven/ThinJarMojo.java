@@ -20,6 +20,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Properties;
 
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.resolver.ArtifactResolutionRequest;
@@ -30,6 +31,7 @@ import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.repository.RepositorySystem;
+import org.apache.maven.settings.Mirror;
 import org.apache.maven.settings.Settings;
 
 import org.springframework.boot.loader.tools.JavaExecutable;
@@ -90,11 +92,21 @@ public abstract class ThinJarMojo extends AbstractMojo {
 
 		try {
 			String localRepo = this.settings.getLocalRepository();
-			List<String> cmd = new ArrayList<>(Arrays.asList(
-					new JavaExecutable().toString(), "-Dmaven.repo.local=" + localRepo,
-					"-Dthin.dryrun", "-Dthin.root=.", "-jar", archive.getAbsolutePath()));
+			String thinRepo = getThinRepo();
+			String debug = getProperty("thin.debug");
+			List<String> cmd = new ArrayList<>(
+					Arrays.asList(new JavaExecutable().toString(), "-Dthin.dryrun",
+							"-Dthin.root=.", "-jar", archive.getAbsolutePath()));
 			if (localRepo != null) {
+				getLog().debug("Local repo: " + localRepo);
 				cmd.add(1, "-Dmaven.repo.local=" + localRepo);
+			}
+			if (debug != null && !"false".equals(debug)) {
+				cmd.add(1, "-Dthin.debug=true");
+			}
+			if (thinRepo != null) {
+				getLog().debug("Thin repo: " + thinRepo);
+				cmd.add(1, "-Dthin.repo=" + thinRepo);
 			}
 			RunProcess runProcess = new RunProcess(workingDirectory,
 					cmd.toArray(new String[0]));
@@ -111,6 +123,36 @@ public abstract class ThinJarMojo extends AbstractMojo {
 		catch (Exception ex) {
 			throw new MojoExecutionException("Could not exec java", ex);
 		}
+	}
+
+	private String getThinRepo() {
+		String repo = getProperty("thin.repo");
+		if (repo != null) {
+			return repo;
+		}
+		for (Mirror mirror : this.settings.getMirrors()) {
+			String of = mirror.getMirrorOf();
+			if ("*".equals(of) || "central".equals(of)
+					|| (of != null && of.contains("spring"))) {
+				return mirror.getUrl();
+			}
+		}
+		return null;
+	}
+
+	private String getProperty(String key) {
+		if (System.getProperty(key) != null) {
+			return System.getProperty(key);
+		}
+		String KEY = key.replace(".", "_").toUpperCase();
+		if (System.getenv(KEY) != null) {
+			return System.getProperty(KEY);
+		}
+		Properties properties = project.getProperties();
+		if (properties != null && properties.get(key) != null) {
+			return properties.getProperty(key);
+		}
+		return null;
 	}
 
 	private ArtifactResolutionRequest getRequest(Artifact artifact) {

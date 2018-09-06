@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
@@ -76,29 +77,6 @@
 						<version>${wrapper.version}</version>
 					</dependency>
 				</dependencies>
-			</plugin>
-			<plugin>
-				<groupId>org.springframework.boot.experimental</groupId>
-				<artifactId>spring-boot-thin-maven-plugin</artifactId>
-				<version>${wrapper.version}</version>
-				<executions>
-					<execution>
-						<id>resolve</id>
-						<goals>
-							<goal>resolve</goal>
-						</goals>
-						<inherited>false</inherited>
-						<configuration>
-							<deployables>
-								<deployable>
-									<groupId>com.example</groupId>
-									<artifactId>app</artifactId>
-									<version>${project.version}</version>
-								</deployable>
-							</deployables>
-						</configuration>
-					</execution>
-				</executions>
 			</plugin>
 		</plugins>
 	</build>
