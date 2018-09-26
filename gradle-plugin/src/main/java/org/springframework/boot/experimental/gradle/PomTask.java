@@ -56,13 +56,13 @@ public class PomTask extends DefaultTask {
 							.writeTo(new File(output, "pom.xml"));
 				}
 				else {
-					getLogger().info(
-							"Skipping pom generation (maybe you forgot to apply plugin: 'io.spring.dependency-management'?)");
+					getLogger().warn(
+						"Skipping pom generation (maybe you forgot to apply plugin: 'maven'?)");
 				}
 			}
 			else {
-				getLogger().info(
-						"Skipping pom generation (maybe you forgot to apply plugin: 'maven'?)");
+				getLogger().warn(
+					"Skipping pom generation (maybe you forgot to apply plugin: 'io.spring.dependency-management'?)");
 			}
 		}
 		catch (Exception e) {
