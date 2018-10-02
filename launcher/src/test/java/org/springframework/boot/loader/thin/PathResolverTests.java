@@ -115,7 +115,7 @@ public class PathResolverTests {
 	}
 
 	@Test
-	@Ignore
+	@Ignore("Is file:/Users/marcingrzejszczak2/repo/spring-boot-thin-launcher-fork/launcher/target/classes/META-INF/thin/empty-pom.xml")
 	public void pomWithMavenArchiveBootInf() throws Exception {
 		Resource resource = resolver.getPom(ArchiveUtils.getArchive(
 				"maven://org.springframework.boot:spring-boot-cli:jar:full:2.1.0.M4"));

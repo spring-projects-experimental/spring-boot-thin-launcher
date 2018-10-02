@@ -16,13 +16,13 @@
 	</parent>
 
 	<modules>
-		<!--<module>app</module>
+		<module>app</module>
 		<module>other</module>
-		<module>shadow</module>-->
+		<module>shadow</module>
 		<module>simple</module>	
-		<!--<module>petclinic</module>
+		<module>petclinic</module>
 		<module>multi</module>
-		<module>pom</module>-->
+		<module>pom</module>
 		<module>tests</module>
 	</modules>
 

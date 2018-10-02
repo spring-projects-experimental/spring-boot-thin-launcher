@@ -1,13 +1,11 @@
 buildscript {
     ext {
-        springBootVersion = '2.1.0.M4'
-        wrapperVersion = '2.0.0.BUILD-SNAPSHOT'
+        springBootVersion = '1.5.10.RELEASE'
+        wrapperVersion = '1.0.16.BUILD-SNAPSHOT'
     }
     repositories {
         mavenLocal()
         mavenCentral()
-        maven { url "https://repo.spring.io/snapshot" }
-        maven { url "https://repo.spring.io/milestone" }
     }
     dependencies {
         classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
@@ -30,11 +28,7 @@ group = 'com.example'
 version = '0.0.1-SNAPSHOT'
 sourceCompatibility = 1.8
 
-repositories {
-    mavenCentral()
-    maven { url "https://repo.spring.io/snapshot" }
-    maven { url "https://repo.spring.io/milestone" }
-}
+repositories { mavenCentral() }
 
 dependencies {
     compile('org.springframework.boot:spring-boot-starter-actuator')

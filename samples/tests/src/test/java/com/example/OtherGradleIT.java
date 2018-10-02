@@ -33,7 +33,6 @@ import static org.assertj.core.api.Assertions.assertThat;
  * @author Dave Syer
  *
  */
-@Ignore
 public class OtherGradleIT {
 
 	private Process started;

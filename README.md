@@ -413,7 +413,7 @@ using `thin.properties`. E.g.
 
 ```
 spring-boot.version=2.1.0.M4
-spring-cloud.version=Dalston.SR3
+spring-cloud.version=Greenwich.BUILD-SNAPSHOT
 ```
 
 where the pom has

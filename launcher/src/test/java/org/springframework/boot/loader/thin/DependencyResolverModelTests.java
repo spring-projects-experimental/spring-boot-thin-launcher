@@ -33,7 +33,6 @@ public class DependencyResolverModelTests {
 	}
 
 	@Test
-	@Ignore
 	public void petclinic() throws Exception {
 		Resource resource = new ClassPathResource("apps/petclinic/pom.xml");
 		Model model = resolver.readModel(resource);

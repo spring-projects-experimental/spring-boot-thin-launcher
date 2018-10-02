@@ -27,7 +27,7 @@
 		<maven.compiler.source>${java.version}</maven.compiler.source>
 		<maven.compiler.testTarget>${java.version}</maven.compiler.testTarget>
 		<maven.compiler.testSource>${java.version}</maven.compiler.testSource>
-		<spring-boot.version>2.0.0.M4</spring-boot.version>
+		<spring-boot.version>2.1.0.M4</spring-boot.version>
 		<!-- Plugins -->
 		<build-helper-maven-plugin.version>3.0.0</build-helper-maven-plugin.version>
 		<maven-assembly-plugin.version>3.1.0</maven-assembly-plugin.version>
@@ -39,7 +39,7 @@
 		<maven-invoker-plugin.version>3.1.0</maven-invoker-plugin.version>
 		<maven-jar-plugin.version>3.1.0</maven-jar-plugin.version>
 		<maven-javadoc-plugin.version>3.0.1</maven-javadoc-plugin.version>
-		<maven-plugin-plugin.version>3.5.4</maven-plugin-plugin.version>
+		<maven-plugin-plugin.version>3.5.2</maven-plugin-plugin.version>
 		<maven-resources-plugin.version>3.1.0</maven-resources-plugin.version>
 		<maven-shade-plugin.version>3.2.0</maven-shade-plugin.version>
 		<maven-source-plugin.version>3.0.1</maven-source-plugin.version>
