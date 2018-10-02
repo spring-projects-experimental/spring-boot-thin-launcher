@@ -170,8 +170,7 @@ public class DependencyResolver {
 						localRepositoryManagerFactory = container
 								.lookup(LocalRepositoryManagerFactory.class);
 						container.addComponent(
-								new ClassRealmManager((MutablePlexusContainer) container,
-										new DefaultBeanLocator()),
+								new ClassRealmManager(new DefaultBeanLocator()),
 								ClassRealmManager.class.getName());
 						projectBuilder = container.lookup(ProjectBuilder.class);
 						repositorySystem = container.lookup(RepositorySystem.class);

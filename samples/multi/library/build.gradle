@@ -2,12 +2,14 @@ buildscript {
     repositories {
         mavenLocal()
         mavenCentral()
+        maven { url "https://repo.spring.io/snapshot" }
+        maven { url "https://repo.spring.io/milestone" }
     }
 }
 
 plugins { id "io.spring.dependency-management" version "1.0.4.RELEASE" }
 
-ext { springBootVersion = '1.5.10.RELEASE' }
+ext { springBootVersion = '2.1.0.M4' }
 
 apply plugin: 'java'
 apply plugin: 'eclipse'
@@ -21,7 +23,11 @@ jar {
 }
 sourceCompatibility = 1.8
 
-repositories { mavenCentral() }
+repositories {
+    mavenCentral()
+    maven { url "https://repo.spring.io/snapshot" }
+    maven { url "https://repo.spring.io/milestone" }
+}
 
 dependencies {
     compile('org.springframework.boot:spring-boot-starter')

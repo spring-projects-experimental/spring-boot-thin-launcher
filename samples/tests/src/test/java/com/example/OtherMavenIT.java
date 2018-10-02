@@ -26,6 +26,7 @@ import org.assertj.core.api.Condition;
 import org.junit.After;
 import org.junit.Assume;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import org.springframework.util.FileSystemUtils;
@@ -36,6 +37,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * @author Dave Syer
  *
  */
+@Ignore
 public class OtherMavenIT {
 
 	private Process started;

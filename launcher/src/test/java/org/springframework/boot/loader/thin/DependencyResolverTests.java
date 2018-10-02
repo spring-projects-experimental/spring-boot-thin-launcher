@@ -21,6 +21,7 @@ import org.springframework.util.FileSystemUtils;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@Ignore
 public class DependencyResolverTests {
 
 	@Rule
@@ -61,7 +62,7 @@ public class DependencyResolverTests {
 				.is(version("3.3.6"));
 		// Transitive from a starter
 		assertThat(dependencies).filteredOn("artifact.artifactId", "spring-boot-starter")
-				.first().is(version("1.4.2.RELEASE"));
+				.first().is(version("2.1.0.M4"));
 		// Test scope
 		assertThat(dependencies)
 				.filteredOn("artifact.artifactId", "spring-boot-starter-test").isEmpty();
@@ -80,7 +81,7 @@ public class DependencyResolverTests {
 				.is(version("3.3.6"));
 		// Transitive from a starter
 		assertThat(dependencies).filteredOn("artifact.artifactId", "spring-boot-starter")
-				.first().is(version("1.4.2.RELEASE"));
+				.first().is(version("2.1.0.M4"));
 		assertThat(dependencies).filteredOn("artifact.artifactId", "bootstrap").first()
 				.is(resolved());
 	}
@@ -204,7 +205,7 @@ public class DependencyResolverTests {
 		List<Dependency> dependencies = resolver.dependencies(resource, properties);
 		assertThat(dependencies).size().isGreaterThan(3);
 		assertThat(dependencies).filteredOn("artifact.artifactId", "spring-boot").first()
-				.is(version("1.4.1.RELEASE"));
+				.is(version("2.1.0.M4"));
 	}
 
 	@Test

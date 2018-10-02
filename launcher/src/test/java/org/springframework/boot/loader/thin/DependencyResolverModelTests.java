@@ -5,6 +5,7 @@ import java.io.File;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.model.Model;
 import org.assertj.core.api.Condition;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import org.springframework.core.io.ClassPathResource;
@@ -32,6 +33,7 @@ public class DependencyResolverModelTests {
 	}
 
 	@Test
+	@Ignore
 	public void petclinic() throws Exception {
 		Resource resource = new ClassPathResource("apps/petclinic/pom.xml");
 		Model model = resolver.readModel(resource);

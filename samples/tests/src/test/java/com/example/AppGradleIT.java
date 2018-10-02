@@ -24,6 +24,7 @@ import java.io.InputStreamReader;
 
 import org.assertj.core.api.Condition;
 import org.junit.After;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -32,6 +33,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * @author Dave Syer
  *
  */
+@Ignore
 public class AppGradleIT {
 
 	private Process started;

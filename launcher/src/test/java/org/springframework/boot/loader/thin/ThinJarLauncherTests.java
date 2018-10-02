@@ -17,6 +17,7 @@ package org.springframework.boot.loader.thin;
 
 import java.io.File;
 
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -29,6 +30,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * @author Dave Syer
  *
  */
+@Ignore
 public class ThinJarLauncherTests {
 
 	@Rule

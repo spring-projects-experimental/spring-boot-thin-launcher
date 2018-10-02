@@ -22,6 +22,7 @@ import java.util.List;
 
 import org.eclipse.aether.artifact.Artifact;
 import org.eclipse.aether.graph.Dependency;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -36,6 +37,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * @author Dave Syer
  *
  */
+@Ignore
 @RunWith(Parameterized.class)
 public class DependencyResolverComputeTests {
 

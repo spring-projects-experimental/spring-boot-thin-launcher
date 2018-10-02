@@ -27,6 +27,7 @@ import org.springframework.cloud.deployer.spi.app.AppInstanceStatus;
 import org.springframework.cloud.deployer.spi.app.AppStatus;
 import org.springframework.cloud.deployer.spi.app.DeploymentState;
 import org.springframework.cloud.deployer.spi.core.AppDeploymentRequest;
+import org.springframework.cloud.deployer.spi.core.RuntimeEnvironmentInfo;
 import org.springframework.cloud.deployer.spi.task.LaunchState;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.MethodInvoker;
@@ -83,6 +84,12 @@ public class ThinJarAppDeployer extends AbstractThinJarSupport implements AppDep
 	@Override
 	public AppStatus status(String id) {
 		return (AppStatus) super.getWrapper(id).status();
+	}
+
+	@Override
+	public RuntimeEnvironmentInfo environmentInfo() {
+		// TODO: Implement me
+		return null;
 	}
 
 	@Override

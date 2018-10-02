@@ -1,7 +1,7 @@
 buildscript {
 	ext {
-		springBootVersion = '1.5.1.RELEASE'
-		wrapperVersion = '1.0.16.BUILD-SNAPSHOT'
+		springBootVersion = '2.1.0.M4'
+		wrapperVersion = '2.0.0.BUILD-SNAPSHOT'
 	}
 	repositories {
 		mavenLocal()
@@ -18,7 +18,8 @@ buildscript {
 apply plugin: 'java'
 apply plugin: 'maven'
 apply plugin: 'eclipse'
-apply plugin: 'spring-boot'
+apply plugin: 'org.springframework.boot'
+apply plugin: 'io.spring.dependency-management'
 apply plugin: 'org.springframework.boot.experimental.thin-launcher'
 
 group = 'com.example'
