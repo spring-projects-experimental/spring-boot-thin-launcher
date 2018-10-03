@@ -23,7 +23,6 @@ import java.util.Properties;
 import org.eclipse.aether.artifact.Artifact;
 import org.eclipse.aether.artifact.DefaultArtifact;
 import org.eclipse.aether.graph.Dependency;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Mockito;
 
@@ -115,10 +114,9 @@ public class PathResolverTests {
 	}
 
 	@Test
-	@Ignore("Is file:/Users/marcingrzejszczak2/repo/spring-boot-thin-launcher-fork/launcher/target/classes/META-INF/thin/empty-pom.xml")
 	public void pomWithMavenArchiveBootInf() throws Exception {
 		Resource resource = resolver.getPom(ArchiveUtils.getArchive(
-				"maven://org.springframework.boot:spring-boot-cli:jar:full:2.1.0.M4"));
+				"maven://org.springframework.boot:spring-boot-cli:jar:full:1.4.2.RELEASE"));
 		assertThat(resource.getURL().toString()).endsWith(
 				"BOOT-INF/classes/META-INF/maven/org.springframework.boot/spring-boot-cli/pom.xml");
 	}
