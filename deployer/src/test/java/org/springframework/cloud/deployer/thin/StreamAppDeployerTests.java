@@ -57,9 +57,9 @@ public class StreamAppDeployerTests {
 	@Test
 	public void tickTock() throws Exception {
 		String first = deploy(
-				"org.springframework.cloud.stream.app:time-source-rabbit:1.1.0.RELEASE");
+				"org.springframework.cloud.stream.app:time-source-rabbit:2.0.1.RELEASE");
 		String second = deploy(
-				"org.springframework.cloud.stream.app:log-sink-rabbit:1.1.0.RELEASE",
+				"org.springframework.cloud.stream.app:log-sink-rabbit:2.0.1.RELEASE",
 				"--spring.cloud.stream.bindings.input.destination=output");
 		// Deployment is blocking so it either failed or succeeded.
 		assertThat(deployer.status(first).getState()).isEqualTo(DeploymentState.deployed);
