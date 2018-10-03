@@ -35,6 +35,8 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 public class MultiMavenIT {
 
+	private static final String BOOT_VERSION = "2.1.0.M4";
+
 	private Process started;
 
 	@After
@@ -67,7 +69,7 @@ public class MultiMavenIT {
 		started = builder.start();
 		String output = output(started.getInputStream(), "Started");
 		assertThat(output).contains("Started DemoApplication");
-		assertThat(output).contains("1.5.11.RELEASE");
+		assertThat(output).contains(BOOT_VERSION);
 	}
 
 	private static String output(InputStream inputStream, String marker)
