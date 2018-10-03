@@ -53,8 +53,7 @@ public class ThinJarTaskLauncher extends AbstractThinJarSupport implements TaskL
 
 	@Override
 	public RuntimeEnvironmentInfo environmentInfo() {
-		// TODO: Implement me
-		return null;
+		return createRuntimeEnvironmentInfo(TaskLauncher.class, getClass());
 	}
 
 }

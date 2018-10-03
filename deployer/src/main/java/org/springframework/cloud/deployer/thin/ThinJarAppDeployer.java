@@ -88,8 +88,7 @@ public class ThinJarAppDeployer extends AbstractThinJarSupport implements AppDep
 
 	@Override
 	public RuntimeEnvironmentInfo environmentInfo() {
-		// TODO: Implement me
-		return null;
+		return createRuntimeEnvironmentInfo(AppDeployer.class, getClass());
 	}
 
 	@Override
