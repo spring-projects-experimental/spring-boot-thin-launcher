@@ -22,6 +22,8 @@ import java.util.Map;
 import org.springframework.boot.loader.thin.ThinJarLauncher;
 import org.springframework.cloud.deployer.spi.app.AppDeployer;
 import org.springframework.cloud.deployer.spi.core.AppDeploymentRequest;
+import org.springframework.cloud.deployer.spi.core.RuntimeEnvironmentInfo;
+import org.springframework.cloud.deployer.spi.util.RuntimeVersionUtils;
 import org.springframework.util.StringUtils;
 
 /**
@@ -107,6 +109,18 @@ public class AbstractThinJarSupport {
 
 	protected ThinJarAppWrapper getWrapper(String id) {
 		return apps.get(id);
+	}
+
+	protected RuntimeEnvironmentInfo createRuntimeEnvironmentInfo(Class<?> spiClass, Class<?> implementationClass) {
+		return new RuntimeEnvironmentInfo.Builder()
+				.spiClass(spiClass)
+				.implementationName(implementationClass.getSimpleName())
+				.implementationVersion(RuntimeVersionUtils.getVersion(implementationClass))
+				.platformType("Local")
+				.platformApiVersion(System.getProperty("os.name") + " " + System.getProperty("os.version"))
+				.platformClientVersion(System.getProperty("os.version"))
+				.platformHostVersion(System.getProperty("os.version"))
+				.build();
 	}
 
 }

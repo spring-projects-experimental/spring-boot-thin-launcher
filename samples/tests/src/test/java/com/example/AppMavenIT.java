@@ -123,7 +123,7 @@ public class AppMavenIT {
 		started = builder.start();
 		String output = output(started.getInputStream(), "Started LauncherApplication");
 		assertThat(output).contains("Jetty started");
-		assertThat(output).contains("1.4.1.RELEASE");
+		assertThat(output).contains("2.1.0.M4");
 	}
 
 	private static String output(InputStream inputStream, String marker)

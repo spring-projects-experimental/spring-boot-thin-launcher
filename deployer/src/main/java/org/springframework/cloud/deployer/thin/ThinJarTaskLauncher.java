@@ -3,6 +3,7 @@ package org.springframework.cloud.deployer.thin;
 import java.util.Collections;
 
 import org.springframework.cloud.deployer.spi.core.AppDeploymentRequest;
+import org.springframework.cloud.deployer.spi.core.RuntimeEnvironmentInfo;
 import org.springframework.cloud.deployer.spi.task.LaunchState;
 import org.springframework.cloud.deployer.spi.task.TaskLauncher;
 import org.springframework.cloud.deployer.spi.task.TaskStatus;
@@ -48,6 +49,11 @@ public class ThinJarTaskLauncher extends AbstractThinJarSupport implements TaskL
 	@Override
 	public void destroy(String appName) {
 		super.getWrapper(appName).cancel();
+	}
+
+	@Override
+	public RuntimeEnvironmentInfo environmentInfo() {
+		return createRuntimeEnvironmentInfo(TaskLauncher.class, getClass());
 	}
 
 }

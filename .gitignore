@@ -35,3 +35,5 @@ nbdist/
 .nb-gradle/
 
 credentials.yml
+*.versionsBackup
+.DS_Store

@@ -13,15 +13,15 @@
 	<parent>
 		<groupId>org.springframework.boot.experimental</groupId>
 		<artifactId>spring-boot-thin-launcher-parent</artifactId>
-		<version>1.0.16.BUILD-SNAPSHOT</version>
+		<version>2.0.0.BUILD-SNAPSHOT</version>
 	</parent>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-		<wrapper.version>1.0.16.BUILD-SNAPSHOT</wrapper.version>
-		<spring-boot.version>1.5.3.RELEASE</spring-boot.version>
-		<deployer.version>1.1.4.RELEASE</deployer.version>
+		<wrapper.version>2.0.0.BUILD-SNAPSHOT</wrapper.version>
+		<spring-boot.version>2.1.0.M4</spring-boot.version>
+		<deployer.version>2.1.0.BUILD-SNAPSHOT</deployer.version>
 	</properties>
 
 	<dependencies>
@@ -72,7 +72,8 @@
 		<dependency>
 			<groupId>org.springframework.cloud</groupId>
 			<artifactId>spring-cloud-deployer-local</artifactId>
-			<version>${deployer.version}</version>
+			<!-- TODO: Change -->
+			<version>2.0.0.BUILD-SNAPSHOT</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>

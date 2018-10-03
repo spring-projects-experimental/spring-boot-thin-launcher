@@ -66,7 +66,6 @@ import org.apache.maven.settings.Repository;
 import org.codehaus.plexus.ContainerConfiguration;
 import org.codehaus.plexus.DefaultContainerConfiguration;
 import org.codehaus.plexus.DefaultPlexusContainer;
-import org.codehaus.plexus.MutablePlexusContainer;
 import org.codehaus.plexus.PlexusConstants;
 import org.codehaus.plexus.PlexusContainer;
 import org.codehaus.plexus.classworlds.ClassWorld;
@@ -170,8 +169,7 @@ public class DependencyResolver {
 						localRepositoryManagerFactory = container
 								.lookup(LocalRepositoryManagerFactory.class);
 						container.addComponent(
-								new ClassRealmManager((MutablePlexusContainer) container,
-										new DefaultBeanLocator()),
+								new ClassRealmManager(new DefaultBeanLocator()),
 								ClassRealmManager.class.getName());
 						projectBuilder = container.lookup(ProjectBuilder.class);
 						repositorySystem = container.lookup(RepositorySystem.class);
