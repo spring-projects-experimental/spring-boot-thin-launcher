@@ -10,7 +10,6 @@ buildscript {
 		maven { url "https://repo.spring.io/milestone" }
 	}
 	dependencies {
-		classpath("org.springframework.boot.experimental:spring-boot-thin-gradle-plugin:${wrapperVersion}")
 		classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
 	}
 }
@@ -20,16 +19,11 @@ apply plugin: 'maven'
 apply plugin: 'eclipse'
 apply plugin: 'org.springframework.boot'
 apply plugin: 'io.spring.dependency-management'
-apply plugin: 'org.springframework.boot.experimental.thin-launcher'
 
 group = 'com.example'
 version = '0.0.1-SNAPSHOT'
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
-
-thinResolvePrepare {
-	into new File("${buildDir}/thin/deploy")
-}
 
 repositories {
 	mavenLocal()
@@ -38,18 +32,7 @@ repositories {
 	maven { url "https://repo.spring.io/milestone" }
 }
 
-configurations { compile.exclude module: 'spring-boot-starter-tomcat' }
-
 dependencies {
-	compile('org.springframework.cloud:spring-cloud-starter-config')
-	compile('org.springframework.boot:spring-boot-starter-web')
-	compile('org.springframework.boot:spring-boot-starter-jetty')
-	compile('org.springframework.boot:spring-boot-starter-actuator')
+	compile('org.springframework.boot:spring-boot-starter-webflux')
 	testCompile('org.springframework.boot:spring-boot-starter-test')
-}
-
-dependencyManagement {
-	imports {
-		mavenBom "org.springframework.cloud:spring-cloud-dependencies:Finchley.SR1"
-	}
 }
