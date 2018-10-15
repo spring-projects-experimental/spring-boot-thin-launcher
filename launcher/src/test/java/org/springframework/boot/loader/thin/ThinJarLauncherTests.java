@@ -54,6 +54,16 @@ public class ThinJarLauncherTests {
 	}
 
 	@Test
+	public void fatClasspath() throws Exception {
+		String[] args = new String[] { "--thin.classpath",
+				"--thin.archive=src/test/resources/apps/boot" };
+		ThinJarLauncher.main(args);
+		assertThat(output.toString())
+				.contains("spring-web-5.0.9.RELEASE.jar" + File.pathSeparator);
+		assertThat(output.toString()).contains("BOOT-INF/classes");
+	}
+
+	@Test
 	public void compute() throws Exception {
 		String[] args = new String[] { "--thin.classpath=properties",
 				"--thin.archive=src/test/resources/apps/basic" };
@@ -273,8 +283,7 @@ public class ThinJarLauncherTests {
 	@Test
 	public void repositorySettingsMissing() throws Exception {
 		DependencyResolver.close();
-		deleteRecursively(
-				new File("target/thin/test/repository/com/github/jitpack"));
+		deleteRecursively(new File("target/thin/test/repository/com/github/jitpack"));
 		String[] args = new String[] { "--thin.root=target/thin/test",
 				"--thin.dryrun=true", "--thin.archive=src/test/resources/apps/jitpack",
 				"--debug" };
@@ -292,8 +301,7 @@ public class ThinJarLauncherTests {
 		System.setProperty("user.home",
 				new File("src/test/resources/settings/profile").getAbsolutePath());
 		try {
-			deleteRecursively(
-					new File("target/thin/test/repository/com/github/jitpack"));
+			deleteRecursively(new File("target/thin/test/repository/com/github/jitpack"));
 			String[] args = new String[] { "--thin.root=target/thin/test",
 					"--thin.dryrun=true",
 					"--thin.archive=src/test/resources/apps/jitpack", "--debug" };

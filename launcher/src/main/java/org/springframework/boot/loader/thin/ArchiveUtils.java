@@ -156,7 +156,7 @@ public class ArchiveUtils {
 		return url;
 	}
 
-	public static URL[] addNestedClasses(Archive archive, URL[] urls, String... paths) {
+	public static List<URL> nestedClasses(Archive archive, String... paths) {
 		List<URL> extras = new ArrayList<>();
 		try {
 			for (String path : paths) {
@@ -169,6 +169,11 @@ public class ArchiveUtils {
 		catch (Exception e) {
 			throw new IllegalStateException("Cannot create urls for resources", e);
 		}
+		return extras;
+	}
+
+	public static URL[] addNestedClasses(Archive archive, URL[] urls, String... paths) {
+		List<URL> extras = nestedClasses(archive, paths);
 		URL[] result = urls;
 		if (!extras.isEmpty()) {
 			extras.addAll(Arrays.asList(urls));

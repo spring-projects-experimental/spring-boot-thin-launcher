@@ -237,12 +237,13 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 	private String classpath(List<Archive> archives) throws Exception {
 		StringBuilder builder = new StringBuilder();
 		String separator = System.getProperty("path.separator");
-		boolean first = true;
-		for (Archive archive : archives) {
-			if (!first) {
-				first = false;
-				continue;
+		for (URL url : ArchiveUtils.nestedClasses(getArchive(), "BOOT-INF/classes/")) {
+			if (builder.length() > 0) {
+				builder.append(separator);
 			}
+			builder.append(url.toURI().toString());
+		}
+		for (Archive archive : archives) {
 			if (builder.length() > 0) {
 				builder.append(separator);
 			}
@@ -343,7 +344,8 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 				.resolvePlaceholders("${" + ThinJarLauncher.THIN_LOCATION + ":}");
 		String root = environment.resolvePlaceholders("${" + THIN_ROOT + ":}");
 		String offline = environment.resolvePlaceholders("${" + THIN_OFFLINE + ":false}");
-		String force = environment.resolvePlaceholders("${" + THIN_DRYRUN + ":${" + THIN_FORCE + "false}}");
+		String force = environment
+				.resolvePlaceholders("${" + THIN_DRYRUN + ":${" + THIN_FORCE + "false}}");
 		PathResolver resolver = new PathResolver(DependencyResolver.instance());
 		if (StringUtils.hasText(locations)) {
 			resolver.setLocations(locations.split(","));

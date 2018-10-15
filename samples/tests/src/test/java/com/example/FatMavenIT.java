@@ -58,12 +58,13 @@ public class FatMavenIT {
 	@Test
 	public void classpath() throws Exception {
 		ProcessBuilder builder = new ProcessBuilder(Utils.javaCommand(),
+				// "-agentlib:jdwp=transport=dt_socket,server=y,address=8000",
 				"-Dthin.archive=../fat/target/fat-0.0.1-SNAPSHOT.jar", "-jar",
 				"../simple/target/simple-0.0.1-SNAPSHOT.jar", "--thin.classpath");
 		builder.redirectErrorStream(true);
 		started = builder.start();
 		String output = output(started.getInputStream());
-		assertThat(output).contains("fat-0.0.1");
+		assertThat(output).contains("fat-0.0.1-SNAPSHOT.jar!/BOOT-INF/classes");
 		assertThat(output).contains("2.0.5.RELEASE");
 		assertThat(output).doesNotContain("actuator");
 		assertThat(output).doesNotContain("spring-cloud");
