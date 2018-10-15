@@ -32,6 +32,7 @@ import org.springframework.boot.loader.ExecutableArchiveLauncher;
 import org.springframework.boot.loader.LaunchedURLClassLoader;
 import org.springframework.boot.loader.archive.Archive;
 import org.springframework.boot.loader.archive.Archive.Entry;
+import org.springframework.boot.loader.archive.ExplodedArchive;
 import org.springframework.core.env.MutablePropertySources;
 import org.springframework.core.env.SimpleCommandLinePropertySource;
 import org.springframework.core.env.StandardEnvironment;
@@ -237,30 +238,37 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 	private String classpath(List<Archive> archives) throws Exception {
 		StringBuilder builder = new StringBuilder();
 		String separator = System.getProperty("path.separator");
-		for (URL url : ArchiveUtils.nestedClasses(getArchive(), "BOOT-INF/classes/")) {
-			if (builder.length() > 0) {
-				builder.append(separator);
+		Archive local = getArchive();
+		if (local instanceof ExplodedArchive) {
+			for (URL url : ArchiveUtils.nestedClasses(local, "BOOT-INF/classes/")) {
+				if (builder.length() > 0) {
+					builder.append(separator);
+				}
+				builder.append(path(url));
 			}
-			builder.append(url.toURI().toString());
 		}
 		for (Archive archive : archives) {
 			if (builder.length() > 0) {
 				builder.append(separator);
 			}
 			log.info("Archive: {}", archive);
-			String uri = archive.getUrl().toURI().toString();
-			if (uri.startsWith("jar:")) {
-				uri = uri.substring("jar:".length());
-			}
-			if (uri.startsWith("file:")) {
-				uri = uri.substring("file:".length());
-			}
-			if (uri.endsWith("!/")) {
-				uri = uri.substring(0, uri.length() - "!/".length());
-			}
-			builder.append(new File(uri).getCanonicalPath());
+			builder.append(path(archive.getUrl()));
 		}
 		return builder.toString();
+	}
+
+	private String path(URL url) throws Exception {
+		String uri = url.toURI().toString();
+		if (uri.startsWith("jar:")) {
+			uri = uri.substring("jar:".length());
+		}
+		if (uri.startsWith("file:")) {
+			uri = uri.substring("file:".length());
+		}
+		if (uri.endsWith("!/")) {
+			uri = uri.substring(0, uri.length() - "!/".length());
+		}
+		return new File(uri).getCanonicalPath();
 	}
 
 	private void addCommandLineProperties(String[] args) {

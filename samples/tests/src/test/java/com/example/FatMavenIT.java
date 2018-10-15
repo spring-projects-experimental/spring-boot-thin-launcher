@@ -21,6 +21,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.concurrent.TimeUnit;
 
 import org.assertj.core.api.Condition;
 import org.junit.After;
@@ -56,15 +57,37 @@ public class FatMavenIT {
 	}
 
 	@Test
-	public void classpath() throws Exception {
+	public void exploded() throws Exception {
+		File exploded = new File("../fat/target/dependency");
+		ProcessBuilder jar = new ProcessBuilder(Utils.jarCommand(), "-xf",
+				"../fat-0.0.1-SNAPSHOT.jar");
 		ProcessBuilder builder = new ProcessBuilder(Utils.javaCommand(),
 				// "-agentlib:jdwp=transport=dt_socket,server=y,address=8000",
+				"-Dthin.archive=" + exploded, "-jar",
+				"../simple/target/simple-0.0.1-SNAPSHOT.jar", "--thin.classpath");
+		builder.redirectErrorStream(true);
+		exploded.mkdirs();
+		assertThat(exploded).exists();
+		jar.directory(exploded);
+		jar.start().waitFor(10, TimeUnit.SECONDS);
+		started = builder.start();
+		String output = output(started.getInputStream());
+		assertThat(output).doesNotContain("file:");
+		assertThat(output).contains("target/dependency/BOOT-INF/classes");
+		assertThat(output).contains("2.0.5.RELEASE");
+		assertThat(output).doesNotContain("actuator");
+		assertThat(output).doesNotContain("spring-cloud");
+	}
+
+	@Test
+	public void classpath() throws Exception {
+		ProcessBuilder builder = new ProcessBuilder(Utils.javaCommand(),
 				"-Dthin.archive=../fat/target/fat-0.0.1-SNAPSHOT.jar", "-jar",
 				"../simple/target/simple-0.0.1-SNAPSHOT.jar", "--thin.classpath");
 		builder.redirectErrorStream(true);
 		started = builder.start();
 		String output = output(started.getInputStream());
-		assertThat(output).contains("fat-0.0.1-SNAPSHOT.jar!/BOOT-INF/classes");
+		assertThat(output).doesNotContain("target/fat/BOOT-INF/classes");
 		assertThat(output).contains("2.0.5.RELEASE");
 		assertThat(output).doesNotContain("actuator");
 		assertThat(output).doesNotContain("spring-cloud");

@@ -35,4 +35,16 @@ public class Utils {
 		return "java";
 	}
 
+	public static String jarCommand() {
+		String javaHome = System.getProperty("java.home");
+		if (javaHome == null) {
+			return "jar"; // Hope it's in PATH
+		}
+		File javaExecutable = new File(javaHome, "bin/jar");
+		if (javaExecutable.exists() && javaExecutable.canExecute()) {
+			return javaExecutable.getAbsolutePath();
+		}
+		return "jar";
+	}
+
 }
