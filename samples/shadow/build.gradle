@@ -1,8 +1,8 @@
 buildscript {
 	ext {
-		springBootVersion = '2.0.3.RELEASE'
+		springBootVersion = '2.0.5.RELEASE'
 		wrapperVersion = '1.0.18.BUILD-SNAPSHOT'
-        shadowVersion = '2.0.1'
+		shadowVersion = '2.0.1'
 	}
 	repositories {
 		jcenter()
@@ -12,7 +12,7 @@ buildscript {
 		maven { url "https://repo.spring.io/milestone" }
 	}
 	dependencies {
-        classpath "com.github.jengelman.gradle.plugins:shadow:${shadowVersion}"
+		classpath "com.github.jengelman.gradle.plugins:shadow:${shadowVersion}"
 		classpath("org.springframework.boot.experimental:spring-boot-thin-gradle-plugin:${wrapperVersion}")
 		classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
 	}
@@ -22,7 +22,6 @@ apply plugin: 'java'
 apply plugin: 'maven'
 apply plugin: 'eclipse'
 apply plugin: 'io.spring.dependency-management'
-apply plugin: 'org.springframework.boot'
 apply plugin: 'com.github.johnrengelman.shadow'
 apply plugin: 'org.springframework.boot.experimental.thin-launcher'
 
@@ -35,22 +34,28 @@ assemble.dependsOn = [shadowJar, thinJar]
 
 import com.github.jengelman.gradle.plugins.shadow.transformers.*
 
+dependencyManagement {
+	imports {
+		mavenBom org.springframework.boot.gradle.plugin.SpringBootPlugin.BOM_COORDINATES
+	}
+}
+
 jar {
-  manifest {
-    attributes 'Main-Class': 'com.example.LauncherApplication'
-  }
+	manifest {
+		attributes 'Main-Class': 'com.example.LauncherApplication'
+	}
 }
 
 shadowJar {
-  // Required for Spring
-  mergeServiceFiles()
-  append 'META-INF/spring.handlers'
-  append 'META-INF/spring.schemas'
-  append 'META-INF/spring.tooling'
-  transform(PropertiesFileTransformer) {
-    paths = ['META-INF/spring.factories' ]
-    mergeStrategy = "append"
-  }
+	// Required for Spring
+	mergeServiceFiles()
+	append 'META-INF/spring.handlers'
+	append 'META-INF/spring.schemas'
+	append 'META-INF/spring.tooling'
+	transform(PropertiesFileTransformer) {
+		paths = ['META-INF/spring.factories' ]
+		mergeStrategy = "append"
+	}
 }
 repositories {
 	mavenLocal()
@@ -60,7 +65,7 @@ repositories {
 }
 
 configurations {
-    testCompile.extendsFrom(compileOnly)
+	testCompile.extendsFrom(compileOnly)
 }
 
 dependencies {

@@ -138,9 +138,16 @@ public class ThinLauncherPlugin implements Plugin<Project> {
 			}
 			if (suffix(jar).isEmpty()) {
 				create(project.getTasks(), task, Jar.class, new Action<Jar>() {
+
 					@Override
 					public void execute(final Jar thin) {
-						final Jar bootJar = (Jar) project.getTasks().getByName("bootJar");
+						final Jar bootJar;
+						if (project.getTasks().findByName("bootJar") != null) {
+							bootJar = (Jar) project.getTasks().getByName("bootJar");
+						}
+						else {
+							bootJar = (Jar) project.getTasks().getByName("jar");
+						}
 						thin.dependsOn(bootJar);
 						project.getTasks().getByName(BasePlugin.ASSEMBLE_TASK_NAME)
 								.dependsOn(thin);
@@ -150,8 +157,7 @@ public class ThinLauncherPlugin implements Plugin<Project> {
 								Map<String, Object> attrs = new HashMap<>();
 								attrs.put("Main-Class",
 										"org.springframework.boot.loader.wrapper.ThinJarWrapper");
-								attrs.put("Start-Class",
-										bootJar.property("mainClassName"));
+								attrs.put("Start-Class", getMainClass(bootJar));
 								thin.setManifest(bootJar.getManifest());
 								thin.getManifest().attributes(attrs);
 								SourceSetContainer sources = (SourceSetContainer) project
@@ -176,6 +182,16 @@ public class ThinLauncherPlugin implements Plugin<Project> {
 												return element.isDirectory();
 											}
 										}).getFiles().toArray(new File[0]));
+							}
+
+							private Object getMainClass(Jar bootJar) {
+								Object result = bootJar.getManifest().getAttributes()
+										.get("Start-Class");
+								if (result != null) {
+									return result;
+								}
+								return bootJar.getManifest().getAttributes()
+										.get("Main-Class");
 							}
 
 						});
