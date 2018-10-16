@@ -21,7 +21,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.concurrent.TimeUnit;
 
 import org.assertj.core.api.Condition;
 import org.junit.After;
@@ -59,17 +58,12 @@ public class FatMavenIT {
 	@Test
 	public void exploded() throws Exception {
 		File exploded = new File("../fat/target/dependency");
-		ProcessBuilder jar = new ProcessBuilder(Utils.jarCommand(), "-xf",
-				"../fat-0.0.1-SNAPSHOT.jar");
 		ProcessBuilder builder = new ProcessBuilder(Utils.javaCommand(),
 				// "-agentlib:jdwp=transport=dt_socket,server=y,address=8000",
 				"-Dthin.archive=" + exploded, "-jar",
 				"../simple/target/simple-0.0.1-SNAPSHOT.jar", "--thin.classpath");
 		builder.redirectErrorStream(true);
-		exploded.mkdirs();
 		assertThat(exploded).exists();
-		jar.directory(exploded);
-		jar.start().waitFor(10, TimeUnit.SECONDS);
 		started = builder.start();
 		String output = output(started.getInputStream());
 		assertThat(output).doesNotContain("file:");
