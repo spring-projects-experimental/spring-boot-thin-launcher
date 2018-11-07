@@ -15,18 +15,7 @@
  */
 package org.springframework.boot.loader.thin;
 
-import java.security.CodeSource;
-import java.security.ProtectionDomain;
-
-import org.slf4j.ILoggerFactory;
-import org.slf4j.impl.StaticLoggerBinder;
-
-import org.springframework.util.Assert;
-import org.springframework.util.StringUtils;
-
-import ch.qos.logback.classic.Level;
-import ch.qos.logback.classic.Logger;
-import ch.qos.logback.classic.LoggerContext;
+import java.util.logging.Logger;
 
 /**
  * @author Dave Syer
@@ -34,51 +23,42 @@ import ch.qos.logback.classic.LoggerContext;
  */
 class LogUtils {
 
+	public static final String ROOT_LOGGER_NAME = "";
+
 	public static void setLogLevel(Level level) {
-		setLogLevel(Logger.ROOT_LOGGER_NAME, level);
+		setLogLevel(ROOT_LOGGER_NAME, level);
 	}
 
 	private static void setLogLevel(String loggerName, Level level) {
-		ch.qos.logback.classic.Logger logger = getLogger(loggerName);
+		Logger logger = getLogger(loggerName);
 		if (logger != null) {
-			logger.setLevel(level);
+			logger.setLevel(convert(level));
 		}
 	}
 
-	private static ch.qos.logback.classic.Logger getLogger(String name) {
-		LoggerContext factory = getLoggerContext();
-		if (StringUtils.isEmpty(name)) {
-			name = Logger.ROOT_LOGGER_NAME;
+	private static java.util.logging.Level convert(Level level) {
+		switch (level) {
+		case OFF:
+			return java.util.logging.Level.OFF;
+		case ERROR:
+			return java.util.logging.Level.SEVERE;
+		case WARN:
+			return java.util.logging.Level.WARNING;
+		case DEBUG:
+			return java.util.logging.Level.FINE;
+		case TRACE:
+			return java.util.logging.Level.FINEST;
+		default:
+			return java.util.logging.Level.INFO;
 		}
-		return factory.getLogger(name);
-
 	}
 
-	private static LoggerContext getLoggerContext() {
-		ILoggerFactory factory = StaticLoggerBinder.getSingleton().getLoggerFactory();
-		Assert.isInstanceOf(LoggerContext.class, factory,
-				String.format(
-						"LoggerFactory is not a Logback LoggerContext but Logback is on "
-								+ "the classpath. Either remove Logback or the competing "
-								+ "implementation (%s loaded from %s). If you are using "
-								+ "WebLogic you will need to add 'org.slf4j' to "
-								+ "prefer-application-packages in WEB-INF/weblogic.xml",
-						factory.getClass(), getLocation(factory)));
-		return (LoggerContext) factory;
+	private static Logger getLogger(String name) {
+		return Logger.getLogger(name);
 	}
 
-	private static Object getLocation(ILoggerFactory factory) {
-		try {
-			ProtectionDomain protectionDomain = factory.getClass().getProtectionDomain();
-			CodeSource codeSource = protectionDomain.getCodeSource();
-			if (codeSource != null) {
-				return codeSource.getLocation();
-			}
-		}
-		catch (SecurityException ex) {
-			// Unable to determine location
-		}
-		return "unknown location";
-	}
+}
 
+enum Level {
+	OFF, ERROR, WARN, INFO, DEBUG, TRACE;
 }

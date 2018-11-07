@@ -38,8 +38,6 @@ import org.springframework.core.env.SimpleCommandLinePropertySource;
 import org.springframework.core.env.StandardEnvironment;
 import org.springframework.util.StringUtils;
 
-import ch.qos.logback.classic.Level;
-
 /**
  *
  * @author Dave Syer
