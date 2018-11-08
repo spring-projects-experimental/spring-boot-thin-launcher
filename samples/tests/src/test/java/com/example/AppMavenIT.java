@@ -65,7 +65,9 @@ public class AppMavenIT {
 		started = builder.start();
 		String output = output(started.getInputStream(), "Started");
 		assertThat(output).contains("Started LauncherApplication");
-		assertThat(output).contains("2.0.4.BUILD-SNAPSHOT");
+		// There's a thin.properties in the jar that changes Spring Boot version
+		// (bizarrely)
+		assertThat(output).contains("2.0.6.RELEASE");
 	}
 
 	@Test
@@ -79,14 +81,16 @@ public class AppMavenIT {
 		started = builder.start();
 		String output = output(started.getInputStream(), "Started");
 		assertThat(output).contains("Started LauncherApplication");
-		assertThat(output).contains("2.0.1.RELEASE");
+		assertThat(output).contains("2.0.4.RELEASE");
 	}
 
 	@Test
 	public void runJarNamedProperties() throws Exception {
 		ProcessBuilder builder = new ProcessBuilder(Utils.javaCommand(), "-Xmx128m",
 				"-noverify", "-XX:TieredStopAtLevel=1",
-				"-Djava.security.egd=file:/dev/./urandom", "-Ddebug", "-Dthin.name=app",
+				"-Djava.security.egd=file:/dev/./urandom", "-Dthin.debug",
+				// Switches to Spring Boot 2.0.1
+				"-Dthin.name=app", //
 				"-jar", "../../../../../app/target/app-0.0.1-SNAPSHOT.jar",
 				"--server.port=0");
 		builder.redirectErrorStream(true);
@@ -103,6 +107,7 @@ public class AppMavenIT {
 				"-noverify", "-XX:TieredStopAtLevel=1",
 				"-Djava.security.egd=file:/dev/./urandom", "-jar",
 				"../../../../../app/target/app-0.0.1-SNAPSHOT.jar", "--server.port=0");
+		// Switches to Spring Boot 2.0.1
 		builder.environment().put("THIN_NAME", "app");
 		builder.redirectErrorStream(true);
 		builder.directory(new File("src/test/resources/app"));

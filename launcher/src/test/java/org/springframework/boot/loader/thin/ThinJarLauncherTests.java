@@ -16,14 +16,24 @@
 package org.springframework.boot.loader.thin;
 
 import java.io.File;
+import java.util.Collections;
+import java.util.Properties;
 
+import org.eclipse.aether.graph.Dependency;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.mockito.ArgumentCaptor;
 
 import org.springframework.boot.test.rule.OutputCapture;
+import org.springframework.core.io.Resource;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 /**
  * @author Dave Syer
@@ -36,6 +46,37 @@ public class ThinJarLauncherTests {
 
 	@Rule
 	public OutputCapture output = new OutputCapture();
+
+	@Test
+	public void emptyProperties() throws Exception {
+		String[] args = new String[] { "--thin.classpath",
+				"--thin.archive=src/test/resources/apps/basic" };
+		ThinJarLauncher launcher = new ThinJarLauncher(args);
+		DependencyResolver resolver = mock(DependencyResolver.class);
+		ReflectionTestUtils.setField(DependencyResolver.class, "instance", resolver);
+		ArgumentCaptor<Properties> props = ArgumentCaptor.forClass(Properties.class);
+		when(resolver.dependencies(any(Resource.class), any(Properties.class)))
+				.thenReturn(Collections.<Dependency>emptyList());
+		launcher.launch(args);
+		verify(resolver).dependencies(any(Resource.class), props.capture());
+		assertThat(props.getValue()).isEmpty();
+	}
+
+	@Test
+	public void profileProperties() throws Exception {
+		String[] args = new String[] { "--thin.classpath",
+				"--thin.archive=src/test/resources/apps/basic", "--thin.profile=foo" };
+		ThinJarLauncher launcher = new ThinJarLauncher(args);
+		DependencyResolver resolver = mock(DependencyResolver.class);
+		ReflectionTestUtils.setField(DependencyResolver.class, "instance", resolver);
+		ArgumentCaptor<Properties> props = ArgumentCaptor.forClass(Properties.class);
+		when(resolver.dependencies(any(Resource.class), any(Properties.class)))
+				.thenReturn(Collections.<Dependency>emptyList());
+		launcher.launch(args);
+		verify(resolver).dependencies(any(Resource.class), props.capture());
+		assertThat(props.getValue()).containsEntry("thin.profile", "foo");
+		DependencyResolver.close();
+	}
 
 	@Test
 	public void dryrun() throws Exception {
@@ -80,7 +121,7 @@ public class ThinJarLauncherTests {
 		String[] args = new String[] { "--thin.dryrun=true",
 				"--thin.root=target/thin/test",
 				"--thin.location=file:src/test/resources/apps/db/META-INF",
-				"--thin.archive=src/test/resources/apps", "--debug" };
+				"--thin.archive=src/test/resources/apps/basic", "--debug" };
 		ThinJarLauncher.main(args);
 		assertThat(
 				new File("target/thin/test/repository/org/springframework/spring-core"))

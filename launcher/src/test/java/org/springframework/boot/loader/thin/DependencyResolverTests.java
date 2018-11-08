@@ -68,6 +68,24 @@ public class DependencyResolverTests {
 	}
 
 	@Test
+	public void mavenProfiles() throws Exception {
+		Resource resource = new ClassPathResource("apps/profiles/pom.xml");
+		Properties props = new Properties();
+		props.setProperty("thin.profile", "secure");
+		List<Dependency> dependencies = resolver.dependencies(resource, props);
+		assertThat(dependencies.size()).isGreaterThan(4);
+		// Transitive from a starter
+		assertThat(dependencies).filteredOn("artifact.artifactId", "spring-boot-starter")
+				.first().is(version("2.1.0.RELEASE"));
+		assertThat(dependencies)
+				.filteredOn("artifact.artifactId", "spring-boot-starter-security")
+				.isNotEmpty();
+		// Test scope
+		assertThat(dependencies)
+				.filteredOn("artifact.artifactId", "spring-boot-starter-test").isEmpty();
+	}
+
+	@Test
 	public void preresolved() throws Exception {
 		Resource resource = new ClassPathResource("apps/petclinic-preresolved/pom.xml");
 		List<Dependency> dependencies = resolver.dependencies(resource,

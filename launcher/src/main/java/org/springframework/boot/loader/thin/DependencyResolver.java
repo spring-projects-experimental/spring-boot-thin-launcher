@@ -25,6 +25,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
@@ -314,6 +315,19 @@ public class DependencyResolver {
 		projectBuildingRequest.setBuildStartTime(new Date());
 		projectBuildingRequest.setUserProperties(properties);
 		projectBuildingRequest.setSystemProperties(System.getProperties());
+		Set<String> profiles = new LinkedHashSet<String>();
+		for (Profile profile : settings.getActiveProfiles()) {
+			profiles.add(profile.getId());
+		}
+		if (properties.containsKey(ThinJarLauncher.THIN_PROFILE)) {
+			String property = properties.getProperty(ThinJarLauncher.THIN_PROFILE);
+			if (property.length() > 0) {
+				profiles.addAll(StringUtils.commaDelimitedListToSet(property));
+			}
+		}
+		if (!profiles.isEmpty()) {
+			projectBuildingRequest.setActiveProfileIds(new ArrayList<>(profiles));
+		}
 		return projectBuildingRequest;
 	}
 

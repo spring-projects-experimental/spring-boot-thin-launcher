@@ -215,6 +215,12 @@ public class PathResolver {
 		Properties properties = new Properties();
 		loadThinProperties(properties, archive, name, profiles);
 		loadThinProperties(properties, this.locations, name, profiles);
+		if (profiles != null && profiles.length > 0) {
+			String values = StringUtils.arrayToCommaDelimitedString(profiles);
+			if (values.length() > 0) {
+				properties.setProperty("thin.profile", values);
+			}
+		}
 		if (root != null) {
 			properties.setProperty("thin.root", root);
 		}

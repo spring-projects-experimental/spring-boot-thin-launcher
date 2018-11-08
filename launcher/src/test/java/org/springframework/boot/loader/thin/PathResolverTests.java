@@ -102,7 +102,7 @@ public class PathResolverTests {
 				new File("src/test/resources/apps/preresolved"));
 		Properties result = ReflectionTestUtils.invokeMethod(resolver, "getProperties",
 				parent, "thin", new String[] { "added" });
-		assertThat(result.size()).isEqualTo(71);
+		assertThat(result.size()).isEqualTo(72);
 	}
 
 	@Test
