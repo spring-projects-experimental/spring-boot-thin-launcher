@@ -343,7 +343,7 @@ public class DependencyResolver {
 								: true,
 						repository.getSnapshots() != null
 								? repository.getSnapshots().isEnabled()
-								: false);
+								: true);
 			}
 		}
 		return list;
