@@ -17,14 +17,12 @@
 package org.springframework.boot.experimental.gradle;
 
 import java.io.File;
+import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
-
-import io.spring.gradle.dependencymanagement.org.codehaus.plexus.util.FileUtils;
-import io.spring.gradle.dependencymanagement.org.codehaus.plexus.util.io.URLInputStreamFacade;
 
 import org.gradle.api.Action;
 import org.gradle.api.InvalidUserDataException;
@@ -165,13 +163,13 @@ public class ThinLauncherPlugin implements Plugin<Project> {
 								thin.from(project.zipTree(new Callable<File>() {
 									@Override
 									public File call() throws Exception {
-										File file = FileUtils.createTempFile("tmp",
-												".jar", project.getBuildDir());
-										FileUtils.copyStreamToFile(
-												new URLInputStreamFacade(getClass()
-														.getClassLoader().getResource(
-																"META-INF/loader/spring-boot-thin-wrapper.jar")),
-												file);
+										File file = File.createTempFile("tmp", ".jar",
+												project.getBuildDir());
+										file.delete();
+										Files.copy(getClass().getClassLoader()
+												.getResourceAsStream(
+														"META-INF/loader/spring-boot-thin-wrapper.jar"),
+												file.toPath());
 										return file;
 									}
 								}));
