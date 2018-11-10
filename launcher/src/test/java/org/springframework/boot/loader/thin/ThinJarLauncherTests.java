@@ -355,6 +355,101 @@ public class ThinJarLauncherTests {
 		assertThat(new File("target/thin/test/repository/com/github/jitpack/maven-simple")
 				.exists()).isTrue();
 	}
+	
+	/**
+	 * There is a snapshot dependency in the POM, but no repository configured for it.
+	 * @throws Exception ...
+	 */
+	@Test
+	public void repositorySettingsMissingForSnapshotDependency() throws Exception {
+		DependencyResolver.close();
+		deleteRecursively(new File("target/thin/test/repository/javax/validation/validation-api"));
+		String[] args = new String[] { "--thin.root=target/thin/test",
+				"--thin.dryrun=true", "--thin.archive=src/test/resources/apps/beanvalidation-snapshot",
+				"--debug" };
+		expected.expect(RuntimeException.class);
+		expected.expectMessage("validation-api:jar:2.0.2-SNAPSHOT");
+		ThinJarLauncher.main(args);
+		assertThat(new File("target/thin/test/repository/javax/validation/validation-api")
+				.exists()).isFalse();
+	}
+	
+	/**
+	 * There is a snapshot dependency in the POM. The repository is in settings.xml, but snapshots are not explicitly enabled.
+	 * There is no snapshots-Element.
+	 * @throws Exception ...
+	 */
+	@Test
+	public void repositorySettingsPresentForSnapshotDependencyDefaultWithNoSnapshotsElement() throws Exception {
+		repositorySettingsPresentForSnapshotDependencyOk("defaultWithNoSnapshotsElement");
+	}
+	
+	/**
+	 * There is a snapshot dependency in the POM. The repository is in settings.xml, but snapshots are not explicitly enabled.
+	 * There is an empty snapshots-Element.
+	 * @throws Exception ...
+	 */
+	@Test
+	public void repositorySettingsPresentForSnapshotDependencyDefaultWithSnapshotsElement() throws Exception {
+		repositorySettingsPresentForSnapshotDependencyOk("defaultWithSnapshotsElement");
+	}
+	
+	/**
+	 * There is a snapshot dependency in the POM. The repository is in settings.xml, and snapshots are explicitly enabled.
+	 * @throws Exception ...
+	 */
+	@Test
+	public void repositorySettingsPresentForSnapshotDependencyEnabled() throws Exception {
+		repositorySettingsPresentForSnapshotDependencyOk("enabled");
+	}
+
+	private void repositorySettingsPresentForSnapshotDependencyOk(String settingsDir) throws Exception {
+		DependencyResolver.close();
+		String home = System.getProperty("user.home");
+		System.setProperty("user.home",
+				new File("src/test/resources/settings/profile-jboss-snapshots/"+settingsDir ).getAbsolutePath());
+		try {
+			deleteRecursively(new File("target/thin/test/repository/javax/validation/validation-api"));
+			String[] args = new String[] { "--thin.root=target/thin/test",
+					"--thin.dryrun=true",
+					"--thin.archive=src/test/resources/apps/beanvalidation-snapshot", "--debug" };
+			ThinJarLauncher.main(args);
+		}
+		finally {
+			System.setProperty("user.home", home);
+		}
+		assertThat(new File("target/thin/test/repository").exists()).isTrue();
+		assertThat(new File("target/thin/test/repository/javax/validation/validation-api")
+				.exists()).isTrue();
+	}
+	
+	/**
+	 * There is a snapshot dependency in the POM. The repository is in settings.xml, but snapshots are explicitly disabled.
+	 * @throws Exception ...
+	 */
+	@Test
+	public void repositorySettingsPresentForSnapshotDependencyDiabled() throws Exception {
+		DependencyResolver.close();
+		String home = System.getProperty("user.home");
+		System.setProperty("user.home",
+				new File("src/test/resources/settings/profile-jboss-snapshots/disabled" ).getAbsolutePath());
+		try {
+			deleteRecursively(new File("target/thin/test/repository/javax/validation/validation-api"));
+			String[] args = new String[] { "--thin.root=target/thin/test",
+					"--thin.dryrun=true",
+					"--thin.archive=src/test/resources/apps/beanvalidation-snapshot", "--debug" };
+			expected.expect(RuntimeException.class);
+			expected.expectMessage("validation-api:jar:2.0.2-SNAPSHOT");
+			ThinJarLauncher.main(args);
+		}
+		finally {
+			System.setProperty("user.home", home);
+		}
+		assertThat(new File("target/thin/test/repository/javax/validation/validation-api")
+				.exists()).isFalse();
+
+	}
+	
 
 	public static boolean deleteRecursively(File root) {
 		if (root != null && root.exists()) {

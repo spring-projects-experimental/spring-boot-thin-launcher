@@ -1,0 +1,1 @@
+This folder contains serveral maven settings for JBoss snapshot repository, which provides, for instance, snapshots for bean validation api.
