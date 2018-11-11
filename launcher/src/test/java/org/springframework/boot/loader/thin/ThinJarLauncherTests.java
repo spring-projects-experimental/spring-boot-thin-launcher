@@ -20,6 +20,7 @@ import java.util.Collections;
 import java.util.Properties;
 
 import org.eclipse.aether.graph.Dependency;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -233,9 +234,10 @@ public class ThinJarLauncherTests {
 	}
 
 	@Test
+	@Ignore("TODO: very slow. Find a better way...")
 	public void overrideSnapshotVersion() throws Exception {
-		deleteRecursively(
-				new File("target/thin/test/repository/org/springframework/spring-core"));
+		deleteRecursively(new File(
+				"target/thin/test/repository/org/springframework/boot/spring-boot"));
 		deleteRecursively(new File(
 				"target/thin/test/repository/org/springframework/boot/spring-boot-starter-parent"));
 		String[] args = new String[] { "--thin.root=target/thin/test",
@@ -243,22 +245,25 @@ public class ThinJarLauncherTests {
 				"--debug" };
 		ThinJarLauncher.main(args);
 		assertThat(new File("target/thin/test/repository").exists()).isTrue();
-		assertThat(new File("target/thin/test/repository/org/springframework/spring-core")
-				.exists()).isTrue();
+		assertThat(new File(
+				"target/thin/test/repository/org/springframework/boot/spring-boot/2.0.1.BUILD-SNAPSHOT")
+						.exists()).isTrue();
 	}
 
 	@Test
+	@Ignore("TODO: very slow. Find a better way...")
 	public void declareSnapshotRepository() throws Exception {
-		deleteRecursively(
-				new File("target/thin/test/repository/org/springframework/spring-core"));
+		deleteRecursively(new File(
+				"target/thin/test/repository/org/springframework/boot/spring-boot"));
 		String[] args = new String[] { "--thin.root=target/thin/test",
 				"--thin.dryrun=true",
 				"--thin.archive=src/test/resources/apps/snapshots-with-repos",
 				"--debug" };
 		ThinJarLauncher.main(args);
 		assertThat(new File("target/thin/test/repository").exists()).isTrue();
-		assertThat(new File("target/thin/test/repository/org/springframework/spring-core")
-				.exists()).isTrue();
+		assertThat(new File(
+				"target/thin/test/repository/org/springframework/boot/spring-boot/2.0.5.BUILD-SNAPSHOT")
+						.exists()).isTrue();
 	}
 
 	@Test
@@ -355,7 +360,7 @@ public class ThinJarLauncherTests {
 		assertThat(new File("target/thin/test/repository/com/github/jitpack/maven-simple")
 				.exists()).isTrue();
 	}
-	
+
 	/**
 	 * There is a snapshot dependency in the POM, but no repository configured for it.
 	 * @throws Exception ...
@@ -363,9 +368,11 @@ public class ThinJarLauncherTests {
 	@Test
 	public void repositorySettingsMissingForSnapshotDependency() throws Exception {
 		DependencyResolver.close();
-		deleteRecursively(new File("target/thin/test/repository/javax/validation/validation-api"));
+		deleteRecursively(
+				new File("target/thin/test/repository/javax/validation/validation-api"));
 		String[] args = new String[] { "--thin.root=target/thin/test",
-				"--thin.dryrun=true", "--thin.archive=src/test/resources/apps/beanvalidation-snapshot",
+				"--thin.dryrun=true",
+				"--thin.archive=src/test/resources/apps/beanvalidation-snapshot",
 				"--debug" };
 		expected.expect(RuntimeException.class);
 		expected.expectMessage("validation-api:jar:2.0.2-SNAPSHOT");
@@ -373,29 +380,32 @@ public class ThinJarLauncherTests {
 		assertThat(new File("target/thin/test/repository/javax/validation/validation-api")
 				.exists()).isFalse();
 	}
-	
+
 	/**
-	 * There is a snapshot dependency in the POM. The repository is in settings.xml, but snapshots are not explicitly enabled.
-	 * There is no snapshots-Element.
+	 * There is a snapshot dependency in the POM. The repository is in settings.xml, but
+	 * snapshots are not explicitly enabled. There is no snapshots-Element.
 	 * @throws Exception ...
 	 */
 	@Test
-	public void repositorySettingsPresentForSnapshotDependencyDefaultWithNoSnapshotsElement() throws Exception {
+	public void repositorySettingsPresentForSnapshotDependencyDefaultWithNoSnapshotsElement()
+			throws Exception {
 		repositorySettingsPresentForSnapshotDependencyOk("defaultWithNoSnapshotsElement");
 	}
-	
+
 	/**
-	 * There is a snapshot dependency in the POM. The repository is in settings.xml, but snapshots are not explicitly enabled.
-	 * There is an empty snapshots-Element.
+	 * There is a snapshot dependency in the POM. The repository is in settings.xml, but
+	 * snapshots are not explicitly enabled. There is an empty snapshots-Element.
 	 * @throws Exception ...
 	 */
 	@Test
-	public void repositorySettingsPresentForSnapshotDependencyDefaultWithSnapshotsElement() throws Exception {
+	public void repositorySettingsPresentForSnapshotDependencyDefaultWithSnapshotsElement()
+			throws Exception {
 		repositorySettingsPresentForSnapshotDependencyOk("defaultWithSnapshotsElement");
 	}
-	
+
 	/**
-	 * There is a snapshot dependency in the POM. The repository is in settings.xml, and snapshots are explicitly enabled.
+	 * There is a snapshot dependency in the POM. The repository is in settings.xml, and
+	 * snapshots are explicitly enabled.
 	 * @throws Exception ...
 	 */
 	@Test
@@ -403,16 +413,20 @@ public class ThinJarLauncherTests {
 		repositorySettingsPresentForSnapshotDependencyOk("enabled");
 	}
 
-	private void repositorySettingsPresentForSnapshotDependencyOk(String settingsDir) throws Exception {
+	private void repositorySettingsPresentForSnapshotDependencyOk(String settingsDir)
+			throws Exception {
 		DependencyResolver.close();
 		String home = System.getProperty("user.home");
-		System.setProperty("user.home",
-				new File("src/test/resources/settings/profile-jboss-snapshots/"+settingsDir ).getAbsolutePath());
+		System.setProperty("user.home", new File(
+				"src/test/resources/settings/profile-jboss-snapshots/" + settingsDir)
+						.getAbsolutePath());
 		try {
-			deleteRecursively(new File("target/thin/test/repository/javax/validation/validation-api"));
+			deleteRecursively(new File(
+					"target/thin/test/repository/javax/validation/validation-api"));
 			String[] args = new String[] { "--thin.root=target/thin/test",
 					"--thin.dryrun=true",
-					"--thin.archive=src/test/resources/apps/beanvalidation-snapshot", "--debug" };
+					"--thin.archive=src/test/resources/apps/beanvalidation-snapshot",
+					"--debug" };
 			ThinJarLauncher.main(args);
 		}
 		finally {
@@ -422,22 +436,27 @@ public class ThinJarLauncherTests {
 		assertThat(new File("target/thin/test/repository/javax/validation/validation-api")
 				.exists()).isTrue();
 	}
-	
+
 	/**
-	 * There is a snapshot dependency in the POM. The repository is in settings.xml, but snapshots are explicitly disabled.
+	 * There is a snapshot dependency in the POM. The repository is in settings.xml, but
+	 * snapshots are explicitly disabled.
 	 * @throws Exception ...
 	 */
 	@Test
-	public void repositorySettingsPresentForSnapshotDependencyDiabled() throws Exception {
+	public void repositorySettingsPresentForSnapshotDependencyDisabled()
+			throws Exception {
 		DependencyResolver.close();
 		String home = System.getProperty("user.home");
 		System.setProperty("user.home",
-				new File("src/test/resources/settings/profile-jboss-snapshots/disabled" ).getAbsolutePath());
+				new File("src/test/resources/settings/profile-jboss-snapshots/disabled")
+						.getAbsolutePath());
 		try {
-			deleteRecursively(new File("target/thin/test/repository/javax/validation/validation-api"));
+			deleteRecursively(new File(
+					"target/thin/test/repository/javax/validation/validation-api"));
 			String[] args = new String[] { "--thin.root=target/thin/test",
 					"--thin.dryrun=true",
-					"--thin.archive=src/test/resources/apps/beanvalidation-snapshot", "--debug" };
+					"--thin.archive=src/test/resources/apps/beanvalidation-snapshot",
+					"--debug" };
 			expected.expect(RuntimeException.class);
 			expected.expectMessage("validation-api:jar:2.0.2-SNAPSHOT");
 			ThinJarLauncher.main(args);
@@ -449,7 +468,6 @@ public class ThinJarLauncherTests {
 				.exists()).isFalse();
 
 	}
-	
 
 	public static boolean deleteRecursively(File root) {
 		if (root != null && root.exists()) {
