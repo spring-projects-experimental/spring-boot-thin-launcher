@@ -16,6 +16,7 @@
 package org.springframework.boot.loader.thin;
 
 import org.apache.maven.repository.internal.MavenRepositorySystemUtils;
+import org.apache.maven.settings.Repository;
 import org.eclipse.aether.DefaultRepositorySystemSession;
 import org.eclipse.aether.repository.AuthenticationContext;
 import org.eclipse.aether.repository.Proxy;
@@ -30,17 +31,18 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 public class MavenSettingsReaderTests {
 
-	private MavenSettingsReader reader = new MavenSettingsReader(
-			"src/test/resources/settings/proxy");
-
 	@Test
 	public void canReadSettings() {
+		MavenSettingsReader reader = new MavenSettingsReader(
+				"src/test/resources/settings/proxy");
 		MavenSettings settings = reader.readSettings();
 		assertThat(settings).isNotNull();
 	}
 
 	@Test
 	public void proxyConfiguration() {
+		MavenSettingsReader reader = new MavenSettingsReader(
+				"src/test/resources/settings/proxy");
 		DefaultRepositorySystemSession session = MavenRepositorySystemUtils.newSession();
 		MavenSettingsReader.applySettings(reader.readSettings(), session);
 		RemoteRepository repository = new RemoteRepository.Builder("my-server", "default",
@@ -58,12 +60,61 @@ public class MavenSettingsReaderTests {
 
 	@Test
 	public void repositoryConfiguration() {
+		MavenSettingsReader reader = new MavenSettingsReader(
+				"src/test/resources/settings/proxy");
 		reader = new MavenSettingsReader("src/test/resources/settings/profile");
 		DefaultRepositorySystemSession session = MavenRepositorySystemUtils.newSession();
 		MavenSettings settings = reader.readSettings();
 		assertThat(settings.getActiveProfiles().get(0).getRepositories().get(0))
 				.isNotNull();
 		MavenSettingsReader.applySettings(settings, session);
+	}
+
+	@Test
+	public void repositorySnapshotsEnabled() {
+		MavenSettingsReader reader = new MavenSettingsReader(
+				"src/test/resources/settings/proxy");
+		reader = new MavenSettingsReader("src/test/resources/settings/snapshots/enabled");
+		MavenSettings settings = reader.readSettings();
+		Repository repo = settings.getActiveProfiles().get(0).getRepositories().get(0);
+		assertThat(repo).isNotNull();
+		assertThat(repo.getSnapshots().isEnabled()).isTrue();
+	}
+
+	@Test
+	public void repositorySnapshotsDisabled() {
+		MavenSettingsReader reader = new MavenSettingsReader(
+				"src/test/resources/settings/proxy");
+		reader = new MavenSettingsReader(
+				"src/test/resources/settings/snapshots/disabled");
+		MavenSettings settings = reader.readSettings();
+		Repository repo = settings.getActiveProfiles().get(0).getRepositories().get(0);
+		assertThat(repo).isNotNull();
+		assertThat(repo.getSnapshots().isEnabled()).isFalse();
+	}
+
+	@Test
+	public void repositorySnapshotsDefault() {
+		MavenSettingsReader reader = new MavenSettingsReader(
+				"src/test/resources/settings/proxy");
+		reader = new MavenSettingsReader(
+				"src/test/resources/settings/snapshots/defaultWithNoSnapshotsElement");
+		MavenSettings settings = reader.readSettings();
+		Repository repo = settings.getActiveProfiles().get(0).getRepositories().get(0);
+		assertThat(repo).isNotNull();
+		assertThat(repo.getSnapshots()).isNull();
+	}
+
+	@Test
+	public void repositorySnapshotsDefaultWithSnapshots() {
+		MavenSettingsReader reader = new MavenSettingsReader(
+				"src/test/resources/settings/proxy");
+		reader = new MavenSettingsReader(
+				"src/test/resources/settings/snapshots/defaultWithSnapshotsElement");
+		MavenSettings settings = reader.readSettings();
+		Repository repo = settings.getActiveProfiles().get(0).getRepositories().get(0);
+		assertThat(repo).isNotNull();
+		assertThat(repo.getSnapshots().isEnabled()).isTrue();
 	}
 
 }

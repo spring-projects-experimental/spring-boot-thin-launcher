@@ -15,8 +15,10 @@
  */
 package org.springframework.boot.loader.thin;
 
+import java.util.List;
 import java.util.Properties;
 
+import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.project.ProjectBuildingRequest;
 import org.junit.After;
 import org.junit.Test;
@@ -46,6 +48,11 @@ public class DependencyResolverSettingsTests {
 		ProjectBuildingRequest request = getProjectBuildingRequest(resolver);
 		assertThat(request.getRemoteRepositories()).filteredOnNull("proxy")
 				.hasSameSizeAs(request.getRemoteRepositories());
+		List<ArtifactRepository> repositories = request.getRemoteRepositories();
+		assertThat(repositories).filteredOnNull("snapshots").isEmpty();
+		// TODO: assert size of repositories (smaller is better for quicker snapshot
+		// checks)
+		assertThat(repositories.get(0).getSnapshots().isEnabled()).isTrue();
 	}
 
 	@Test
@@ -55,6 +62,19 @@ public class DependencyResolverSettingsTests {
 		DependencyResolver resolver = DependencyResolver.instance();
 		ProjectBuildingRequest request = getProjectBuildingRequest(resolver);
 		assertThat(request.getRemoteRepositories()).filteredOnNull("proxy").isEmpty();
+	}
+
+	@Test
+	public void testSnaphotsEnabledByDefault() throws Exception {
+		DependencyResolver.close();
+		System.setProperty("user.home",
+				"src/test/resources/settings/snapshots/defaultWithNoSnapshotsElement");
+		DependencyResolver resolver = DependencyResolver.instance();
+		ProjectBuildingRequest request = getProjectBuildingRequest(resolver);
+		List<ArtifactRepository> repositories = request.getRemoteRepositories();
+		assertThat(repositories).filteredOnNull("snapshots").isEmpty();
+		assertThat(repositories).hasSize(3);
+		assertThat(repositories.get(2).getSnapshots().isEnabled()).isTrue();
 	}
 
 	private ProjectBuildingRequest getProjectBuildingRequest(
