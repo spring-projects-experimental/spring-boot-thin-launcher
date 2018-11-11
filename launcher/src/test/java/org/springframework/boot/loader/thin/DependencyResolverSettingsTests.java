@@ -50,8 +50,6 @@ public class DependencyResolverSettingsTests {
 				.hasSameSizeAs(request.getRemoteRepositories());
 		List<ArtifactRepository> repositories = request.getRemoteRepositories();
 		assertThat(repositories).filteredOnNull("snapshots").isEmpty();
-		// TODO: assert size of repositories (smaller is better for quicker snapshot
-		// checks)
 		assertThat(repositories.get(0).getSnapshots().isEnabled()).isTrue();
 	}
 

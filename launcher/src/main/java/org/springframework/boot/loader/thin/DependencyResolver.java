@@ -21,7 +21,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
@@ -308,8 +307,8 @@ public class DependencyResolver {
 		projectBuildingRequest.setRepositoryMerging(RepositoryMerging.REQUEST_DOMINANT);
 		projectBuildingRequest
 				.setRemoteRepositories(mavenRepositories(settings, session, properties));
-		projectBuildingRequest.getRemoteRepositories()
-				.addAll(mavenRepositories(settings, session));
+		projectBuildingRequest.setRemoteRepositories(mavenRepositories(settings, session,
+				projectBuildingRequest.getRemoteRepositories()));
 		projectBuildingRequest.setRepositorySession(session);
 		projectBuildingRequest.setProcessPlugins(false);
 		projectBuildingRequest.setBuildStartTime(new Date());
@@ -331,9 +330,10 @@ public class DependencyResolver {
 		return projectBuildingRequest;
 	}
 
-	private Collection<? extends ArtifactRepository> mavenRepositories(
-			MavenSettings settings, DefaultRepositorySystemSession session) {
-		List<ArtifactRepository> list = new ArrayList<>();
+	private List<ArtifactRepository> mavenRepositories(MavenSettings settings,
+			DefaultRepositorySystemSession session,
+			List<ArtifactRepository> repositories) {
+		List<ArtifactRepository> list = new ArrayList<>(repositories);
 		for (Profile profile : settings.getActiveProfiles()) {
 			for (Repository repository : profile.getRepositories()) {
 				addRepositoryIfMissing(settings, session, list, repository.getId(),
