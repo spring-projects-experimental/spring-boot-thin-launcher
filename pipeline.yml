@@ -28,7 +28,8 @@ jobs:
       image_resource:
         type: docker-image
         source: 
-          repository: springio/spring-ci-base
+          repository: openjdk
+          label: 8-jdk-alpine
       inputs:
         - name: source
       caches:
