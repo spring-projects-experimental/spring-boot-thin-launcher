@@ -91,6 +91,8 @@ public class PathResolver {
 
 	public List<Archive> resolve(Archive parent, Archive archive, String name,
 			String... profiles) {
+		log.info("Extracting dependencies from: {}, with profiles {}", archive,
+				Arrays.asList(profiles));
 		List<Archive> archives = new ArrayList<>();
 		if (parent != null) {
 			archives.addAll(archives(extract(parent, archive, name, profiles)));
@@ -207,7 +209,8 @@ public class PathResolver {
 	public List<Dependency> extract(Archive archive, String name, String[] profiles) {
 		Properties properties = getProperties(archive, name, profiles);
 		Resource pom = getPom(archive);
-		log.info("Extracting dependencies from: {}", pom);
+		log.info("Extracting dependencies from: {}, with profiles {}", pom,
+				Arrays.asList(profiles));
 		return engine.dependencies(pom, properties);
 	}
 
