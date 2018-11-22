@@ -101,7 +101,7 @@ public class ThinJarLauncherTests {
 		ThinJarLauncher.main(args);
 		assertThat(output.toString())
 				.contains("spring-web-5.0.9.RELEASE.jar" + File.pathSeparator);
-		assertThat(output.toString()).contains("BOOT-INF/classes");
+		assertThat(output.toString()).contains("BOOT-INF" + File.separator + "classes");
 	}
 
 	@Test

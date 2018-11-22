@@ -67,7 +67,8 @@ public class FatMavenIT {
 		started = builder.start();
 		String output = output(started.getInputStream());
 		assertThat(output).doesNotContain("file:");
-		assertThat(output).contains("target/dependency/BOOT-INF/classes");
+		assertThat(output).contains(
+				"target/dependency/BOOT-INF/classes".replace("/", File.separator));
 		assertThat(output).contains("2.0.5.RELEASE");
 		assertThat(output).doesNotContain("actuator");
 		assertThat(output).doesNotContain("spring-cloud");
