@@ -149,15 +149,17 @@ public class ThinJarLauncherTests {
 		deleteRecursively(
 				new File("target/thin/test/repository/org/springframework/spring-core"));
 		deleteRecursively(new File("target/thin/test/repository/junit"));
-		String[] args = new String[] { "--thin.dryrun=true",
+		String[] args = new String[] { "--thin.dryrun=true", "--thin.force=false",
 				"--thin.root=target/thin/test",
 				"--thin.archive=src/test/resources/apps/petclinic-preresolved",
-				"--debug" };
+				"--thin.debug" };
 		ThinJarLauncher.main(args);
 		assertThat(
 				new File("target/thin/test/repository/org/springframework/spring-core"))
 						.exists();
 		assertThat(new File("target/thin/test/repository/junit/junit")).doesNotExist();
+		// assertThat(output.toString())
+		// .contains("Dependencies are pre-computed in properties");
 	}
 
 	@Test

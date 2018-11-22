@@ -351,7 +351,7 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 		String root = environment.resolvePlaceholders("${" + THIN_ROOT + ":}");
 		String offline = environment.resolvePlaceholders("${" + THIN_OFFLINE + ":false}");
 		String force = environment.resolvePlaceholders(
-				"${" + THIN_DRYRUN + ":${" + THIN_FORCE + ":false}}");
+				"${" + THIN_FORCE + ":${" + THIN_DRYRUN + ":false}}");
 		PathResolver resolver = new PathResolver(DependencyResolver.instance());
 		if (StringUtils.hasText(locations)) {
 			resolver.setLocations(locations.split(","));

@@ -196,7 +196,7 @@ public class DependencyResolver {
 			log.info("Dependencies are pre-computed in properties");
 			Model model = new Model();
 			model = ThinPropertiesModelProcessor.process(model, properties);
-			return aetherDependencies(model.getDependencies());
+			return aetherDependencies(model.getDependencies(), properties);
 		}
 		initialize();
 		try {
@@ -240,7 +240,7 @@ public class DependencyResolver {
 	}
 
 	private List<Dependency> aetherDependencies(
-			List<org.apache.maven.model.Dependency> dependencies) {
+			List<org.apache.maven.model.Dependency> dependencies, Properties properties) {
 		List<Dependency> list = new ArrayList<>();
 		for (org.apache.maven.model.Dependency dependency : dependencies) {
 			Artifact artifact = new DefaultArtifact(coordinates(dependency));
@@ -248,7 +248,7 @@ public class DependencyResolver {
 			list.add(converted);
 		}
 		initialize();
-		List<ArtifactResult> result = collectNonTransitive(list);
+		List<ArtifactResult> result = collectNonTransitive(list, properties);
 		list = new ArrayList<>();
 		for (ArtifactResult item : result) {
 			Artifact artifact = item.getArtifact();
@@ -285,8 +285,9 @@ public class DependencyResolver {
 
 	public File resolve(Dependency dependency) {
 		initialize();
-		return collectNonTransitive(Arrays.asList(dependency)).iterator().next()
-				.getArtifact().getFile();
+		// TODO: do we need a version of this with non-empty properties?
+		return collectNonTransitive(Arrays.asList(dependency), new Properties())
+				.iterator().next().getArtifact().getFile();
 	}
 
 	private List<Dependency> runtime(List<Dependency> dependencies) {
@@ -350,7 +351,7 @@ public class DependencyResolver {
 	}
 
 	private List<ArtifactRepository> mavenRepositories(MavenSettings settings,
-			DefaultRepositorySystemSession session, Properties properties) {
+			RepositorySystemSession session, Properties properties) {
 		List<ArtifactRepository> list = new ArrayList<>();
 		if (properties.containsKey(ThinJarLauncher.THIN_ROOT)) {
 			addRepositoryIfMissing(settings, session, list, "local",
@@ -364,7 +365,7 @@ public class DependencyResolver {
 	}
 
 	private List<RemoteRepository> aetherRepositories(MavenSettings settings,
-			DefaultRepositorySystemSession session, Properties properties) {
+			RepositorySystemSession session, Properties properties) {
 		List<RemoteRepository> list = new ArrayList<>();
 		for (ArtifactRepository input : mavenRepositories(settings, session,
 				properties)) {
@@ -405,8 +406,8 @@ public class DependencyResolver {
 	}
 
 	private void addRepositoryIfMissing(MavenSettings settings,
-			DefaultRepositorySystemSession session, List<ArtifactRepository> list,
-			String id, String url, boolean releases, boolean snapshots) {
+			RepositorySystemSession session, List<ArtifactRepository> list, String id,
+			String url, boolean releases, boolean snapshots) {
 		for (ArtifactRepository repo : list) {
 			if (url.equals(repo.getUrl())) {
 				return;
@@ -419,8 +420,8 @@ public class DependencyResolver {
 	}
 
 	private ArtifactRepository repo(MavenSettings settings,
-			DefaultRepositorySystemSession session, String id, String url,
-			boolean releases, boolean snapshots) {
+			RepositorySystemSession session, String id, String url, boolean releases,
+			boolean snapshots) {
 		MavenArtifactRepository repository = new MavenArtifactRepository();
 		repository.setLayout(new DefaultRepositoryLayout());
 		repository.setId(id);
@@ -452,7 +453,7 @@ public class DependencyResolver {
 	}
 
 	private org.apache.maven.repository.Proxy proxy(MavenSettings settings,
-			DefaultRepositorySystemSession session, RemoteRepository remote,
+			RepositorySystemSession session, RemoteRepository remote,
 			ProxySelector proxy) {
 		Proxy config = proxy.getProxy(remote);
 		if (config == null) {
@@ -568,11 +569,14 @@ public class DependencyResolver {
 		return new File(System.getProperty("user.home"), ".m2");
 	}
 
-	private List<ArtifactResult> collectNonTransitive(List<Dependency> dependencies) {
+	private List<ArtifactResult> collectNonTransitive(List<Dependency> dependencies,
+			Properties properties) {
 		try {
-			List<ArtifactRequest> artifactRequests = getArtifactRequests(dependencies);
-			List<ArtifactResult> result = this.repositorySystem
-					.resolveArtifacts(createSession(new Properties()), artifactRequests);
+			DefaultRepositorySystemSession session = createSession(properties);
+			List<ArtifactRequest> artifactRequests = getArtifactRequests(dependencies,
+					session);
+			List<ArtifactResult> result = this.repositorySystem.resolveArtifacts(session,
+					artifactRequests);
 			return result;
 		}
 		catch (Exception ex) {
@@ -580,20 +584,14 @@ public class DependencyResolver {
 		}
 	}
 
-	private List<ArtifactRequest> getArtifactRequests(List<Dependency> dependencies) {
+	private List<ArtifactRequest> getArtifactRequests(List<Dependency> dependencies,
+			RepositorySystemSession session) {
 		List<ArtifactRequest> list = new ArrayList<>();
 		for (Dependency dependency : dependencies) {
 			ArtifactRequest request = new ArtifactRequest(dependency.getArtifact(), null,
 					null);
-			DefaultRepositorySystemSession session;
-			try {
-				session = createSession(new Properties());
-				request.setRepositories(
-						aetherRepositories(settings, session, new Properties()));
-			}
-			catch (NoLocalRepositoryManagerException e) {
-				throw new IllegalStateException("No local repository manager", e);
-			}
+			request.setRepositories(
+					aetherRepositories(settings, session, new Properties()));
 			list.add(request);
 		}
 		return list;
