@@ -232,42 +232,26 @@ class ThinPropertiesModelProcessor extends DefaultModelProcessor {
 				+ ", expected format is <groupId>:<artifactId>[:<extension>[:<classifier>]][:<version>]");
 		String groupId = m.group(1);
 		String artifactId = m.group(2);
-		String version;
+		String version = null;
 		String extension = DEFAULT_EXTENSION;
 		String classifier = EMPTY_CLASSIFIER;
+		if (StringUtils.hasLength(m.group(4))) {
+			extension = m.group(4);
+		}
+		if (StringUtils.hasLength(m.group(8))) {
+			version = m.group(8);
+		}
 		if (StringUtils.hasLength(m.group(6))) {
-			if (StringUtils.hasLength(m.group(4))) {
-				extension = m.group(4);
-			}
 			classifier = m.group(6);
-			if (StringUtils.hasLength(m.group(8))) {
-				version = m.group(8);
-			}
-			else {
-				if (isVersion(classifier)) {
-					version = classifier;
-					classifier = "";
-				}
-				else {
-					version = null;
-				}
+			if (version == null && isVersion(classifier)) {
+				version = classifier;
+				classifier = "";
 			}
 		}
 		else {
-			if (StringUtils.hasLength(m.group(4))) {
-				extension = m.group(4);
-			}
-			if (StringUtils.hasLength(m.group(8))) {
-				version = m.group(8);
-			}
-			else {
-				if (isVersion(extension)) {
-					version = extension;
-					extension = "jar";
-				}
-				else {
-					version = null;
-				}
+			if (version == null && isVersion(extension)) {
+				version = extension;
+				extension = DEFAULT_EXTENSION;
 			}
 		}
 		return new DefaultArtifact(groupId, artifactId, classifier, extension, version);
