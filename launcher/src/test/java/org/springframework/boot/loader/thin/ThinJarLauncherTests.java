@@ -19,6 +19,7 @@ import java.io.File;
 import java.util.Collections;
 import java.util.Properties;
 
+import org.eclipse.aether.artifact.DefaultArtifact;
 import org.eclipse.aether.graph.Dependency;
 import org.junit.Rule;
 import org.junit.Test;
@@ -46,6 +47,34 @@ public class ThinJarLauncherTests {
 
 	@Rule
 	public OutputCapture output = new OutputCapture();
+
+	@Test
+	public void coords() throws Exception {
+		String coords = ThinJarLauncher
+				.coordinates(new DefaultArtifact("com.example:foo:1.0"));
+		assertThat(coords).isEqualTo("com.example:foo:1.0");
+	}
+
+	@Test
+	public void classifier() throws Exception {
+		String coords = ThinJarLauncher
+				.coordinates(new DefaultArtifact("com.example:foo:jar:duplicate:1.0"));
+		assertThat(coords).isEqualTo("com.example:foo:jar:duplicate:1.0");
+	}
+
+	@Test
+	public void extension() throws Exception {
+		String coords = ThinJarLauncher
+				.coordinates(new DefaultArtifact("com.example:foo:zip:1.0"));
+		assertThat(coords).isEqualTo("com.example:foo:zip:1.0");
+	}
+
+	@Test
+	public void extensionAndClassifier() throws Exception {
+		String coords = ThinJarLauncher
+				.coordinates(new DefaultArtifact("com.example:foo:zip:duplicate:1.0"));
+		assertThat(coords).isEqualTo("com.example:foo:zip:duplicate:1.0");
+	}
 
 	@Test
 	public void emptyProperties() throws Exception {

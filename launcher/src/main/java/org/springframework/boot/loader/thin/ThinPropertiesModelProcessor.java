@@ -224,7 +224,7 @@ class ThinPropertiesModelProcessor extends DefaultModelProcessor {
 		return dependency;
 	}
 
-	private static DefaultArtifact artifact(String coordinates) {
+	static DefaultArtifact artifact(String coordinates) {
 		Pattern p = Pattern
 				.compile("([^: ]+):([^: ]+)(:([^: ]*)(:([^: ]+))?)?(:([^: ]+))?");
 		Matcher m = p.matcher(coordinates);
@@ -240,12 +240,43 @@ class ThinPropertiesModelProcessor extends DefaultModelProcessor {
 				extension = m.group(4);
 			}
 			classifier = m.group(6);
-			version = StringUtils.hasLength(m.group(8)) ? m.group(8) : null;
+			if (StringUtils.hasLength(m.group(8))) {
+				version = m.group(8);
+			}
+			else {
+				if (isVersion(classifier)) {
+					version = classifier;
+					classifier = "";
+				}
+				else {
+					version = null;
+				}
+			}
 		}
 		else {
-			version = StringUtils.hasLength(m.group(4)) ? m.group(4) : null;
+			if (StringUtils.hasLength(m.group(4))) {
+				extension = m.group(4);
+			}
+			if (StringUtils.hasLength(m.group(8))) {
+				version = m.group(8);
+			}
+			else {
+				if (isVersion(extension)) {
+					version = extension;
+					extension = "jar";
+				}
+				else {
+					version = null;
+				}
+			}
 		}
 		return new DefaultArtifact(groupId, artifactId, classifier, extension, version);
+	}
+
+	private static boolean isVersion(String label) {
+		// Not a classifier or an extension (which are usually just simple alphabetic
+		// strings)
+		return label.endsWith("-SNAPSHOT") || !label.matches("[a-zA-Z]+[0-9]*");
 	}
 
 }

@@ -32,6 +32,8 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
 
+import org.springframework.util.StringUtils;
+
 /**
  * Resolves the dependencies for a thin jar artifact and outputs a thin properties file.
  * 
@@ -139,9 +141,17 @@ public class PropertiesMojo extends ThinJarMojo {
 		return coordinates(dependency, this.compute);
 	}
 
-	private String coordinates(Artifact dependency, boolean withVersion) {
-		return dependency.getGroupId() + ":" + dependency.getArtifactId()
-				+ (withVersion ? ":" + dependency.getVersion() : "");
+	private String coordinates(Artifact artifact, boolean withVersion) {
+		// group:artifact:extension:classifier:version
+		String classifier = artifact.getClassifier();
+		String extension = artifact.getType();
+		return artifact.getGroupId() + ":" + artifact.getArtifactId()
+				+ (StringUtils.hasText(extension)
+						&& (!"jar".equals(extension) || StringUtils.hasText(classifier))
+								? ":" + extension
+								: "")
+				+ (StringUtils.hasText(classifier) ? ":" + classifier : "")
+				+ (withVersion ? ":" + artifact.getVersion() : "");
 	}
 
 }

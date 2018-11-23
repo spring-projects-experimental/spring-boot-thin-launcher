@@ -226,9 +226,10 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 		String classifier = artifact.getClassifier();
 		String extension = artifact.getExtension();
 		return artifact.getGroupId() + ":" + artifact.getArtifactId()
-				+ (StringUtils.hasText(extension) && !"jar".equals(extension)
-						? ":" + extension
-						: "")
+				+ (StringUtils.hasText(extension)
+						&& (!"jar".equals(extension) || StringUtils.hasText(classifier))
+								? ":" + extension
+								: "")
 				+ (StringUtils.hasText(classifier) ? ":" + classifier : "") + ":"
 				+ artifact.getVersion();
 	}

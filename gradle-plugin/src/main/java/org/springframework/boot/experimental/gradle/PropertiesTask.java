@@ -78,11 +78,24 @@ public class PropertiesTask extends DefaultTask {
 					.getResolvedArtifacts()) {
 				ModuleVersionIdentifier artifactId = artifact.getModuleVersion().getId();
 				properties.setProperty("dependencies." + artifactId.getName(),
-						artifactId.getGroup() + ":" + artifactId.getName() + ":"
-								+ artifactId.getVersion());
+						coordinates(artifact, true));
 			}
 		}
 		return properties;
+	}
+
+	private String coordinates(ResolvedArtifact artifact, boolean withVersion) {
+		// group:artifact:extension:classifier:version
+		String classifier = artifact.getClassifier();
+		String extension = artifact.getType();
+		ModuleVersionIdentifier artifactId = artifact.getModuleVersion().getId();
+		return artifactId.getGroup() + ":" + artifactId.getName()
+				+ (StringUtils.hasText(extension)
+						&& (!"jar".equals(extension) || StringUtils.hasText(classifier))
+								? ":" + extension
+								: "")
+				+ (StringUtils.hasText(classifier) ? ":" + classifier : "")
+				+ (withVersion ? ":" + artifactId.getVersion() : "");
 	}
 
 	private String getFileName() {
@@ -113,6 +126,7 @@ public class PropertiesTask extends DefaultTask {
 	/**
 	 * The name of the thin properties file (defaults to "thin").
 	 */
+	@Override
 	public void setName(String name) {
 		this.name = name;
 	}
