@@ -19,6 +19,7 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -310,6 +311,8 @@ public class DependencyResolver {
 				.setRemoteRepositories(mavenRepositories(settings, session, properties));
 		projectBuildingRequest.setRemoteRepositories(mavenRepositories(settings, session,
 				projectBuildingRequest.getRemoteRepositories()));
+		projectBuildingRequest.setLocalRepository(
+				localArtifactRepository(properties, settings, session));
 		projectBuildingRequest.setRepositorySession(session);
 		projectBuildingRequest.setProcessPlugins(false);
 		projectBuildingRequest.setBuildStartTime(new Date());
@@ -355,7 +358,8 @@ public class DependencyResolver {
 		List<ArtifactRepository> list = new ArrayList<>();
 		if (properties.containsKey(ThinJarLauncher.THIN_ROOT)) {
 			addRepositoryIfMissing(settings, session, list, "local",
-					"file://" + getM2RepoDirectory(), true, true);
+					"file://" + localRepositoryPath(new Properties(), settings), true,
+					true);
 		}
 		addRepositoryIfMissing(settings, session, list, "spring-snapshots",
 				"https://repo.spring.io/libs-snapshot", true, true);
@@ -527,11 +531,30 @@ public class DependencyResolver {
 	}
 
 	private LocalRepository localRepository(Properties properties) {
+		return new LocalRepository(localRepositoryPath(properties, settings));
+	}
+
+	private ArtifactRepository localArtifactRepository(Properties properties,
+			MavenSettings settings, DefaultRepositorySystemSession session) {
+		try {
+			return repo(settings, session, "cache",
+					localRepositoryPath(properties, settings).toURI().toURL().toString(),
+					true, true);
+		}
+		catch (MalformedURLException e) {
+			throw new IllegalStateException("Cannot locate local repo", e);
+		}
+	}
+
+	private File localRepositoryPath(Properties properties, MavenSettings settings) {
+		if (settings != null && StringUtils.hasText(settings.getLocalRepository())) {
+			return new File(settings.getLocalRepository());
+		}
 		if (!properties.containsKey("thin.root")) {
-			return new LocalRepository(getM2RepoDirectory());
+			return getM2RepoDirectory();
 		}
 		String root = properties.getProperty("thin.root");
-		return new LocalRepository(StringUtils.cleanPath(root + "/repository"));
+		return new File(StringUtils.cleanPath(root + "/repository"));
 	}
 
 	public Model readModel(Resource resource) {

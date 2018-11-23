@@ -63,6 +63,16 @@ public class DependencyResolverSettingsTests {
 	}
 
 	@Test
+	public void testLocalRepository() throws Exception {
+		DependencyResolver.close();
+		System.setProperty("user.home", "src/test/resources/settings/local");
+		DependencyResolver resolver = DependencyResolver.instance();
+		ProjectBuildingRequest request = getProjectBuildingRequest(resolver);
+		assertThat(request.getLocalRepository().getUrl())
+				.contains("target/thin/test/repository");
+	}
+
+	@Test
 	public void testSnaphotsEnabledByDefault() throws Exception {
 		DependencyResolver.close();
 		System.setProperty("user.home",
