@@ -143,6 +143,17 @@ public class ThinJarLauncherTests {
 	}
 
 	@Test
+	public void twoClassifiers() throws Exception {
+		String[] args = new String[] { "--thin.classpath=properties",
+				"--thin.archive=src/test/resources/apps/classifier" };
+		ThinJarLauncher.main(args);
+		assertThat(output.toString()).contains(
+				"dependencies.spring-boot-test=org.springframework.boot:spring-boot-test:2.1.0.RELEASE\n");
+		assertThat(output.toString()).contains(
+				"dependencies.spring-boot-test.tests=org.springframework.boot:spring-boot-test:jar:tests:2.1.0.RELEASE\n");
+	}
+
+	@Test
 	public void thinRoot() throws Exception {
 		deleteRecursively(
 				new File("target/thin/test/repository/org/springframework/spring-core"));

@@ -139,6 +139,15 @@ public class DependencyResolverTests {
 	}
 
 	@Test
+	public void classifier() throws Exception {
+		Resource resource = new ClassPathResource("apps/classifier/pom.xml");
+		List<Dependency> dependencies = resolver.dependencies(resource);
+		assertThat(dependencies.size()).isGreaterThan(2);
+		assertThat(dependencies).filteredOn("artifact.artifactId", "spring-boot-test")
+				.hasSize(2);
+	}
+
+	@Test
 	public void excludeLast() throws Exception {
 		Resource resource = new ClassPathResource("apps/excludelast/pom.xml");
 		List<Dependency> dependencies = resolver.dependencies(resource,
