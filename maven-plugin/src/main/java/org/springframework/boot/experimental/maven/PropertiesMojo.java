@@ -90,7 +90,7 @@ public class PropertiesMojo extends ThinJarMojo {
 			for (Artifact artifact : artifacts) {
 				if ("runtime".equals(artifact.getScope())
 						|| "compile".equals(artifact.getScope())) {
-					props.setProperty("dependencies." + artifact.getArtifactId(),
+					props.setProperty("dependencies." + key(artifact),
 							coordinates(artifact));
 				}
 			}
@@ -106,6 +106,14 @@ public class PropertiesMojo extends ThinJarMojo {
 
 		getLog().info("Properties ready in: " + outputDirectory);
 
+	}
+
+	private String key(Artifact dependency) {
+		String key = dependency.getArtifactId();
+		if (!StringUtils.isEmpty(dependency.getClassifier())) {
+			key = key + "." + dependency.getClassifier();
+		}
+		return key;
 	}
 
 	private void boms(MavenProject project, Properties props) {

@@ -76,12 +76,19 @@ public class PropertiesTask extends DefaultTask {
 		if (configuration != null) {
 			for (ResolvedArtifact artifact : configuration.getResolvedConfiguration()
 					.getResolvedArtifacts()) {
-				ModuleVersionIdentifier artifactId = artifact.getModuleVersion().getId();
-				properties.setProperty("dependencies." + artifactId.getName(),
+				properties.setProperty("dependencies." + key(artifact),
 						coordinates(artifact, true));
 			}
 		}
 		return properties;
+	}
+
+	private String key(ResolvedArtifact dependency) {
+		String key = dependency.getModuleVersion().getId().getName();
+		if (!StringUtils.isEmpty(dependency.getClassifier())) {
+			key = key + "." + dependency.getClassifier();
+		}
+		return key;
 	}
 
 	private String coordinates(ResolvedArtifact artifact, boolean withVersion) {
