@@ -127,6 +127,8 @@ class ThinPropertiesModelProcessor extends DefaultModelProcessor {
 								dependency.getArtifactId())
 								&& ObjectUtils.nullSafeEquals(artifact.getGroupId(),
 										dependency.getGroupId())
+								&& ObjectUtils.nullSafeEquals(artifact.getClassifier(),
+										dependency.getClassifier())
 								&& artifact.getVersion() != null) {
 							dependency.setVersion(
 									StringUtils.hasLength(artifact.getVersion())

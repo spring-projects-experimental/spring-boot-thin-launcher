@@ -104,6 +104,20 @@ public class DependencyResolverTests {
 	}
 
 	@Test
+	public void preresolvedClassifier() throws Exception {
+		Resource resource = new ClassPathResource("apps/preresolved-classifier/pom.xml");
+		List<Dependency> dependencies = resolver.dependencies(resource,
+				PropertiesLoaderUtils.loadProperties(new ClassPathResource(
+						"apps/preresolved-classifier/META-INF/thin.properties")));
+		// System.err.println(dependencies);
+		assertThat(dependencies.size()).isEqualTo(2);
+		assertThat(dependencies).filteredOn("artifact.artifactId", "spring-boot-test")
+				.first().is(version("2.1.0.RELEASE"));
+		assertThat(dependencies).filteredOn("artifact.classifier", "tests").first()
+				.is(resolved());
+	}
+
+	@Test
 	public void pomWithBom() throws Exception {
 		Resource resource = new ClassPathResource("apps/cloud/pom.xml");
 		List<Dependency> dependencies = resolver.dependencies(resource);
