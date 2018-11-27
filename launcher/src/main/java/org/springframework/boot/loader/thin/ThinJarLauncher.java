@@ -214,19 +214,12 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 
 	private String properties(List<Dependency> dependencies) {
 		StringBuilder builder = new StringBuilder("computed=true\n");
+		int counter = 1;
 		for (Dependency dependency : dependencies) {
-			builder.append("dependencies." + key(dependency) + "="
+			builder.append("dependencies." + counter++ + "="
 					+ coordinates(dependency.getArtifact()) + "\n");
 		}
 		return builder.toString();
-	}
-
-	private String key(Dependency dependency) {
-		String key = dependency.getArtifact().getArtifactId();
-		if (!StringUtils.isEmpty(dependency.getArtifact().getClassifier())) {
-			key = key + "." + dependency.getArtifact().getClassifier();
-		}
-		return key;
 	}
 
 	static String coordinates(Artifact artifact) {
