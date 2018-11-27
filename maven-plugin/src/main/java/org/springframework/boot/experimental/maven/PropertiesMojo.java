@@ -36,7 +36,7 @@ import org.springframework.util.StringUtils;
 
 /**
  * Resolves the dependencies for a thin jar artifact and outputs a thin properties file.
- * 
+ *
  * @author Dave Syer
  *
  */
@@ -90,7 +90,7 @@ public class PropertiesMojo extends ThinJarMojo {
 			for (Artifact artifact : artifacts) {
 				if ("runtime".equals(artifact.getScope())
 						|| "compile".equals(artifact.getScope())) {
-					props.setProperty("dependencies." + key(artifact),
+					props.setProperty("dependencies." + key(artifact, props),
 							coordinates(artifact));
 				}
 			}
@@ -108,10 +108,15 @@ public class PropertiesMojo extends ThinJarMojo {
 
 	}
 
-	private String key(Artifact dependency) {
+	private String key(Artifact dependency, Properties props) {
 		String key = dependency.getArtifactId();
 		if (!StringUtils.isEmpty(dependency.getClassifier())) {
 			key = key + "." + dependency.getClassifier();
+		}
+
+		int counter = 1;
+		while (props.get(key) != null) {
+			key = key + "." + counter++;
 		}
 		return key;
 	}
