@@ -143,7 +143,7 @@ public class ThinConverterApplication {
 				"\nConverts a thin executable jar to a Spring Boot fat jar with the same name but with '-exec' suffix.\n\n"
 						+ "Usage: run a thin jar and make this one the --thin.library for it. E.g. \n\n"
 						+ "    $ java -jar myapp.jar --thin.dryrun --thin.root=target/thin/root\n"
-						+ "    $ java -jar myapp.jar --thin.library=org.springframework.boot.experimental:spring-boot-thin-converter:1.0.19.RELEASE\n"
+						+ "    $ java -jar myapp.jar --thin.library=org.springframework.boot.experimental:spring-boot-thin-converter:1.0.20.BUILD-SNAPSHOT\n"
 						+ "    $ java -jar myapp-exec.jar\n\n" + //
 						"  Optional args:\n\n" //
 						+ "    repository - location of Maven repository cache (defaults to target/thin/root/repository)\n"
