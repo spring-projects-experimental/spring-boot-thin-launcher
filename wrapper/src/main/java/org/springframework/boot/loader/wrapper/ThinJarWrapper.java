@@ -90,7 +90,7 @@ public class ThinJarWrapper {
 
 	private static final String DEFAULT_LAUNCHER_CLASS = "org.springframework.boot.loader.thin.ThinJarLauncher";
 
-	private static final String DEFAULT_LIBRARY = "org.springframework.boot.experimental:spring-boot-thin-launcher:jar:exec:1.0.18.BUILD-SNAPSHOT";
+	private static final String DEFAULT_LIBRARY = "org.springframework.boot.experimental:spring-boot-thin-launcher:jar:exec:1.0.18.RELEASE";
 
 	private Properties properties;
 
