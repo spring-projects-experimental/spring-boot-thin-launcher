@@ -6,7 +6,14 @@ The thin-launcher provides its own custom layout for the Spring Boot
 plugins. If this layout is used then the jar built by Spring Boot will
 be executable and thin.
 
-Build a Spring Boot application and add the layout. In Maven this
+NOTE: if you are using a snapshot version of the thin launcher you
+either need to build it locally or include the snapshot repository
+declarations. You can use https://start.spring.io to find suitable
+repository declarations for Maven and Gradle, or look at the samples
+in this project.
+
+
+With Maven, build a Spring Boot application and add the layout. This
 means adding it to the Spring Boot plugin declaration:
 
 ```xml
@@ -24,13 +31,13 @@ means adding it to the Spring Boot plugin declaration:
 </plugin>
 ```
 
-and in Gradle for Spring Boot up to 1.5.x:
+and in Gradle for Spring Boot up to 1.5.x (you can use older versions of Spring Boot for the app, but the plugin has to be 1.5.x or later):
 
 ```groovy
 buildscript {
 	ext {
 		springBootVersion = '1.5.6.RELEASE'
-		wrapperVersion = '1.0.18.BUILD-SNAPSHOT'
+		wrapperVersion = '1.0.17.RELEASE'
 	}
 	repositories {
 		mavenLocal()
@@ -52,7 +59,7 @@ and for Spring Boot 2.0.x:
 buildscript {
 	ext {
 		springBootVersion = '2.0.1.RELEASE'
-		wrapperVersion = '1.0.18.BUILD-SNAPSHOT'
+		wrapperVersion = '1.0.17.RELEASE'
 	}
 	repositories {
 		mavenLocal()
@@ -67,31 +74,6 @@ apply plugin: 'maven'
 apply plugin: 'io.spring.dependency-management'
 apply plugin: 'org.springframework.boot'
 apply plugin: 'org.springframework.boot.experimental.thin-launcher'
-```
-
-If you are using the 1.0.10.RELEASE version of the plugin, you need to create a `thinJar` task manually (and `thinResolve` will not work). Example:
-
-```groovy
-configurations {
-	thinLauncher
-}
-
-dependencies {
-	compile('org.springframework.boot:spring-boot-starter')
-	testCompile('org.springframework.boot:spring-boot-starter-test')
-	thinLauncher('org.springframework.boot.experimental:spring-boot-thin-wrapper:1.0.10.RELEASE')
-}
-
-task thinJar(type: Jar) {
-	from zipTree(configurations.thinLauncher.singleFile)
-	from(sourceSets.main.runtimeClasspath.filter { it.directory })
-	doFirst {
-		manifest {
-			attributes['Main-Class'] = 'org.springframework.boot.loader.wrapper.ThinJarWrapper'
-			attributes['Start-Class'] = bootJar.mainClassName
-		}
-	}
-}
 ```
 
 In Gradle you also need to generate a `pom.xml` or a `thin.properties` (unless you want to maintain it by hand). A `pom.xml` will be generated automatically by the "thinPom" task in the Thin Gradle plugin. It does this by calling out to the maven plugin and the dependency management plugin; the maven plugin is always present, and the dependency management plugin is present if you are using the Spring Boot plugin. To generate a `pom.xml` remember to apply the maven and Thin Gradle plugins.
