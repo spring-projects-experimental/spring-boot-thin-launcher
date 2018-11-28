@@ -20,7 +20,9 @@ import java.io.File;
 import java.net.URL;
 import java.security.AccessControlException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import org.eclipse.aether.artifact.Artifact;
@@ -213,21 +215,36 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 	}
 
 	private String properties(List<Dependency> dependencies) {
-		StringBuilder builder = new StringBuilder("computed=true\n");
-		for (Dependency dependency : dependencies) {
-			builder.append("dependencies." + key(dependency) + "="
-					+ coordinates(dependency.getArtifact()) + "\n");
+	    Map<String,String> props = new HashMap<>();
+	    props.put("computed",  "true");
+        for (Dependency dependency : dependencies) {
+            props.put(key(dependency.getArtifact(), props),
+                coordinates(dependency.getArtifact()));
+        }
+		StringBuilder builder = new StringBuilder();
+		for (String key: props.keySet()) {
+		    builder.append("dependencies.").append(key).append('=')
+		           .append(props.get(key))
+		           .append("\n");
 		}
 		return builder.toString();
 	}
 
-	private String key(Dependency dependency) {
-		String key = dependency.getArtifact().getArtifactId();
-		if (!StringUtils.isEmpty(dependency.getArtifact().getClassifier())) {
-			key = key + "." + dependency.getArtifact().getClassifier();
-		}
-		return key;
-	}
+    private String key(Artifact dependency, Map<String,String> props) {
+        String key = dependency.getArtifactId();
+        if (!StringUtils.isEmpty(dependency.getClassifier())) {
+            key = key + "." + dependency.getClassifier();
+        }
+
+        int counter = 1;
+        do {
+            if (props.get(key) == null) {
+                break;
+            }
+            key = key + "." + counter++;
+        }while(true);
+        return key;
+    }
 
 	static String coordinates(Artifact artifact) {
 		// group:artifact:extension:classifier:version

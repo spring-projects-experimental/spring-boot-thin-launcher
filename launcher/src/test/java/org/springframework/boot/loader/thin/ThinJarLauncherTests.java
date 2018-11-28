@@ -153,6 +153,18 @@ public class ThinJarLauncherTests {
 				"dependencies.spring-boot-test.tests=org.springframework.boot:spring-boot-test:jar:tests:2.1.0.RELEASE\n");
 	}
 
+    @Test
+    public void sameArtifactNames() throws Exception {
+        String[] args = new String[] { "--thin.classpath=properties",
+                "--thin.archive=src/test/resources/apps/same-artifact-names" };
+        ThinJarLauncher.main(args);
+        assertThat(output.toString()).contains(
+                "dependencies.jersey-client=org.glassfish.jersey.core:jersey-client:2.27\n");
+        assertThat(output.toString()).contains(
+                "dependencies.jersey-client.1=com.sun.jersey:jersey-client:1.19.1\n");
+    }
+
+
 	@Test
 	public void thinRoot() throws Exception {
 		deleteRecursively(

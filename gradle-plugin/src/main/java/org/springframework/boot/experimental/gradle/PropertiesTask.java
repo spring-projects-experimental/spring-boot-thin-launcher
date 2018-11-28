@@ -36,7 +36,7 @@ import org.springframework.util.StringUtils;
  * some time on startup to have the dependencies pre-computed, but it makes it less
  * flexible, so this task is optional. If you enable it, you probably want to make it a
  * dependency of the main java plugin task so that it runs automatically on build.
- * 
+ *
  * @author Andy Wilkinson
  * @author Dave Syer
  *
@@ -76,19 +76,26 @@ public class PropertiesTask extends DefaultTask {
 		if (configuration != null) {
 			for (ResolvedArtifact artifact : configuration.getResolvedConfiguration()
 					.getResolvedArtifacts()) {
-				properties.setProperty("dependencies." + key(artifact),
+				properties.setProperty("dependencies." + key(artifact, properties),
 						coordinates(artifact, true));
 			}
 		}
 		return properties;
 	}
 
-	private String key(ResolvedArtifact dependency) {
+	private String key(ResolvedArtifact dependency, Properties props) {
 		String key = dependency.getModuleVersion().getId().getName();
 		if (!StringUtils.isEmpty(dependency.getClassifier())) {
 			key = key + "." + dependency.getClassifier();
 		}
-		return key;
+        int counter = 1;
+        do {
+            if (props.get(key) == null) {
+                break;
+            }
+            key = key + "." + counter++;
+        }while(true);
+        return key;
 	}
 
 	private String coordinates(ResolvedArtifact artifact, boolean withVersion) {
@@ -140,7 +147,7 @@ public class PropertiesTask extends DefaultTask {
 
 	/**
 	 * The profile to use for the generated properties (default null)
-	 * 
+	 *
 	 * @param profile the value of the profile
 	 */
 	public void setProfile(String profile) {
