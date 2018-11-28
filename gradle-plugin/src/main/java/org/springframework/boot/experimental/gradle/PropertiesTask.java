@@ -89,7 +89,7 @@ public class PropertiesTask extends DefaultTask {
 			key = key + "." + dependency.getClassifier();
 		}
 		int counter = 1;
-		while (props.get(key) != null) {
+		while (props.get("dependencies." + key) != null) {
 			key = key + "." + counter++;
 		}
 		return key;

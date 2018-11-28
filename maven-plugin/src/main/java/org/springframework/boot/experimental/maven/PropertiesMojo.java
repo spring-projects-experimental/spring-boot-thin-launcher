@@ -115,7 +115,7 @@ public class PropertiesMojo extends ThinJarMojo {
 		}
 
 		int counter = 1;
-		while (props.get(key) != null) {
+		while (props.get("dependencies." + key) != null) {
 			key = key + "." + counter++;
 		}
 		return key;
