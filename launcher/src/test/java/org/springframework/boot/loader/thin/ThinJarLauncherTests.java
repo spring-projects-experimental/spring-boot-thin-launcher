@@ -139,7 +139,7 @@ public class ThinJarLauncherTests {
 				"--thin.archive=src/test/resources/apps/basic" };
 		ThinJarLauncher.main(args);
 		assertThat(output.toString()).contains(
-				"dependencies.25=org.springframework:spring-web:4.3.3.RELEASE\n");
+				"dependencies.spring-web=org.springframework:spring-web:4.3.3.RELEASE\n");
 	}
 
 	@Test
@@ -148,9 +148,9 @@ public class ThinJarLauncherTests {
 				"--thin.archive=src/test/resources/apps/classifier" };
 		ThinJarLauncher.main(args);
 		assertThat(output.toString()).contains(
-				"dependencies.1=org.springframework.boot:spring-boot-test:2.1.0.RELEASE\n");
+				"dependencies.spring-boot-test=org.springframework.boot:spring-boot-test:2.1.0.RELEASE\n");
 		assertThat(output.toString()).contains(
-				"dependencies.9=org.springframework.boot:spring-boot-test:jar:tests:2.1.0.RELEASE\n");
+				"dependencies.spring-boot-test.tests=org.springframework.boot:spring-boot-test:jar:tests:2.1.0.RELEASE\n");
 	}
 
 	@Test
