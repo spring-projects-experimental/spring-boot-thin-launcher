@@ -307,6 +307,29 @@ public class PathResolver {
 	}
 
 	private void merge(Properties props, Properties added) {
+		if (!props.isEmpty()) {
+			for (Object key : new HashSet<>(added.keySet())) {
+				String name = (String) key;
+				if (name.startsWith("dependencies.")) {
+					// Later (higher priority) profile dependencies trump earlier
+					// exclusions
+					// with the same key
+					String artifact = name.substring("dependencies.".length());
+					if (props.containsKey("exclusions." + artifact)) {
+						props.remove("exclusions." + artifact);
+					}
+				}
+				else if (name.startsWith("exclusions.")) {
+					// Later (higher priority) profile exclusions trump earlier
+					// dependencies
+					// with the same key
+					String artifact = name.substring("exclusions.".length());
+					if (props.containsKey("dependencies." + artifact)) {
+						props.remove("dependencies." + artifact);
+					}
+				}
+			}
+		}
 		if ("true".equals(props.get("computed"))) {
 			if (!"true".equals(added.get("computed"))) {
 				// Ensure there are no added dependencies since they are not computed

@@ -97,6 +97,20 @@ public class PathResolverTests {
 	}
 
 	@Test
+	public void propertiesExcludeThenInclude() throws Exception {
+		Archive parent = new ExplodedArchive(
+				new File("src/test/resources/apps/exclude-include"));
+		Properties result = ReflectionTestUtils.invokeMethod(resolver, "getProperties",
+				parent, "thin", new String[] {});
+		assertThat(result).doesNotContainKey("dependencies.spring-boot-starter-actuator");
+		assertThat(result).containsKey("exclusions.spring-boot-starter-actuator");
+		result = ReflectionTestUtils.invokeMethod(resolver, "getProperties", parent,
+				"thin", new String[] { "actr" });
+		assertThat(result).doesNotContainKey("exclusions.spring-boot-starter-actuator");
+		assertThat(result).containsKey("dependencies.spring-boot-starter-actuator");
+	}
+
+	@Test
 	public void propertiesPreresolvedMixed() throws Exception {
 		Archive parent = new ExplodedArchive(
 				new File("src/test/resources/apps/preresolved"));
