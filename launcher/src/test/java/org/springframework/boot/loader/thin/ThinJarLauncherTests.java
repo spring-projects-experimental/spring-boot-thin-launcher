@@ -153,17 +153,16 @@ public class ThinJarLauncherTests {
 				"dependencies.spring-boot-test.tests=org.springframework.boot:spring-boot-test:jar:tests:2.1.0.RELEASE\n");
 	}
 
-    @Test
-    public void sameArtifactNames() throws Exception {
-        String[] args = new String[] { "--thin.classpath=properties",
-                "--thin.archive=src/test/resources/apps/same-artifact-names" };
-        ThinJarLauncher.main(args);
-        assertThat(output.toString()).contains(
-                "dependencies.jersey-client=org.glassfish.jersey.core:jersey-client:2.27\n");
-        assertThat(output.toString()).contains(
-                "dependencies.jersey-client.1=com.sun.jersey:jersey-client:1.19.1\n");
-    }
-
+	@Test
+	public void sameArtifactNames() throws Exception {
+		String[] args = new String[] { "--thin.classpath=properties",
+				"--thin.archive=src/test/resources/apps/same-artifact-names" };
+		ThinJarLauncher.main(args);
+		assertThat(output.toString()).contains(
+				"dependencies.jersey-client=org.glassfish.jersey.core:jersey-client:2.27\n");
+		assertThat(output.toString()).contains(
+				"dependencies.jersey-client.1=com.sun.jersey:jersey-client:1.19.1\n");
+	}
 
 	@Test
 	public void thinRoot() throws Exception {
@@ -306,6 +305,34 @@ public class ThinJarLauncherTests {
 		assertThat(new File("target/thin/test/repository").exists()).isTrue();
 		assertThat(new File("target/thin/test/repository/org/springframework/spring-core")
 				.exists()).isTrue();
+	}
+
+	@Test
+	public void settingsReadFromRootWithThinRoot() throws Exception {
+		DependencyResolver.close();
+		String home = System.getProperty("user.home");
+		System.setProperty("user.home",
+				new File("src/test/resources/settings/local").getAbsolutePath());
+		try {
+			deleteRecursively(new File(
+					"target/thin/other/repository/org/springframework/spring-core"));
+			deleteRecursively(new File(
+					"target/thin/test/repository/org/springframework/spring-core"));
+			String[] args = new String[] { "--thin.dryrun=true",
+					"--thin.root=target/thin/other",
+					"--thin.archive=src/test/resources/apps/snapshots-with-repos",
+					"--debug" };
+			ThinJarLauncher.main(args);
+		}
+		finally {
+			System.setProperty("user.home", home);
+		}
+		assertThat(new File("target/thin/other/repository").exists()).isTrue();
+		assertThat(new File("target/thin/test/repository/org/springframework/spring-core")
+				.exists()).isFalse();
+		assertThat(
+				new File("target/thin/other/repository/org/springframework/spring-core")
+						.exists()).isTrue();
 	}
 
 	@Test

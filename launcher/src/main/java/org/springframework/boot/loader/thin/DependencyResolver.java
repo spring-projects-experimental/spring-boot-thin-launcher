@@ -111,6 +111,10 @@ import org.springframework.util.StringUtils;
 
 public class DependencyResolver {
 
+	public static final String THIN_OFFLINE = "thin.offline";
+
+	public static final String THIN_ROOT = "thin.root";
+
 	private static final Logger log = LoggerFactory.getLogger(DependencyResolver.class);
 
 	private static DependencyResolver instance = new DependencyResolver();
@@ -519,8 +523,8 @@ public class DependencyResolver {
 					: new CompositeProxySelector(Arrays.asList(existing, fallback));
 			session.setProxySelector(selector);
 		}
-		if (properties.containsKey("thin.offline")
-				&& !"false".equals(properties.getProperty("thin.offline"))) {
+		if (properties.containsKey(THIN_OFFLINE)
+				&& !"false".equals(properties.getProperty(THIN_OFFLINE))) {
 			session.setOffline(true);
 		}
 		return session;
@@ -547,13 +551,13 @@ public class DependencyResolver {
 	}
 
 	private File localRepositoryPath(Properties properties, MavenSettings settings) {
-		if (settings != null && StringUtils.hasText(settings.getLocalRepository())) {
-			return new File(settings.getLocalRepository());
-		}
-		if (!properties.containsKey("thin.root")) {
+		if (!properties.containsKey(THIN_ROOT)) {
+			if (settings != null && StringUtils.hasText(settings.getLocalRepository())) {
+				return new File(settings.getLocalRepository());
+			}
 			return getM2RepoDirectory();
 		}
-		String root = properties.getProperty("thin.root");
+		String root = properties.getProperty(THIN_ROOT);
 		return new File(StringUtils.cleanPath(root + "/repository"));
 	}
 

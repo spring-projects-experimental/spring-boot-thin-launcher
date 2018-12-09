@@ -302,7 +302,9 @@ public class PathResolver {
 		catch (Exception e) {
 			throw new IllegalStateException("Cannot load properties", e);
 		}
-		merge(props, added);
+		if (!added.isEmpty()) {
+			merge(props, added);
+		}
 		return props;
 	}
 
