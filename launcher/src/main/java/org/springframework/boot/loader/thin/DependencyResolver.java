@@ -316,7 +316,7 @@ public class DependencyResolver {
 		projectBuildingRequest.setRemoteRepositories(mavenRepositories(settings, session,
 				projectBuildingRequest.getRemoteRepositories()));
 		projectBuildingRequest.setLocalRepository(
-				localArtifactRepository(properties, settings, session));
+				localArtifactRepository(properties, settings, session, true));
 		projectBuildingRequest.setRepositorySession(session);
 		projectBuildingRequest.setProcessPlugins(false);
 		projectBuildingRequest.setBuildStartTime(new Date());
@@ -362,8 +362,8 @@ public class DependencyResolver {
 		List<ArtifactRepository> list = new ArrayList<>();
 		if (properties.containsKey(ThinJarLauncher.THIN_ROOT)) {
 			addRepositoryIfMissing(settings, session, list, "local",
-					"file://" + localRepositoryPath(new Properties(), settings), true,
-					true);
+					"file://" + localRepositoryPath(new Properties(), settings, false),
+					true, true);
 		}
 		addRepositoryIfMissing(settings, session, list, "spring-snapshots",
 				"https://repo.spring.io/libs-snapshot", true, true);
@@ -535,14 +535,16 @@ public class DependencyResolver {
 	}
 
 	private LocalRepository localRepository(Properties properties) {
-		return new LocalRepository(localRepositoryPath(properties, settings));
+		return new LocalRepository(localRepositoryPath(properties, settings, true));
 	}
 
 	private ArtifactRepository localArtifactRepository(Properties properties,
-			MavenSettings settings, DefaultRepositorySystemSession session) {
+			MavenSettings settings, DefaultRepositorySystemSession session,
+			boolean preferThinRoot) {
 		try {
 			return repo(settings, session, "cache",
-					localRepositoryPath(properties, settings).toURI().toURL().toString(),
+					localRepositoryPath(properties, settings, preferThinRoot).toURI()
+							.toURL().toString(),
 					true, true);
 		}
 		catch (MalformedURLException e) {
@@ -550,8 +552,9 @@ public class DependencyResolver {
 		}
 	}
 
-	private File localRepositoryPath(Properties properties, MavenSettings settings) {
-		if (!properties.containsKey(THIN_ROOT)) {
+	private File localRepositoryPath(Properties properties, MavenSettings settings,
+			boolean preferThinRoot) {
+		if (!properties.containsKey(THIN_ROOT) || !preferThinRoot) {
 			if (settings != null && StringUtils.hasText(settings.getLocalRepository())) {
 				return new File(settings.getLocalRepository());
 			}
