@@ -57,6 +57,12 @@ public class PropertiesMojo extends ThinJarMojo {
 	@Parameter(property = "thin.compute", defaultValue = "true", required = true)
 	private boolean compute;
 
+    /**
+     * When enable, generate -SNAPSHOT instead of timestamp
+     */
+    @Parameter(property = "thin.useBaseVersion", defaultValue = "false")
+    private boolean useBaseVersion;
+
 	@Override
 	public void execute() throws MojoExecutionException {
 
@@ -158,13 +164,14 @@ public class PropertiesMojo extends ThinJarMojo {
 		// group:artifact:extension:classifier:version
 		String classifier = artifact.getClassifier();
 		String extension = artifact.getType();
+		String version = useBaseVersion?artifact.getBaseVersion():artifact.getVersion();
 		return artifact.getGroupId() + ":" + artifact.getArtifactId()
 				+ (StringUtils.hasText(extension)
 						&& (!"jar".equals(extension) || StringUtils.hasText(classifier))
 								? ":" + extension
 								: "")
 				+ (StringUtils.hasText(classifier) ? ":" + classifier : "")
-				+ (withVersion ? ":" + artifact.getVersion() : "");
+				+ (withVersion ? ":" + version : "");
 	}
 
 }
