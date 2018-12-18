@@ -61,7 +61,7 @@ public class PropertiesMojo extends ThinJarMojo {
      * Version modifier for external snapshot dependency. Possible values: TIMESTAMP and SNAPSHOT
      */
     @Parameter(property = "thin.snapshotStyle", defaultValue = "TIMESTAMP")
-    private String snapshotStyle;
+    private SnapshotStyle snapshotStyle;
 
 
     private enum SnapshotStyle { SNAPSHOT, TIMESTAMP }
@@ -167,7 +167,7 @@ public class PropertiesMojo extends ThinJarMojo {
 		// group:artifact:extension:classifier:version
 		String classifier = artifact.getClassifier();
 		String extension = artifact.getType();
-		String version = SnapshotStyle.valueOf(snapshotStyle).equals(SnapshotStyle.SNAPSHOT)
+		String version = snapshotStyle.equals(SnapshotStyle.SNAPSHOT)
 		        ? artifact.getBaseVersion():artifact.getVersion();
 		return artifact.getGroupId() + ":" + artifact.getArtifactId()
 				+ (StringUtils.hasText(extension)
