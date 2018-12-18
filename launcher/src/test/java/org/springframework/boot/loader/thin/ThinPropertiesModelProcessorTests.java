@@ -15,6 +15,7 @@
  */
 package org.springframework.boot.loader.thin;
 
+import org.apache.maven.model.Dependency;
 import org.eclipse.aether.artifact.DefaultArtifact;
 import org.junit.Test;
 
@@ -112,6 +113,24 @@ public class ThinPropertiesModelProcessorTests {
 		assertThat(artifact.getVersion()).isEmpty();
 		assertThat(artifact.getClassifier()).isEqualTo("");
 		assertThat(artifact.getExtension()).isEqualTo("zip");
+	}
+
+	@Test
+	public void classifierMatches() {
+		Dependency artifact = ThinPropertiesModelProcessor.dependency(
+				ThinPropertiesModelProcessor.artifact("com.example:foo:zip:weird:1.0"));
+		Dependency other = ThinPropertiesModelProcessor.dependency(
+				ThinPropertiesModelProcessor.artifact("com.example:foo:zip:weird:2.0"));
+		assertThat(ThinPropertiesModelProcessor.isSameArtifact(artifact, other)).isTrue();
+	}
+
+	@Test
+	public void classifierEmpty() {
+		Dependency artifact = ThinPropertiesModelProcessor
+				.dependency(ThinPropertiesModelProcessor.artifact("com.example:foo:zip"));
+		Dependency other = ThinPropertiesModelProcessor
+				.dependency(ThinPropertiesModelProcessor.artifact("com.example:foo:zip"));
+		assertThat(ThinPropertiesModelProcessor.isSameArtifact(artifact, other)).isTrue();
 	}
 
 }

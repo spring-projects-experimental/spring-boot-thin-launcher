@@ -154,8 +154,7 @@ class ThinPropertiesModelProcessor extends DefaultModelProcessor {
 				Dependency excluded = null;
 				for (Dependency dependency : model.getDependencies()) {
 					dependency.addExclusion(exclusion);
-					if (dependency.getGroupId().equals(target.getGroupId()) && dependency
-							.getArtifactId().equals(target.getArtifactId())) {
+					if (isSameArtifact(target, dependency)) {
 						excluded = dependency;
 					}
 				}
@@ -171,6 +170,16 @@ class ThinPropertiesModelProcessor extends DefaultModelProcessor {
 			}
 		}
 		return model;
+	}
+
+	static boolean isSameArtifact(Dependency target, Dependency dependency) {
+		boolean classifierMatch = (target.getClassifier() == null
+				&& dependency.getClassifier() == null)
+				|| (target.getClassifier() == null ? false
+						: target.getClassifier().equals(dependency.getClassifier()));
+		return dependency.getGroupId().equals(target.getGroupId())
+				&& dependency.getArtifactId().equals(target.getArtifactId())
+				&& classifierMatch;
 	}
 
 	private static String replacePlaceholder(Properties properties, String value) {
@@ -212,7 +221,7 @@ class ThinPropertiesModelProcessor extends DefaultModelProcessor {
 		return false;
 	}
 
-	private static Dependency dependency(DefaultArtifact artifact) {
+	static Dependency dependency(DefaultArtifact artifact) {
 		Dependency dependency = new Dependency();
 		dependency.setGroupId(artifact.getGroupId());
 		dependency.setArtifactId(artifact.getArtifactId());
