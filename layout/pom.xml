@@ -6,7 +6,7 @@
 	<parent>
 		<groupId>org.springframework.boot.experimental</groupId>
 		<artifactId>spring-boot-thin-launcher-parent</artifactId>
-		<version>1.0.20.BUILD-SNAPSHOT</version>
+		<version>1.0.20.RELEASE</version>
 	</parent>
 
 	<artifactId>spring-boot-thin-layout</artifactId>
