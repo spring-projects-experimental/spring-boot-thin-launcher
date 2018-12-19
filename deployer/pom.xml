@@ -13,13 +13,13 @@
 	<parent>
 		<groupId>org.springframework.boot.experimental</groupId>
 		<artifactId>spring-boot-thin-launcher-parent</artifactId>
-		<version>1.0.20.RELEASE</version>
+		<version>1.0.21.BUILD-SNAPSHOT</version>
 	</parent>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-		<wrapper.version>1.0.20.RELEASE</wrapper.version>
+		<wrapper.version>1.0.21.BUILD-SNAPSHOT</wrapper.version>
 		<deployer.version>1.1.4.RELEASE</deployer.version>
 	</properties>
 
