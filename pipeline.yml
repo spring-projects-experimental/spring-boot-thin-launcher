@@ -29,7 +29,7 @@ jobs:
         type: docker-image
         source: 
           repository: openjdk
-          tag: 8-jdk-alpine
+          tag: 8-jdk
       inputs:
         - name: source
       caches:

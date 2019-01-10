@@ -187,6 +187,17 @@ public class DependencyResolverTests {
 	}
 
 	@Test
+	public void testOverride() throws Exception {
+		Resource resource = new ClassPathResource("apps/test/pom.xml");
+		List<Dependency> dependencies = resolver.dependencies(resource,
+				PropertiesLoaderUtils.loadProperties(
+						new ClassPathResource("apps/test/META-INF/thin.properties")));
+		assertThat(dependencies.size()).isGreaterThan(15);
+		assertThat(dependencies).filteredOn("artifact.artifactId", "spring-boot-starter-web")
+				.first().is(version("1.5.3.RELEASE"));
+	}
+
+	@Test
 	public void excluded() throws Exception {
 		Resource resource = new ClassPathResource("apps/excluded/pom.xml");
 		List<Dependency> dependencies = resolver.dependencies(resource,
