@@ -84,6 +84,10 @@ public class ResolveMojo extends ThinJarMojo {
 	@Override
 	public void execute() throws MojoExecutionException, MojoFailureException {
 
+		if (this.project.getPackaging().equals("pom")) {
+			getLog().debug("Thin resolve goal could not be applied to pom project.");
+			return;
+		}
 		if (skip) {
 			getLog().info("Skipping execution");
 			return;

@@ -57,18 +57,24 @@ public class PropertiesMojo extends ThinJarMojo {
 	@Parameter(property = "thin.compute", defaultValue = "true", required = true)
 	private boolean compute;
 
-    /**
-     * Version modifier for external snapshot dependency. Possible values: TIMESTAMP and SNAPSHOT
-     */
-    @Parameter(property = "thin.snapshotStyle", defaultValue = "TIMESTAMP")
-    private SnapshotStyle snapshotStyle;
+	/**
+	 * Version modifier for external snapshot dependency. Possible values: TIMESTAMP and
+	 * SNAPSHOT
+	 */
+	@Parameter(property = "thin.snapshotStyle", defaultValue = "TIMESTAMP")
+	private SnapshotStyle snapshotStyle;
 
-
-    private enum SnapshotStyle { SNAPSHOT, TIMESTAMP }
+	private enum SnapshotStyle {
+		SNAPSHOT, TIMESTAMP
+	}
 
 	@Override
 	public void execute() throws MojoExecutionException {
 
+		if (this.project.getPackaging().equals("pom")) {
+			getLog().debug("Thin properties goal could not be applied to pom project.");
+			return;
+		}
 		if (skip) {
 			getLog().info("Skipping execution");
 			return;
@@ -168,7 +174,8 @@ public class PropertiesMojo extends ThinJarMojo {
 		String classifier = artifact.getClassifier();
 		String extension = artifact.getType();
 		String version = snapshotStyle.equals(SnapshotStyle.SNAPSHOT)
-		        ? artifact.getBaseVersion():artifact.getVersion();
+				? artifact.getBaseVersion()
+				: artifact.getVersion();
 		return artifact.getGroupId() + ":" + artifact.getArtifactId()
 				+ (StringUtils.hasText(extension)
 						&& (!"jar".equals(extension) || StringUtils.hasText(classifier))
