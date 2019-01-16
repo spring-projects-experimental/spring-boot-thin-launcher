@@ -56,6 +56,13 @@ public class AppGradleIT {
 	}
 
 	@Test
+	public void thinResolve() {
+		File repo = new File("../app/build/thin/root/repository");
+		assertThat(repo).exists();
+		assertThat(new File(repo, "org/springframework/spring-core")).exists();
+	}
+
+	@Test
 	public void runJar() throws Exception {
 		ProcessBuilder builder = new ProcessBuilder(Utils.javaCommand(), "-Xmx128m",
 				"-noverify", "-XX:TieredStopAtLevel=1",

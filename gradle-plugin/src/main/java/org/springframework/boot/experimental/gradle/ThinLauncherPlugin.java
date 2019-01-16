@@ -136,6 +136,7 @@ public class ThinLauncherPlugin implements Plugin<Project> {
 
 	private void createCopyTask(final Project project, final Jar jar) {
 		String task = "bootRepackage";
+		Jar thinJar = jar;
 		if (project.getTasksByName(task, true).isEmpty()) {
 			task = "thinJar" + suffix(jar);
 			if (suffix(jar).startsWith("ThinJar")) {
@@ -145,7 +146,7 @@ public class ThinLauncherPlugin implements Plugin<Project> {
 				return;
 			}
 			if (suffix(jar).isEmpty()) {
-				create(project.getTasks(), task, Jar.class, new Action<Jar>() {
+				thinJar = create(project.getTasks(), task, Jar.class, new Action<Jar>() {
 
 					@Override
 					public void execute(final Jar thin) {
@@ -212,12 +213,13 @@ public class ThinLauncherPlugin implements Plugin<Project> {
 			}
 		}
 		final String bootJarTask = task;
+		final Jar targetJar = thinJar;
 		create(project.getTasks(), "thinResolvePrepare" + suffix(jar), Copy.class,
 				new Action<Copy>() {
 					@Override
 					public void execute(Copy copy) {
 						copy.dependsOn(bootJarTask);
-						copy.from(jar.getOutputs().getFiles());
+						copy.from(targetJar.getOutputs().getFiles());
 						copy.into(new File(project.getBuildDir(), "thin/root"));
 					}
 				});
@@ -228,6 +230,15 @@ public class ThinLauncherPlugin implements Plugin<Project> {
 				new Action<Exec>() {
 					@Override
 					public void execute(final Exec exec) {
+						final Jar thinJar;
+						if (project.getTasks()
+								.findByName("thinJar" + suffix(jar)) != null) {
+							thinJar = (Jar) project.getTasks()
+									.getByName("thinJar" + suffix(jar));
+						}
+						else {
+							thinJar = (Jar) project.getTasks().getByName("jar");
+						}
 						final String prepareTask = "thinResolvePrepare" + suffix(jar);
 						exec.dependsOn(prepareTask);
 						exec.doFirst(new Action<Task>() {
@@ -240,7 +251,8 @@ public class ThinLauncherPlugin implements Plugin<Project> {
 										copy.getOutputs().getFiles().getSingleFile());
 								exec.setCommandLine(Jvm.current().getJavaExecutable());
 								List<String> args = Arrays.asList("-Dthin.root=.",
-										"-Dthin.dryrun", "-jar", jar.getArchiveName());
+										"-Dthin.dryrun", "-jar",
+										thinJar.getArchiveName());
 								String thinRepo = getThinRepo(project);
 								if (thinRepo != null) {
 									args.add(1, "-Dthin.repo=" + thinRepo);

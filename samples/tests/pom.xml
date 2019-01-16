@@ -91,25 +91,11 @@
 				<configuration><skip>${skipExec}</skip></configuration>
 				<executions>
 					<execution>
-						<id>app-resolve</id>
-						<phase>pre-integration-test</phase>
-						<configuration>
-							<workingDirectory>${basedir}/../app</workingDirectory>
-							<executable>${gradle.exec}</executable>
-							<arguments>
-								<argument>thinResolve</argument>
-							</arguments>
-						</configuration>
-						<goals>
-							<goal>exec</goal>
-						</goals>
-					</execution>
-					<execution>
 						<id>app</id>
-						<phase>pre-integration-test</phase>
+						<phase>process-test-resources</phase>
 						<configuration>
 							<workingDirectory>${basedir}/../app</workingDirectory>
-							<executable>${gradle.exec}</executable>
+							<executable>${basedir}/../app/${gradle.exec}</executable>
 							<arguments>
 								<argument>clean</argument>
 								<argument>build</argument>
@@ -120,8 +106,22 @@
 						</goals>
 					</execution>
 					<execution>
+						<id>app-resolve</id>
+						<phase>process-test-resources</phase>
+						<configuration>
+							<workingDirectory>${basedir}/../app</workingDirectory>
+							<executable>${basedir}/../app/${gradle.exec}</executable>
+							<arguments>
+								<argument>thinResolve</argument>
+							</arguments>
+						</configuration>
+						<goals>
+							<goal>exec</goal>
+						</goals>
+					</execution>
+					<execution>
 						<id>other</id>
-						<phase>pre-integration-test</phase>
+						<phase>process-test-resources</phase>
 						<configuration>
 							<workingDirectory>${basedir}/../other</workingDirectory>
 							<executable>${gradle.exec}</executable>
@@ -136,10 +136,10 @@
 					</execution>
 					<execution>
 						<id>shadow</id>
-						<phase>pre-integration-test</phase>
+						<phase>process-test-resources</phase>
 						<configuration>
 							<workingDirectory>${basedir}/../shadow</workingDirectory>
-							<executable>${gradle.exec}</executable>
+							<executable>${basedir}/../shadow/${gradle.exec}</executable>
 							<arguments>
 								<argument>build</argument>
 							</arguments>
@@ -150,10 +150,10 @@
 					</execution>
 					<execution>
 						<id>simple</id>
-						<phase>pre-integration-test</phase>
+						<phase>process-test-resources</phase>
 						<configuration>
 							<workingDirectory>${basedir}/../simple</workingDirectory>
- 							<executable>${gradle.exec}</executable>
+ 							<executable>${basedir}/../simple/${gradle.exec}</executable>
 							<arguments>
 								<argument>build</argument>
 								<argument>thinResolve</argument>
@@ -165,10 +165,10 @@
 					</execution>
 					<execution>
 						<id>multi</id>
-						<phase>pre-integration-test</phase>
+						<phase>process-test-resources</phase>
 						<configuration>
 							<workingDirectory>${basedir}/../multi</workingDirectory>
- 							<executable>${gradle.exec}</executable>
+ 							<executable>${basedir}/../multi/${gradle.exec}</executable>
 							<arguments>
 								<argument>build</argument>
 								<argument>:application:thinResolve</argument>
