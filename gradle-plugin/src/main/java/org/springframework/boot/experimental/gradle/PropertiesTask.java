@@ -116,7 +116,7 @@ public class PropertiesTask extends DefaultTask {
 
 	/**
 	 * Sets the {@link Configuration} that will be used to resolve the dependencies that
-	 * are listed in {@code lib.proeprties}.
+	 * are listed in {@code thin.properties}.
 	 *
 	 * @param configuration the configuration
 	 */

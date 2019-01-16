@@ -16,7 +16,7 @@ buildscript {
 }
 
 apply plugin: 'java'
-apply plugin: 'maven'
+apply plugin: 'maven-publish'
 apply plugin: 'eclipse'
 apply plugin: 'io.spring.dependency-management'
 apply plugin: 'org.springframework.boot'
@@ -35,8 +35,8 @@ repositories {
 }
 
 dependencies {
-	compile('org.springframework.boot:spring-boot-starter')
-	testCompile('org.springframework.boot:spring-boot-starter-test')
+	implementation('org.springframework.boot:spring-boot-starter')
+	testImplementation('org.springframework.boot:spring-boot-starter-test')
 }
 
 // Optional manipulation of the jar file
@@ -44,5 +44,14 @@ bootJar {
 	classifier = 'boot' // creates a fat jar as well
 	manifest {
 		attributes 'Marker': 'Boot' // adds an attribute to the manifest
+	}
+}
+
+// This is necessary in order to generate a pom.xml
+publishing {
+	publications {
+		mavenJava(MavenPublication) {
+			from components.java
+		}
 	}
 }

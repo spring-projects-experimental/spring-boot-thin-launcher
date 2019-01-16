@@ -29,6 +29,7 @@ import org.gradle.api.InvalidUserDataException;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 import org.gradle.api.Task;
+import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.plugins.BasePlugin;
 import org.gradle.api.plugins.JavaPlugin;
 import org.gradle.api.plugins.JavaPluginConvention;
@@ -116,12 +117,21 @@ public class ThinLauncherPlugin implements Plugin<Project> {
 	}
 
 	private void configureLibPropertiesTask(PropertiesTask thin, Project project) {
-		thin.setConfiguration(project.getConfigurations()
-				.getByName(JavaPlugin.RUNTIME_CONFIGURATION_NAME));
+		thin.setConfiguration(findRuntimeClasspath(project));
 		SourceSetContainer sourceSets = project.getConvention()
 				.getPlugin(JavaPluginConvention.class).getSourceSets();
 		File resourcesDir = sourceSets.getByName("main").getOutput().getResourcesDir();
 		thin.setOutput(new File(resourcesDir, "META-INF"));
+	}
+
+	private Configuration findRuntimeClasspath(Project project) {
+		Configuration configuration = project.getConfigurations()
+				.getByName("runtimeClasspath");
+		if (configuration == null) {
+			configuration = project.getConfigurations()
+					.getByName(JavaPlugin.RUNTIME_CONFIGURATION_NAME);
+		}
+		return configuration;
 	}
 
 	private void createCopyTask(final Project project, final Jar jar) {

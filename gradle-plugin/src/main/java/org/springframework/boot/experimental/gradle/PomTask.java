@@ -23,8 +23,10 @@ import io.spring.gradle.dependencymanagement.maven.PomDependencyManagementConfig
 
 import org.gradle.api.DefaultTask;
 import org.gradle.api.plugins.MavenPluginConvention;
+import org.gradle.api.publish.maven.tasks.GenerateMavenPom;
 import org.gradle.api.tasks.OutputFile;
 import org.gradle.api.tasks.TaskAction;
+import org.gradle.api.tasks.TaskCollection;
 import org.gradle.api.tasks.TaskExecutionException;
 
 /**
@@ -42,7 +44,6 @@ public class PomTask extends DefaultTask {
 	@TaskAction
 	public void generate() {
 		try {
-			output.mkdirs();
 			getLogger().info("Output: " + output);
 			DependencyManagementExtension dependencies = getProject().getExtensions()
 					.findByType(DependencyManagementExtension.class);
@@ -52,17 +53,28 @@ public class PomTask extends DefaultTask {
 				MavenPluginConvention maven = getProject().getConvention()
 						.findPlugin(MavenPluginConvention.class);
 				if (maven != null) {
+					output.mkdirs();
 					maven.pom().withXml(pomConfigurer)
 							.writeTo(new File(output, "pom.xml"));
 				}
 				else {
-					getLogger().warn(
-						"Skipping pom generation (maybe you forgot to apply plugin: 'maven'?)");
+					TaskCollection<GenerateMavenPom> tasks = getProject().getTasks()
+							.withType(GenerateMavenPom.class);
+					if (!tasks.isEmpty()) {
+						output.mkdirs();
+						GenerateMavenPom plugin = tasks.iterator().next();
+						plugin.setDestination(new File(output, "pom.xml"));
+						plugin.doGenerate();
+					}
+					else {
+						getLogger().warn(
+								"Skipping pom generation (maybe you forgot to apply plugin: 'maven' or 'maven-publish'?)");
+					}
 				}
 			}
 			else {
 				getLogger().warn(
-					"Skipping pom generation (maybe you forgot to apply plugin: 'io.spring.dependency-management'?)");
+						"Skipping pom generation (maybe you forgot to apply plugin: 'io.spring.dependency-management'?)");
 			}
 		}
 		catch (Exception e) {

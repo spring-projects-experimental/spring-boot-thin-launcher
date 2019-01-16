@@ -64,7 +64,7 @@
 			<groupId>org.gradle</groupId>
 			<artifactId>gradle-maven</artifactId>
 			<scope>provided</scope>
-			<version>3.4</version>
+			<version>3.5</version>
 		</dependency>
 		<dependency>
 			<groupId>io.spring.gradle</groupId>
