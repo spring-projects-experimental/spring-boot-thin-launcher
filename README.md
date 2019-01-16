@@ -78,6 +78,8 @@ apply plugin: 'org.springframework.boot.experimental.thin-launcher'
 
 In Gradle you also need to generate a `pom.xml` or a `thin.properties` (unless you want to maintain it by hand). A `pom.xml` will be generated automatically by the "thinPom" task in the Thin Gradle plugin. It does this by calling out to the maven plugin and the dependency management plugin; the maven plugin is always present, and the dependency management plugin is present if you are using the Spring Boot plugin. To generate a `pom.xml` remember to apply the maven and Thin Gradle plugins.
 
+NOTE: Gradle has a new `maven-publish` plugin that works with the new "standard" configurations (e.g. `runtimeOnly` replaces `runtime`). It doesn't work with the thin launcher plugin yet.
+
 The generated pom goes in the normal maven place by default under `META-INF/maven`. You can configure the output directory by setting the "output" property of the "thinPom" task.
 
 You can customize the generated `pom.xml`, or switch it off, by creating your own task in `build.gradle` and forcing the jar task to depend on it instead of "thinPom", or by simply not using the Thin Gradle plugin. Example (which just duplicates the default):
