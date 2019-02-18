@@ -28,8 +28,8 @@ jobs:
       image_resource:
         type: docker-image
         source: 
-          repository: openjdk
-          tag: 8-jdk
+          repository:  adoptopenjdk/openjdk8
+          tag: jdk8u192-b12
       inputs:
         - name: source
       caches:
