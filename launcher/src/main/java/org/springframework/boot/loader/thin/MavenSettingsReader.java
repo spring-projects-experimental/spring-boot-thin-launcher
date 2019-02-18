@@ -56,6 +56,9 @@ public class MavenSettingsReader {
 	}
 
 	public MavenSettingsReader(String homeDir) {
+		if (homeDir==null) {
+			homeDir = System.getProperty("user.home");
+		}
 		this.homeDir = homeDir;
 	}
 
@@ -97,7 +100,18 @@ public class MavenSettingsReader {
 		}
 		else {
 			log.info("No settings found at: " + settingsFile);
+			String home = System.getProperty("user.home");
+			if (!new File(home).getAbsolutePath().equals(new File(this.homeDir).getAbsolutePath())) {
+				settingsFile = new File(home, ".m2/settings.xml");
+				if (settingsFile.exists()) {
+					log.info("Reading settings from: " + settingsFile);
+				}
+			}
 		}
+		return loadSettings(settingsFile);
+	}
+	
+	private Settings loadSettings(File settingsFile) {
 		SettingsBuildingRequest request = new DefaultSettingsBuildingRequest();
 		request.setUserSettingsFile(settingsFile);
 		request.setSystemProperties(System.getProperties());

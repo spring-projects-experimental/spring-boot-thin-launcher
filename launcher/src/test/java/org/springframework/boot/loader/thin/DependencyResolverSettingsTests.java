@@ -20,6 +20,7 @@ import java.util.Properties;
 
 import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.project.ProjectBuildingRequest;
+import org.assertj.core.api.filter.NotFilter;
 import org.junit.After;
 import org.junit.Test;
 
@@ -55,17 +56,28 @@ public class DependencyResolverSettingsTests {
 
 	@Test
 	public void testProxy() throws Exception {
-		DependencyResolver.close();
 		System.setProperty("user.home", "src/test/resources/settings/proxy");
+		DependencyResolver.close();
 		DependencyResolver resolver = DependencyResolver.instance();
 		ProjectBuildingRequest request = getProjectBuildingRequest(resolver);
 		assertThat(request.getRemoteRepositories()).filteredOnNull("proxy").isEmpty();
 	}
 
 	@Test
-	public void testLocalRepository() throws Exception {
+	public void testThinRoot() throws Exception {
+		Properties properties = new Properties();
+		properties.setProperty("thin.root", "src/test/resources/settings/proxy");
 		DependencyResolver.close();
+		DependencyResolver resolver = DependencyResolver.instance();
+		ProjectBuildingRequest request = getProjectBuildingRequest(resolver, properties);
+		assertThat(request.getRemoteRepositories())
+				.filteredOn("proxy", NotFilter.not(null)).isNotEmpty();
+	}
+
+	@Test
+	public void testLocalRepository() throws Exception {
 		System.setProperty("user.home", "src/test/resources/settings/local");
+		DependencyResolver.close();
 		DependencyResolver resolver = DependencyResolver.instance();
 		ProjectBuildingRequest request = getProjectBuildingRequest(resolver);
 		assertThat(request.getLocalRepository().getUrl())
@@ -74,9 +86,9 @@ public class DependencyResolverSettingsTests {
 
 	@Test
 	public void testSnaphotsEnabledByDefault() throws Exception {
-		DependencyResolver.close();
 		System.setProperty("user.home",
 				"src/test/resources/settings/snapshots/defaultWithNoSnapshotsElement");
+		DependencyResolver.close();
 		DependencyResolver resolver = DependencyResolver.instance();
 		ProjectBuildingRequest request = getProjectBuildingRequest(resolver);
 		List<ArtifactRepository> repositories = request.getRemoteRepositories();
@@ -87,8 +99,13 @@ public class DependencyResolverSettingsTests {
 
 	private ProjectBuildingRequest getProjectBuildingRequest(
 			DependencyResolver resolver) {
-		ReflectionTestUtils.invokeMethod(resolver, "initialize");
 		Properties properties = new Properties();
+		return getProjectBuildingRequest(resolver, properties);
+	}
+
+	private ProjectBuildingRequest getProjectBuildingRequest(DependencyResolver resolver,
+			Properties properties) {
+		ReflectionTestUtils.invokeMethod(resolver, "initialize", properties);
 		ProjectBuildingRequest request = ReflectionTestUtils.invokeMethod(resolver,
 				"getProjectBuildingRequest", properties);
 		return request;

@@ -157,7 +157,7 @@ public class DependencyResolver {
 	private DependencyResolver() {
 	}
 
-	private void initialize() {
+	private void initialize(Properties properties) {
 		if (this.container == null) {
 			synchronized (lock) {
 				if (this.container == null) {
@@ -185,7 +185,7 @@ public class DependencyResolver {
 						throw new IllegalStateException("Cannot create container", e);
 					}
 					this.container = container;
-					this.settings = new MavenSettingsReader().readSettings();
+					this.settings = new MavenSettingsReader(properties.getProperty(THIN_ROOT)).readSettings();
 				}
 			}
 		}
@@ -203,7 +203,7 @@ public class DependencyResolver {
 			model = ThinPropertiesModelProcessor.process(model, properties);
 			return aetherDependencies(model.getDependencies(), properties);
 		}
-		initialize();
+		initialize(properties);
 		try {
 			log.info("Computing dependencies from pom and properties");
 			ProjectBuildingRequest request = getProjectBuildingRequest(properties);
@@ -252,7 +252,7 @@ public class DependencyResolver {
 			Dependency converted = new Dependency(artifact, "runtime");
 			list.add(converted);
 		}
-		initialize();
+		initialize(properties);
 		List<ArtifactResult> result = collectNonTransitive(list, properties);
 		list = new ArrayList<>();
 		for (ArtifactResult item : result) {
@@ -289,9 +289,10 @@ public class DependencyResolver {
 	}
 
 	public File resolve(Dependency dependency) {
-		initialize();
+		Properties properties = new Properties();
+		initialize(properties);
 		// TODO: do we need a version of this with non-empty properties?
-		return collectNonTransitive(Arrays.asList(dependency), new Properties())
+		return collectNonTransitive(Arrays.asList(dependency), properties)
 				.iterator().next().getArtifact().getFile();
 	}
 
@@ -569,7 +570,7 @@ public class DependencyResolver {
 	}
 
 	public Model readModel(final Resource resource, final Properties properties) {
-		initialize();
+		initialize(properties);
 		try {
 			ProjectBuildingRequest request = getProjectBuildingRequest(properties);
 			request.setResolveDependencies(false);

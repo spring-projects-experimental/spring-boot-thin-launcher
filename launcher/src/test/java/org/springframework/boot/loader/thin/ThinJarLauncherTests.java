@@ -89,6 +89,7 @@ public class ThinJarLauncherTests {
 		launcher.launch(args);
 		verify(resolver).dependencies(any(Resource.class), props.capture());
 		assertThat(props.getValue()).isEmpty();
+		DependencyResolver.close();
 	}
 
 	@Test
@@ -96,6 +97,7 @@ public class ThinJarLauncherTests {
 		String[] args = new String[] { "--thin.classpath",
 				"--thin.archive=src/test/resources/apps/basic", "--thin.profile=foo" };
 		ThinJarLauncher launcher = new ThinJarLauncher(args);
+		DependencyResolver.close();
 		DependencyResolver resolver = mock(DependencyResolver.class);
 		ReflectionTestUtils.setField(DependencyResolver.class, "instance", resolver);
 		ArgumentCaptor<Properties> props = ArgumentCaptor.forClass(Properties.class);
