@@ -22,8 +22,9 @@ import org.springframework.data.repository.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * Repository class for <code>Pet</code> domain objects All method names are compliant with Spring Data naming
- * conventions so this interface can easily be extended for Spring Data See here: https://docs.spring.io/spring-data/jpa/docs/current/reference/html/jpa.repositories.html#jpa.query-methods.query-creation
+ * Repository class for <code>Pet</code> domain objects All method names are compliant
+ * with Spring Data naming conventions so this interface can easily be extended for Spring
+ * Data
  *
  * @author Ken Krebs
  * @author Juergen Hoeller
@@ -55,4 +56,3 @@ public interface PetRepository extends Repository<Pet, Integer> {
     void save(Pet pet);
 
 }
-

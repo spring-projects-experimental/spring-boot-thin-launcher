@@ -34,7 +34,7 @@ docker run -e MYSQL_ROOT_PASSWORD=petclinic -e MYSQL_DATABASE=petclinic -p 3306:
 
 ### prerequisites
 The following items should be installed in your system:
-* Maven 3 (https://www.sonatype.com/books/mvnref-book/reference/installation.html)
+* Maven 3 (https://books.sonatype.com/mvnref-book/reference/index.html)
 * git command line tool (https://help.github.com/articles/set-up-git)
 * Eclipse with the m2e plugin (m2e is installed by default when using the STS (https://www.springsource.org/sts) distribution of Eclipse)
 

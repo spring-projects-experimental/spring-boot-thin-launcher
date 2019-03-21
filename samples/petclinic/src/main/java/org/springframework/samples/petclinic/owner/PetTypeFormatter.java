@@ -15,7 +15,6 @@
  */
 package org.springframework.samples.petclinic.owner;
 
-
 import java.text.ParseException;
 import java.util.Collection;
 import java.util.Locale;
@@ -25,10 +24,9 @@ import org.springframework.format.Formatter;
 import org.springframework.stereotype.Component;
 
 /**
- * Instructs Spring MVC on how to parse and print elements of type 'PetType'. Starting from Spring 3.0, Formatters have
- * come as an improvement in comparison to legacy PropertyEditors. See the following links for more details: - The
- * Spring ref doc: https://docs.spring.io/spring/docs/current/spring-framework-reference/html/validation.html#format-Formatter-SPI
- * - A nice blog entry from Gordon Dickens: /ZhdnZ/wordpress/2010/09/30/using-spring-3-0-custom-type-converter/
+ * Instructs Spring MVC on how to parse and print elements of type 'PetType'. Starting
+ * from Spring 3.0, Formatters have come as an improvement in comparison to legacy
+ * PropertyEditors.
  * <p/>
  *
  * @author Mark Fisher
@@ -39,7 +37,6 @@ import org.springframework.stereotype.Component;
 public class PetTypeFormatter implements Formatter<PetType> {
 
     private final PetRepository pets;
-
 
     @Autowired
     public PetTypeFormatter(PetRepository pets) {
