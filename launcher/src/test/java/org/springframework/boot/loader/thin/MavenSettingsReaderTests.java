@@ -46,7 +46,7 @@ public class MavenSettingsReaderTests {
 		DefaultRepositorySystemSession session = MavenRepositorySystemUtils.newSession();
 		MavenSettingsReader.applySettings(reader.readSettings(), session);
 		RemoteRepository repository = new RemoteRepository.Builder("my-server", "default",
-				"http://maven.example.com").build();
+				"https://maven.example.com").build();
 		Proxy proxy = session.getProxySelector().getProxy(repository);
 		repository = new RemoteRepository.Builder(repository).setProxy(proxy).build();
 		assertThat(proxy.getHost()).isEqualTo("proxy.example.com");
