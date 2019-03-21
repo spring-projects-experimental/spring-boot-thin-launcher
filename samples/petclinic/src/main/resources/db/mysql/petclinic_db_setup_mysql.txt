@@ -9,7 +9,7 @@
 --------------------------------------------------------------------------------
 
 1) Download and install the MySQL database (e.g., MySQL Community Server 5.1.x),
-   which can be found here: http://dev.mysql.com/downloads/
+   which can be found here: https://dev.mysql.com/downloads/
 
 2) Add the MySQL JDBC driver  to your classpath.
 
