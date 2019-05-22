@@ -19,6 +19,7 @@ resources:
  
 jobs:
 - name: build
+  public: true
   plan:
   - get: source
     trigger: true

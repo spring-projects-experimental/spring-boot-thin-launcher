@@ -42,10 +42,10 @@
 
 	<build>
 		<plugins>
-            <plugin>
-                <artifactId>maven-jar-plugin</artifactId>
-                <version>${maven-jar-plugin.version}</version>
-            </plugin>
+			<plugin>
+				<artifactId>maven-jar-plugin</artifactId>
+				<version>${maven-jar-plugin.version}</version>
+			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-failsafe-plugin</artifactId>
@@ -88,7 +88,9 @@
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>exec-maven-plugin</artifactId>
-				<configuration><skip>${skipExec}</skip></configuration>
+				<configuration>
+					<skip>${skipExec}</skip>
+				</configuration>
 				<executions>
 					<execution>
 						<id>app</id>
@@ -153,7 +155,7 @@
 						<phase>process-test-resources</phase>
 						<configuration>
 							<workingDirectory>${basedir}/../simple</workingDirectory>
- 							<executable>${basedir}/../simple/${gradle.exec}</executable>
+							<executable>${basedir}/../simple/${gradle.exec}</executable>
 							<arguments>
 								<argument>build</argument>
 								<argument>thinResolve</argument>
@@ -168,7 +170,7 @@
 						<phase>process-test-resources</phase>
 						<configuration>
 							<workingDirectory>${basedir}/../multi</workingDirectory>
- 							<executable>${basedir}/../multi/${gradle.exec}</executable>
+							<executable>${basedir}/../multi/${gradle.exec}</executable>
 							<arguments>
 								<argument>build</argument>
 								<argument>:application:thinResolve</argument>
@@ -183,7 +185,7 @@
 		</plugins>
 		<pluginManagement>
 			<plugins>
-				<!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->
+				<!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself. -->
 				<plugin>
 					<groupId>org.eclipse.m2e</groupId>
 					<artifactId>lifecycle-mapping</artifactId>
@@ -193,15 +195,9 @@
 							<pluginExecutions>
 								<pluginExecution>
 									<pluginExecutionFilter>
-										<groupId>
-											org.codehaus.mojo
-										</groupId>
-										<artifactId>
-											exec-maven-plugin
-										</artifactId>
-										<versionRange>
-											[1.5.0,)
-										</versionRange>
+										<groupId>org.codehaus.mojo</groupId>
+										<artifactId>exec-maven-plugin</artifactId>
+										<versionRange>[1.5.0,)</versionRange>
 										<goals>
 											<goal>exec</goal>
 										</goals>
