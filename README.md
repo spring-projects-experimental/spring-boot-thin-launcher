@@ -1,4 +1,4 @@
-A "thin" jar launcher for java apps. Version 1.0.21.RELEASE is in Maven Central. See https://github.com/spring-projects/spring-boot/issues/1813 for more discussion and ideas.
+A "thin" jar launcher for java apps. Version 1.0.21.RELEASE is in Maven Central. See https://github.com/spring-projects/spring-boot/issues/1813 for more discussion and ideas. [![ci.spring.io](https://ci.spring.io/api/v1/teams/spring-team/pipelines/spring-boot-thin-launcher/badge)](https://ci.spring.io/?groups=spring-team)
 
 ## Getting Started
 
