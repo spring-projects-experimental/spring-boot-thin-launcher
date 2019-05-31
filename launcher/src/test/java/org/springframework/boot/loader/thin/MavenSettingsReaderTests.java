@@ -61,8 +61,7 @@ public class MavenSettingsReaderTests {
 	@Test
 	public void repositoryConfiguration() {
 		MavenSettingsReader reader = new MavenSettingsReader(
-				"src/test/resources/settings/proxy");
-		reader = new MavenSettingsReader("src/test/resources/settings/profile");
+				"src/test/resources/settings/profile");
 		DefaultRepositorySystemSession session = MavenRepositorySystemUtils.newSession();
 		MavenSettings settings = reader.readSettings();
 		assertThat(settings.getActiveProfiles().get(0).getRepositories().get(0))
