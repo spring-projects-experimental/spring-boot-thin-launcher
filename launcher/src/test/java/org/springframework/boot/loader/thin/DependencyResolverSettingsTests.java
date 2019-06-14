@@ -120,7 +120,7 @@ public class DependencyResolverSettingsTests {
 		List<ArtifactRepository> repositories = request.getRemoteRepositories();
 		assertThat(repositories).filteredOnNull("snapshots").isEmpty();
 		assertThat(repositories).hasSize(3);
-		assertThat(repositories.get(2).getSnapshots().isEnabled()).isTrue();
+		assertThat(repositories.get(0).getSnapshots().isEnabled()).isTrue();
 	}
 
 	private ProjectBuildingRequest getProjectBuildingRequest(DependencyResolver resolver) {
