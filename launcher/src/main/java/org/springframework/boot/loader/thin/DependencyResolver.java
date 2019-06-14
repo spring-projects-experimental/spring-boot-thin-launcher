@@ -298,8 +298,6 @@ public class DependencyResolver {
 		DefaultRepositorySystemSession session = createSession(properties);
 		projectBuildingRequest.setRepositoryMerging(RepositoryMerging.REQUEST_DOMINANT);
 		projectBuildingRequest.setRemoteRepositories(mavenRepositories(settings, session, properties));
-		projectBuildingRequest.setRemoteRepositories(
-				mavenRepositories(settings, session, projectBuildingRequest.getRemoteRepositories()));
 		projectBuildingRequest.setLocalRepository(localArtifactRepository(properties, settings, session, true));
 		projectBuildingRequest.setRepositorySession(session);
 		projectBuildingRequest.setProcessPlugins(false);
@@ -322,19 +320,6 @@ public class DependencyResolver {
 		return projectBuildingRequest;
 	}
 
-	private List<ArtifactRepository> mavenRepositories(MavenSettings settings, DefaultRepositorySystemSession session,
-			List<ArtifactRepository> repositories) {
-		List<ArtifactRepository> list = new ArrayList<>(repositories);
-		for (Profile profile : settings.getActiveProfiles()) {
-			for (Repository repository : profile.getRepositories()) {
-				addRepositoryIfMissing(settings, session, list, repository.getId(), repository.getUrl(),
-						repository.getReleases() != null ? repository.getReleases().isEnabled() : true,
-						repository.getSnapshots() != null ? repository.getSnapshots().isEnabled() : true);
-			}
-		}
-		return list;
-	}
-
 	private List<ArtifactRepository> mavenRepositories(MavenSettings settings, RepositorySystemSession session,
 			Properties properties) {
 		List<ArtifactRepository> list = new ArrayList<>();
@@ -342,9 +327,6 @@ public class DependencyResolver {
 			addRepositoryIfMissing(settings, session, list, "local",
 					"file://" + localRepositoryPath(new Properties(), settings, false), true, true);
 		}
-		addRepositoryIfMissing(settings, session, list, "spring-snapshots", "https://repo.spring.io/libs-snapshot",
-				true, true);
-		addRepositoryIfMissing(settings, session, list, "central", "https://repo1.maven.org/maven2", true, false);
 		for (Profile profile : settings.getActiveProfiles()) {
 			for (Repository repository : profile.getRepositories()) {
 				addRepositoryIfMissing(settings, session, list, repository.getId(), repository.getUrl(),
@@ -352,6 +334,9 @@ public class DependencyResolver {
 						repository.getSnapshots() != null ? repository.getSnapshots().isEnabled() : true);
 			}
 		}
+		addRepositoryIfMissing(settings, session, list, "spring-snapshots", "https://repo.spring.io/libs-snapshot",
+				true, true);
+		addRepositoryIfMissing(settings, session, list, "central", "https://repo1.maven.org/maven2", true, false);
 		return list;
 	}
 
