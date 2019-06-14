@@ -15,16 +15,24 @@
  */
 package org.springframework.boot.loader.thin;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.nio.charset.Charset;
 import java.util.List;
 import java.util.Properties;
 
 import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.project.ProjectBuildingRequest;
 import org.assertj.core.api.filter.NotFilter;
+import org.eclipse.aether.artifact.Artifact;
+import org.eclipse.aether.artifact.DefaultArtifact;
+import org.eclipse.aether.graph.Dependency;
 import org.junit.After;
 import org.junit.Test;
 
 import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.util.StreamUtils;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -70,8 +78,7 @@ public class DependencyResolverSettingsTests {
 		DependencyResolver.close();
 		DependencyResolver resolver = DependencyResolver.instance();
 		ProjectBuildingRequest request = getProjectBuildingRequest(resolver, properties);
-		assertThat(request.getRemoteRepositories())
-				.filteredOn("proxy", NotFilter.not(null)).isNotEmpty();
+		assertThat(request.getRemoteRepositories()).filteredOn("proxy", NotFilter.not(null)).isNotEmpty();
 	}
 
 	@Test
@@ -80,14 +87,33 @@ public class DependencyResolverSettingsTests {
 		DependencyResolver.close();
 		DependencyResolver resolver = DependencyResolver.instance();
 		ProjectBuildingRequest request = getProjectBuildingRequest(resolver);
-		assertThat(request.getLocalRepository().getUrl())
-				.contains("target/thin/test/repository");
+		assertThat(request.getLocalRepository().getUrl()).contains("target/thin/test/repository");
+	}
+
+	@Test
+	public void testRemoteRepository() throws Exception {
+		File userhome = new File("target/settings/repo/.m2");
+		if (!userhome.exists()) {
+			userhome.mkdirs();
+		}
+		String settings = StreamUtils.copyToString(
+				new FileInputStream(new File("src/test/resources/settings/repo/.m2/settings.xml")),
+				Charset.defaultCharset());
+		settings = settings.replace("${repo.url}", "file://" + new File("target/test-classes/repo").getAbsolutePath());
+		StreamUtils.copy(settings, Charset.defaultCharset(), new FileOutputStream(new File(userhome, "settings.xml")));
+		System.setProperty("user.home", new File("target/settings/repo").getAbsolutePath());
+		ThinJarLauncherTests.deleteRecursively(new File("target/settings/repo/.m2/repository/com/example"));
+		DependencyResolver.close();
+		DependencyResolver resolver = DependencyResolver.instance();
+		Artifact artifact = new DefaultArtifact("com.example.maven:maven-simple:1.0");
+		File file = resolver.resolve(new Dependency(artifact, "compile"));
+		assertThat(file.getAbsolutePath()).contains("settings/repo/.m2/repository/com/example");
+		assertThat(file.exists());
 	}
 
 	@Test
 	public void testSnaphotsEnabledByDefault() throws Exception {
-		System.setProperty("user.home",
-				"src/test/resources/settings/snapshots/defaultWithNoSnapshotsElement");
+		System.setProperty("user.home", "src/test/resources/settings/snapshots/defaultWithNoSnapshotsElement");
 		DependencyResolver.close();
 		DependencyResolver resolver = DependencyResolver.instance();
 		ProjectBuildingRequest request = getProjectBuildingRequest(resolver);
@@ -97,17 +123,15 @@ public class DependencyResolverSettingsTests {
 		assertThat(repositories.get(2).getSnapshots().isEnabled()).isTrue();
 	}
 
-	private ProjectBuildingRequest getProjectBuildingRequest(
-			DependencyResolver resolver) {
+	private ProjectBuildingRequest getProjectBuildingRequest(DependencyResolver resolver) {
 		Properties properties = new Properties();
 		return getProjectBuildingRequest(resolver, properties);
 	}
 
-	private ProjectBuildingRequest getProjectBuildingRequest(DependencyResolver resolver,
-			Properties properties) {
+	private ProjectBuildingRequest getProjectBuildingRequest(DependencyResolver resolver, Properties properties) {
 		ReflectionTestUtils.invokeMethod(resolver, "initialize", properties);
-		ProjectBuildingRequest request = ReflectionTestUtils.invokeMethod(resolver,
-				"getProjectBuildingRequest", properties);
+		ProjectBuildingRequest request = ReflectionTestUtils.invokeMethod(resolver, "getProjectBuildingRequest",
+				properties);
 		return request;
 	}
 

@@ -40,6 +40,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class DependencyResolverComputeTests {
 
 	private static int TOTAL = 1;
+
 	private static List<Dependency> dependencies;
 
 	@Parameters
@@ -51,10 +52,10 @@ public class DependencyResolverComputeTests {
 		DependencyResolver resolver = DependencyResolver.instance();
 		Resource resource = new ClassPathResource("apps/petclinic/pom.xml");
 		DependencyResolverComputeTests.dependencies = resolver.dependencies(resource);
-//		for (Dependency dependency : dependencies) {
-//			System.err.println("dependencies." + dependency.getArtifact().getArtifactId()
-//					+ "=" + coordinates(dependency.getArtifact()));
-//		}
+		// for (Dependency dependency : dependencies) {
+		// System.err.println("dependencies." + dependency.getArtifact().getArtifactId()
+		// + "=" + coordinates(dependency.getArtifact()));
+		// }
 		DependencyResolver.close();
 		return args;
 	}
@@ -81,8 +82,7 @@ public class DependencyResolverComputeTests {
 
 	static String coordinates(Artifact artifact) {
 		// group:artifact:extension:classifier:version
-		return artifact.getGroupId() + ":" + artifact.getArtifactId() + ":"
-				+ artifact.getVersion();
+		return artifact.getGroupId() + ":" + artifact.getArtifactId() + ":" + artifact.getVersion();
 	}
 
 }
