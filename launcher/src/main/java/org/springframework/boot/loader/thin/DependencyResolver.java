@@ -344,12 +344,12 @@ public class DependencyResolver {
 			Properties properties) {
 		List<RemoteRepository> list = new ArrayList<>();
 		for (ArtifactRepository input : mavenRepositories(settings, session, properties)) {
-			list.add(remote(input));
+			list.add(aetherRepository(input));
 		}
 		return list;
 	}
 
-	private RemoteRepository remote(ArtifactRepository input) {
+	private RemoteRepository aetherRepository(ArtifactRepository input) {
 		Proxy proxy = proxy(input);
 		Builder builder = new RemoteRepository.Builder(input.getId(), input.getLayout().getId(), input.getUrl())
 				.setSnapshotPolicy(policy(input.getSnapshots())).setReleasePolicy(policy(input.getReleases()));
