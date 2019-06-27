@@ -140,14 +140,18 @@ public class PathResolver {
 				throw new IllegalStateException("Cannot locate archive", e);
 			}
 			String pattern = "META-INF/maven/**"
-					+ (artifactId == null ? "" : "/" + artifactId) + "/pom.xml";
+					+ (artifactId == null || artifactId.length() == 0 ? ""
+							: "/" + artifactId)
+					+ "/pom.xml";
 			Resource resource = findResource(archive, pattern);
 			if (resource != null) {
 				return resource;
 			}
 			// Spring Boot fat jar
 			pattern = "BOOT-INF/classes/META-INF/maven/**"
-					+ (artifactId == null ? "" : "/" + artifactId) + "/pom.xml";
+					+ (artifactId == null || artifactId.length() == 0 ? ""
+							: "/" + artifactId)
+					+ "/pom.xml";
 			resource = findResource(archive, pattern);
 			if (resource != null) {
 				return resource;
@@ -399,6 +403,7 @@ public class PathResolver {
 			path = path.substring(0, path.length() - 2);
 		}
 		path = StringUtils.getFilename(path);
+		path = path.replace(".jar", "");
 		path = path.split("-[0-9]")[0];
 		return path;
 	}

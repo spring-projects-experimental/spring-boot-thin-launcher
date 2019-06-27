@@ -135,4 +135,12 @@ public class PathResolverTests {
 				"BOOT-INF/classes/META-INF/maven/org.springframework.boot/spring-boot-cli/pom.xml");
 	}
 
+	@Test
+	public void pomWithUnversionedJar() throws Exception {
+		Resource resource = resolver.getPom(
+				new ExplodedArchive(new File("src/test/resources/apps/fake.jar")));
+		assertThat(resource.getURL().toString())
+				.endsWith("META-INF/maven/com.example/fake/pom.xml");
+	}
+
 }
