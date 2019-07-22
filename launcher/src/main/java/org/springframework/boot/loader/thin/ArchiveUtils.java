@@ -23,7 +23,6 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 
 import org.eclipse.aether.artifact.DefaultArtifact;
@@ -32,6 +31,7 @@ import org.eclipse.aether.graph.Dependency;
 import org.springframework.boot.loader.archive.Archive;
 import org.springframework.boot.loader.archive.ExplodedArchive;
 import org.springframework.boot.loader.archive.JarFileArchive;
+import org.springframework.boot.loader.jar.JarFile;
 import org.springframework.boot.loader.tools.MainClassFinder;
 import org.springframework.core.io.UrlResource;
 
@@ -52,7 +52,7 @@ public class ArchiveUtils {
 			return new ExplodedArchive(file);
 		}
 		try {
-			return new JarFileArchive(file);
+			return new JarFileArchive(new JarFile(file));
 		}
 		catch (IOException e) {
 			throw new IllegalStateException("Cannot create JAR archive: " + file, e);
