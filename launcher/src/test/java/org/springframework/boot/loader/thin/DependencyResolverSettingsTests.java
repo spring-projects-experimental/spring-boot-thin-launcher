@@ -107,7 +107,7 @@ public class DependencyResolverSettingsTests {
 		DependencyResolver resolver = DependencyResolver.instance();
 		Artifact artifact = new DefaultArtifact("com.example.maven:maven-simple:1.0");
 		File file = resolver.resolve(new Dependency(artifact, "compile"));
-		assertThat(file.getAbsolutePath()).contains("settings/repo/.m2/repository/com/example");
+		assertThat(file.getAbsolutePath()).contains(new File("settings/repo/.m2/repository/com/example").getPath());
 		assertThat(file.exists());
 	}
 
