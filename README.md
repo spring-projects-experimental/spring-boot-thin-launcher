@@ -153,7 +153,7 @@ app, by setting a System property or command line argument
 "thin.dryrun" (to any value except "false"). In fact, since you don't
 need the application code for this (except the
 `META-INF/thin.properties`), you could run only the launcher, or the
-wrapper whioch is contained in the launcher for convenience. This is a
+wrapper which is contained in the launcher for convenience. This is a
 useful trick for laying down a file system layer in a container image,
 for example.
 
