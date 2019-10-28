@@ -25,8 +25,6 @@ import org.junit.Test;
 import org.springframework.boot.loader.archive.Archive;
 import org.springframework.boot.loader.archive.ExplodedArchive;
 import org.springframework.boot.loader.archive.JarFileArchive;
-import org.springframework.boot.loader.thin.DependencyResolver;
-import org.springframework.boot.loader.thin.PathResolver;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -38,6 +36,17 @@ public class PathResolverSubtractTests {
 
 	private DependencyResolver dependencies = DependencyResolver.instance();
 	private PathResolver resolver = new PathResolver(dependencies);
+
+	@Test
+	public void childWithProfile() throws Exception {
+		Archive child = new ExplodedArchive(new File("src/test/resources/apps/child"));
+		Archive parent = child;
+		List<Archive> parents = resolver.resolve(null, child, "thin");
+		List<Archive> result = resolver.resolve(parent, child, "thin", "child");
+		// just the actuators and micrometer
+		assertThat(result.size() - parents.size()).isEqualTo(6);
+		assertThat(result.get(result.size() - 4).toString()).contains("actuator");
+	}
 
 	@Test
 	public void childWithDatabase() throws Exception {

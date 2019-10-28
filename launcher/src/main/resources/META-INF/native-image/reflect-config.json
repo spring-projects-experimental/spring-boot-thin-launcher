@@ -1,0 +1,1552 @@
+[
+{
+  "name":"hidden.com.google.inject.AbstractModule",
+  "allDeclaredMethods":true
+},
+{
+  "name":"hidden.com.google.inject.Binder",
+  "methods":[{"name":"bindListener","parameterTypes":["hidden.com.google.inject.matcher.Matcher","hidden.com.google.inject.spi.ProvisionListener[]"] }]
+},
+{
+  "name":"hidden.com.google.inject.internal.InjectorShell$RootModule",
+  "allDeclaredMethods":true
+},
+{
+  "name":"hidden.com.google.inject.internal.ProviderMethod",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true
+},
+{
+  "name":"hidden.com.google.inject.internal.ProviderMethod$ReflectionProviderMethod",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true
+},
+{
+  "name":"hidden.com.google.inject.matcher.AbstractMatcher",
+  "allDeclaredMethods":true
+},
+{
+  "name":"hidden.com.google.inject.name.Named",
+  "allDeclaredMethods":true
+},
+{
+  "name":"hidden.com.google.inject.spi.ElementSource",
+  "methods":[{"name":"getDeclaringSource","parameterTypes":[] }]
+},
+{
+  "name":"hidden.com.google.inject.spi.ProviderInstanceBinding",
+  "methods":[{"name":"getUserSuppliedProvider","parameterTypes":[] }]
+},
+{
+  "name":"hidden.com.google.inject.util.Modules$EmptyModule",
+  "allDeclaredMethods":true
+},
+{
+  "name":"hidden.com.google.inject.util.Providers$ConstantProvider",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true
+},
+{
+  "name":"hidden.org.apache.maven.DefaultArtifactFilterManager",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.apache.maven.DefaultMaven",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.apache.maven.DefaultProjectDependenciesResolver",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.apache.maven.ReactorReader",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.apache.maven.artifact.deployer.DefaultArtifactDeployer",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.apache.maven.artifact.factory.DefaultArtifactFactory",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.apache.maven.artifact.handler.DefaultArtifactHandler",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.apache.maven.artifact.handler.manager.DefaultArtifactHandlerManager",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.apache.maven.artifact.installer.DefaultArtifactInstaller",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.apache.maven.artifact.manager.DefaultWagonManager",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.apache.maven.artifact.repository.DefaultArtifactRepositoryFactory",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.apache.maven.artifact.repository.layout.DefaultRepositoryLayout",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.apache.maven.artifact.repository.layout.FlatRepositoryLayout",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.apache.maven.artifact.repository.metadata.DefaultRepositoryMetadataManager",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.apache.maven.artifact.repository.metadata.io.DefaultMetadataReader",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.apache.maven.artifact.resolver.DefaultArtifactCollector",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.apache.maven.artifact.resolver.DefaultArtifactResolver",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.apache.maven.artifact.resolver.DefaultResolutionErrorHandler",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.apache.maven.bridge.MavenRepositorySystem",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.apache.maven.classrealm.DefaultClassRealmManager",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.apache.maven.cli.configuration.SettingsXmlConfigurationProcessor",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.apache.maven.cli.internal.BootstrapCoreExtensionManager",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.apache.maven.configuration.internal.DefaultBeanConfigurator",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.apache.maven.eventspy.internal.EventSpyDispatcher",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.apache.maven.exception.DefaultExceptionHandler",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.apache.maven.execution.DefaultMavenExecutionRequestPopulator",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.apache.maven.execution.DefaultRuntimeInformation",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.apache.maven.execution.scope.internal.MojoExecutionScope",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true
+},
+{
+  "name":"hidden.org.apache.maven.execution.scope.internal.MojoExecutionScope$1",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true
+},
+{
+  "name":"hidden.org.apache.maven.execution.scope.internal.MojoExecutionScopeCoreModule",
+  "allDeclaredMethods":true,
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"hidden.org.apache.maven.execution.scope.internal.MojoExecutionScopeModule",
+  "allDeclaredMethods":true
+},
+{
+  "name":"hidden.org.apache.maven.extension.internal.CoreExports",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.apache.maven.extension.internal.CoreExportsProvider",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.apache.maven.graph.DefaultGraphBuilder",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.apache.maven.internal.aether.DefaultRepositorySystemSessionFactory",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.apache.maven.lifecycle.DefaultLifecycleExecutor",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.apache.maven.lifecycle.DefaultLifecycles",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.apache.maven.lifecycle.Lifecycle",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.apache.maven.lifecycle.internal.BuildListCalculator",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.apache.maven.lifecycle.internal.DefaultExecutionEventCatapult",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.apache.maven.lifecycle.internal.DefaultLifecycleExecutionPlanCalculator",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.apache.maven.lifecycle.internal.DefaultLifecycleMappingDelegate",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.apache.maven.lifecycle.internal.DefaultLifecyclePluginAnalyzer",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.apache.maven.lifecycle.internal.DefaultLifecycleTaskSegmentCalculator",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.apache.maven.lifecycle.internal.DefaultMojoExecutionConfigurator",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.apache.maven.lifecycle.internal.DefaultProjectArtifactFactory",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.apache.maven.lifecycle.internal.LifecycleDebugLogger",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.apache.maven.lifecycle.internal.LifecycleDependencyResolver",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.apache.maven.lifecycle.internal.LifecycleModuleBuilder",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.apache.maven.lifecycle.internal.LifecyclePluginResolver",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.apache.maven.lifecycle.internal.LifecycleStarter",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.apache.maven.lifecycle.internal.MojoDescriptorCreator",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.apache.maven.lifecycle.internal.MojoExecutor",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.apache.maven.lifecycle.internal.builder.BuilderCommon",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.apache.maven.lifecycle.internal.builder.multithreaded.MultiThreadedBuilder",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.apache.maven.lifecycle.internal.builder.singlethreaded.SingleThreadedBuilder",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.apache.maven.lifecycle.mapping.DefaultLifecycleMapping",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.apache.maven.model.Activation",
+  "allDeclaredFields":true
+},
+{
+  "name":"hidden.org.apache.maven.model.ActivationFile",
+  "allDeclaredFields":true
+},
+{
+  "name":"hidden.org.apache.maven.model.ActivationOS",
+  "allDeclaredFields":true
+},
+{
+  "name":"hidden.org.apache.maven.model.ActivationProperty",
+  "allDeclaredFields":true
+},
+{
+  "name":"hidden.org.apache.maven.model.Build",
+  "allDeclaredFields":true,
+  "allPublicMethods":true
+},
+{
+  "name":"hidden.org.apache.maven.model.BuildBase",
+  "allDeclaredFields":true
+},
+{
+  "name":"hidden.org.apache.maven.model.CiManagement",
+  "allDeclaredFields":true
+},
+{
+  "name":"hidden.org.apache.maven.model.ConfigurationContainer",
+  "allDeclaredFields":true
+},
+{
+  "name":"hidden.org.apache.maven.model.Contributor",
+  "allDeclaredFields":true
+},
+{
+  "name":"hidden.org.apache.maven.model.Dependency",
+  "allDeclaredFields":true
+},
+{
+  "name":"hidden.org.apache.maven.model.DependencyManagement",
+  "allDeclaredFields":true
+},
+{
+  "name":"hidden.org.apache.maven.model.DeploymentRepository",
+  "allDeclaredFields":true
+},
+{
+  "name":"hidden.org.apache.maven.model.Developer",
+  "allDeclaredFields":true
+},
+{
+  "name":"hidden.org.apache.maven.model.DistributionManagement",
+  "allDeclaredFields":true
+},
+{
+  "name":"hidden.org.apache.maven.model.Exclusion",
+  "allDeclaredFields":true
+},
+{
+  "name":"hidden.org.apache.maven.model.Extension",
+  "allDeclaredFields":true
+},
+{
+  "name":"hidden.org.apache.maven.model.FileSet",
+  "allDeclaredFields":true
+},
+{
+  "name":"hidden.org.apache.maven.model.IssueManagement",
+  "allDeclaredFields":true
+},
+{
+  "name":"hidden.org.apache.maven.model.License",
+  "allDeclaredFields":true
+},
+{
+  "name":"hidden.org.apache.maven.model.MailingList",
+  "allDeclaredFields":true
+},
+{
+  "name":"hidden.org.apache.maven.model.Model",
+  "allDeclaredFields":true,
+  "allPublicMethods":true
+},
+{
+  "name":"hidden.org.apache.maven.model.ModelBase",
+  "allDeclaredFields":true
+},
+{
+  "name":"hidden.org.apache.maven.model.Organization",
+  "allDeclaredFields":true,
+  "allPublicMethods":true
+},
+{
+  "name":"hidden.org.apache.maven.model.Parent",
+  "allPublicMethods":true
+},
+{
+  "name":"hidden.org.apache.maven.model.PatternSet",
+  "allDeclaredFields":true
+},
+{
+  "name":"hidden.org.apache.maven.model.Plugin",
+  "allDeclaredFields":true
+},
+{
+  "name":"hidden.org.apache.maven.model.PluginConfiguration",
+  "allDeclaredFields":true
+},
+{
+  "name":"hidden.org.apache.maven.model.PluginContainer",
+  "allDeclaredFields":true
+},
+{
+  "name":"hidden.org.apache.maven.model.PluginExecution",
+  "allDeclaredFields":true
+},
+{
+  "name":"hidden.org.apache.maven.model.PluginManagement",
+  "allDeclaredFields":true
+},
+{
+  "name":"hidden.org.apache.maven.model.Prerequisites",
+  "allDeclaredFields":true
+},
+{
+  "name":"hidden.org.apache.maven.model.Profile",
+  "allDeclaredFields":true
+},
+{
+  "name":"hidden.org.apache.maven.model.ReportPlugin",
+  "allDeclaredFields":true
+},
+{
+  "name":"hidden.org.apache.maven.model.ReportSet",
+  "allDeclaredFields":true
+},
+{
+  "name":"hidden.org.apache.maven.model.Reporting",
+  "allDeclaredFields":true,
+  "allPublicMethods":true
+},
+{
+  "name":"hidden.org.apache.maven.model.Repository",
+  "allDeclaredFields":true
+},
+{
+  "name":"hidden.org.apache.maven.model.RepositoryBase",
+  "allDeclaredFields":true
+},
+{
+  "name":"hidden.org.apache.maven.model.RepositoryPolicy",
+  "allDeclaredFields":true
+},
+{
+  "name":"hidden.org.apache.maven.model.Resource",
+  "allDeclaredFields":true
+},
+{
+  "name":"hidden.org.apache.maven.model.Scm",
+  "allDeclaredFields":true,
+  "allPublicMethods":true
+},
+{
+  "name":"hidden.org.apache.maven.model.Site",
+  "allDeclaredFields":true
+},
+{
+  "name":"hidden.org.apache.maven.model.building.DefaultModelBuilder",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.apache.maven.model.building.DefaultModelProcessor",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true
+},
+{
+  "name":"hidden.org.apache.maven.model.composition.DefaultDependencyManagementImporter",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.apache.maven.model.inheritance.DefaultInheritanceAssembler",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.apache.maven.model.interpolation.AbstractStringBasedModelInterpolator",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true
+},
+{
+  "name":"hidden.org.apache.maven.model.interpolation.StringSearchModelInterpolator",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.apache.maven.model.io.DefaultModelReader",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.apache.maven.model.io.DefaultModelWriter",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.apache.maven.model.locator.DefaultModelLocator",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.apache.maven.model.management.DefaultDependencyManagementInjector",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.apache.maven.model.management.DefaultPluginManagementInjector",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.apache.maven.model.normalization.DefaultModelNormalizer",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.apache.maven.model.path.DefaultModelPathTranslator",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.apache.maven.model.path.DefaultModelUrlNormalizer",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.apache.maven.model.path.DefaultPathTranslator",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.apache.maven.model.path.DefaultUrlNormalizer",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.apache.maven.model.plugin.DefaultLifecycleBindingsInjector",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.apache.maven.model.plugin.DefaultPluginConfigurationExpander",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.apache.maven.model.plugin.DefaultReportConfigurationExpander",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.apache.maven.model.plugin.DefaultReportingConverter",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.apache.maven.model.profile.DefaultProfileInjector",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.apache.maven.model.profile.DefaultProfileSelector",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.apache.maven.model.profile.activation.FileProfileActivator",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.apache.maven.model.profile.activation.JdkVersionProfileActivator",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.apache.maven.model.profile.activation.OperatingSystemProfileActivator",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.apache.maven.model.profile.activation.PropertyProfileActivator",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.apache.maven.model.superpom.DefaultSuperPomProvider",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.apache.maven.model.validation.DefaultModelValidator",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.apache.maven.plugin.DefaultBuildPluginManager",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.apache.maven.plugin.DefaultExtensionRealmCache",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.apache.maven.plugin.DefaultPluginArtifactsCache",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.apache.maven.plugin.DefaultPluginDescriptorCache",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.apache.maven.plugin.DefaultPluginRealmCache",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.apache.maven.plugin.internal.DefaultLegacySupport",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.apache.maven.plugin.internal.DefaultMavenPluginManager",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.apache.maven.plugin.internal.DefaultPluginDependenciesResolver",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.apache.maven.plugin.internal.DefaultPluginManager",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.apache.maven.plugin.prefix.internal.DefaultPluginPrefixResolver",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.apache.maven.plugin.version.internal.DefaultPluginVersionResolver",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.apache.maven.profiles.DefaultMavenProfilesBuilder",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.apache.maven.project.DefaultMavenProjectBuilder",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.apache.maven.project.DefaultMavenProjectHelper",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.apache.maven.project.DefaultProjectBuilder",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.apache.maven.project.DefaultProjectBuildingHelper",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.apache.maven.project.DefaultProjectDependenciesResolver",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.apache.maven.project.DefaultProjectRealmCache",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.apache.maven.project.artifact.DefaultMavenMetadataCache",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.apache.maven.project.artifact.DefaultMetadataSource",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.apache.maven.project.artifact.MavenMetadataSource",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.apache.maven.project.inheritance.DefaultModelInheritanceAssembler",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.apache.maven.project.interpolation.AbstractStringBasedModelInterpolator",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true
+},
+{
+  "name":"hidden.org.apache.maven.project.interpolation.StringSearchModelInterpolator",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.apache.maven.project.path.DefaultPathTranslator",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.apache.maven.project.validation.DefaultModelValidator",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.apache.maven.repository.DefaultMirrorSelector",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.apache.maven.repository.internal.DefaultArtifactDescriptorReader",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.apache.maven.repository.internal.DefaultVersionRangeResolver",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.apache.maven.repository.internal.DefaultVersionResolver",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.apache.maven.repository.internal.SnapshotMetadataGeneratorFactory",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.apache.maven.repository.internal.VersionsMetadataGeneratorFactory",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.apache.maven.repository.legacy.DefaultUpdateCheckManager",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.apache.maven.repository.legacy.DefaultWagonManager",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.apache.maven.repository.legacy.LegacyRepositorySystem",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.apache.maven.repository.legacy.repository.DefaultArtifactRepositoryFactory",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.apache.maven.repository.legacy.resolver.DefaultLegacyArtifactCollector",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.apache.maven.repository.legacy.resolver.conflict.DefaultConflictResolver",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.apache.maven.repository.legacy.resolver.conflict.DefaultConflictResolverFactory",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.apache.maven.repository.legacy.resolver.conflict.FarthestConflictResolver",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.apache.maven.repository.legacy.resolver.conflict.NearestConflictResolver",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.apache.maven.repository.legacy.resolver.conflict.NewestConflictResolver",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.apache.maven.repository.legacy.resolver.conflict.OldestConflictResolver",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.apache.maven.repository.legacy.resolver.transform.AbstractVersionTransformation",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true
+},
+{
+  "name":"hidden.org.apache.maven.repository.legacy.resolver.transform.DefaultArtifactTransformationManager",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.apache.maven.repository.legacy.resolver.transform.LatestArtifactTransformation",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.apache.maven.repository.legacy.resolver.transform.ReleaseArtifactTransformation",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.apache.maven.repository.legacy.resolver.transform.SnapshotTransformation",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.apache.maven.repository.metadata.DefaultClasspathTransformation",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.apache.maven.repository.metadata.DefaultGraphConflictResolutionPolicy",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.apache.maven.repository.metadata.DefaultGraphConflictResolver",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.apache.maven.rtinfo.internal.DefaultRuntimeInformation",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.apache.maven.session.scope.internal.SessionScope",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true
+},
+{
+  "name":"hidden.org.apache.maven.session.scope.internal.SessionScope$1",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true
+},
+{
+  "name":"hidden.org.apache.maven.session.scope.internal.SessionScopeModule",
+  "allDeclaredMethods":true,
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"hidden.org.apache.maven.settings.DefaultMavenSettingsBuilder",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.apache.maven.settings.building.DefaultSettingsBuilder",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.apache.maven.settings.crypto.DefaultSettingsDecrypter",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.apache.maven.settings.io.DefaultSettingsReader",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.apache.maven.settings.io.DefaultSettingsWriter",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.apache.maven.settings.validation.DefaultSettingsValidator",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.apache.maven.toolchain.DefaultToolchainManager",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.apache.maven.toolchain.DefaultToolchainManagerPrivate",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.apache.maven.toolchain.DefaultToolchainsBuilder",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.apache.maven.toolchain.building.DefaultToolchainsBuilder",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.apache.maven.toolchain.io.DefaultToolchainsReader",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.apache.maven.toolchain.java.JavaToolchainFactory",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.eclipse.aether.connector.basic.BasicRepositoryConnectorFactory",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.eclipse.aether.impl.guice.AetherModule",
+  "allDeclaredMethods":true
+},
+{
+  "name":"hidden.org.eclipse.aether.impl.guice.AetherModule$Slf4jModule",
+  "allDeclaredMethods":true
+},
+{
+  "name":"hidden.org.eclipse.aether.internal.impl.DefaultArtifactResolver",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.eclipse.aether.internal.impl.DefaultChecksumPolicyProvider",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.eclipse.aether.internal.impl.DefaultDependencyCollector",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.eclipse.aether.internal.impl.DefaultDeployer",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.eclipse.aether.internal.impl.DefaultFileProcessor",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.eclipse.aether.internal.impl.DefaultInstaller",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.eclipse.aether.internal.impl.DefaultLocalRepositoryProvider",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.eclipse.aether.internal.impl.DefaultMetadataResolver",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.eclipse.aether.internal.impl.DefaultOfflineController",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.eclipse.aether.internal.impl.DefaultRemoteRepositoryManager",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.eclipse.aether.internal.impl.DefaultRepositoryConnectorProvider",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.eclipse.aether.internal.impl.DefaultRepositoryEventDispatcher",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.eclipse.aether.internal.impl.DefaultRepositoryLayoutProvider",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.eclipse.aether.internal.impl.DefaultRepositorySystem",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.eclipse.aether.internal.impl.DefaultSyncContextFactory",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.eclipse.aether.internal.impl.DefaultTransporterProvider",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.eclipse.aether.internal.impl.DefaultUpdateCheckManager",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.eclipse.aether.internal.impl.DefaultUpdatePolicyAnalyzer",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.eclipse.aether.internal.impl.EnhancedLocalRepositoryManagerFactory",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.eclipse.aether.internal.impl.LoggerFactoryProvider",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.eclipse.aether.internal.impl.Maven2RepositoryLayoutFactory",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.eclipse.aether.internal.impl.SimpleLocalRepositoryManagerFactory",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.eclipse.aether.internal.impl.slf4j.Slf4jLoggerFactory",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.eclipse.aether.transport.file.FileTransporterFactory",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.eclipse.aether.transport.http.HttpTransporterFactory",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.eclipse.sisu.Parameters",
+  "allDeclaredMethods":true
+},
+{
+  "name":"hidden.org.eclipse.sisu.bean.BeanScheduler",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true
+},
+{
+  "name":"hidden.org.eclipse.sisu.inject.DefaultBeanLocator",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true
+},
+{
+  "name":"hidden.org.eclipse.sisu.inject.DefaultRankingFunction",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true
+},
+{
+  "name":"hidden.org.eclipse.sisu.inject.TypeArguments$Implicit",
+  "allDeclaredMethods":true
+},
+{
+  "name":"hidden.org.eclipse.sisu.plexus.ClassRealmManager",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true
+},
+{
+  "name":"hidden.org.eclipse.sisu.plexus.DefaultPlexusBeanLocator",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true
+},
+{
+  "name":"hidden.org.eclipse.sisu.plexus.PlexusBindingModule",
+  "allDeclaredMethods":true
+},
+{
+  "name":"hidden.org.eclipse.sisu.plexus.PlexusDateTypeConverter",
+  "allDeclaredMethods":true
+},
+{
+  "name":"hidden.org.eclipse.sisu.plexus.PlexusLifecycleManager",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true
+},
+{
+  "name":"hidden.org.eclipse.sisu.plexus.PlexusXmlBeanConverter",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.eclipse.sisu.space.AbstractDeferredClass",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true
+},
+{
+  "name":"hidden.org.eclipse.sisu.space.NamedClass",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true
+},
+{
+  "name":"hidden.org.eclipse.sisu.space.URLClassSpace",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true
+},
+{
+  "name":"hidden.org.eclipse.sisu.space.WildcardKey$Qualified",
+  "allDeclaredMethods":true
+},
+{
+  "name":"hidden.org.eclipse.sisu.wire.BeanProviders$3",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true
+},
+{
+  "name":"hidden.org.eclipse.sisu.wire.BeanProviders$7",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true
+},
+{
+  "name":"hidden.org.eclipse.sisu.wire.ElementAnalyzer$1",
+  "allDeclaredMethods":true
+},
+{
+  "name":"hidden.org.eclipse.sisu.wire.MergedProperties",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true
+},
+{
+  "name":"hidden.org.eclipse.sisu.wire.PlaceholderBeanProvider",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true
+},
+{
+  "name":"hidden.org.eclipse.sisu.wire.TypeConverterCache",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"hidden.org.eclipse.sisu.wire.WireModule",
+  "allDeclaredMethods":true
+},
+{
+  "name":"java.lang.Boolean",
+  "methods":[{"name":"parseBoolean","parameterTypes":["java.lang.String"] }]
+},
+{
+  "name":"java.lang.Byte",
+  "methods":[{"name":"parseByte","parameterTypes":["java.lang.String"] }]
+},
+{
+  "name":"java.lang.Double",
+  "methods":[{"name":"parseDouble","parameterTypes":["java.lang.String"] }]
+},
+{
+  "name":"java.lang.Float",
+  "methods":[{"name":"parseFloat","parameterTypes":["java.lang.String"] }]
+},
+{
+  "name":"java.lang.Integer",
+  "methods":[{"name":"parseInt","parameterTypes":["java.lang.String"] }]
+},
+{
+  "name":"java.lang.Long",
+  "methods":[{"name":"parseLong","parameterTypes":["java.lang.String"] }]
+},
+{
+  "name":"java.lang.Object",
+  "allDeclaredFields":true
+},
+{
+  "name":"java.lang.Short",
+  "methods":[{"name":"parseShort","parameterTypes":["java.lang.String"] }]
+},
+{
+  "name":"java.net.URLStreamHandler",
+  "methods":[{"name":"openConnection","parameterTypes":["java.net.URL"] }]
+},
+{
+  "name":"java.util.AbstractMap",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true
+},
+{
+  "name":"java.util.Collections$UnmodifiableMap",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true
+},
+{
+  "name":"javax.inject.Named",
+  "allDeclaredMethods":true
+},
+{
+  "name":"org.codehaus.plexus.DefaultPlexusContainer",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"org.codehaus.plexus.DefaultPlexusContainer$1",
+  "allDeclaredMethods":true
+},
+{
+  "name":"org.codehaus.plexus.DefaultPlexusContainer$BootModule",
+  "allDeclaredMethods":true
+},
+{
+  "name":"org.codehaus.plexus.DefaultPlexusContainer$ContainerModule",
+  "allDeclaredMethods":true
+},
+{
+  "name":"org.codehaus.plexus.DefaultPlexusContainer$DefaultsModule",
+  "allDeclaredMethods":true
+},
+{
+  "name":"org.codehaus.plexus.DefaultPlexusContainer$LoggerManagerProvider",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true
+},
+{
+  "name":"org.codehaus.plexus.DefaultPlexusContainer$LoggerProvider",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true
+},
+{
+  "name":"org.codehaus.plexus.classworlds.realm.ClassRealm",
+  "methods":[{"name":"getImportRealms","parameterTypes":[] }]
+},
+{
+  "name":"org.codehaus.plexus.component.annotations.Requirement",
+  "methods":[{"name":"optional","parameterTypes":[] }]
+},
+{
+  "name":"org.codehaus.plexus.component.configurator.AbstractComponentConfigurator",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true
+},
+{
+  "name":"org.codehaus.plexus.component.configurator.BasicComponentConfigurator",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"org.codehaus.plexus.component.configurator.MapOrientedComponentConfigurator",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"org.codehaus.plexus.context.DefaultContext",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true
+},
+{
+  "name":"org.codehaus.plexus.logging.AbstractLogEnabled",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true
+},
+{
+  "name":"org.codehaus.plexus.logging.AbstractLogger",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true
+},
+{
+  "name":"org.codehaus.plexus.logging.AbstractLoggerManager",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true
+},
+{
+  "name":"org.codehaus.plexus.logging.console.ConsoleLogger",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"org.codehaus.plexus.logging.console.ConsoleLoggerManager",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"org.codehaus.plexus.util.xml.Xpp3Dom",
+  "allDeclaredFields":true
+},
+{
+  "name":"org.sonatype.plexus.components.cipher.DefaultPlexusCipher",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"org.sonatype.plexus.components.sec.dispatcher.DefaultSecDispatcher",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+},
+{
+  "name":"org.springframework.boot.loader.thin.DependencyResolutionModule",
+  "allDeclaredMethods":true
+},
+{
+  "name":"org.springframework.boot.loader.thin.ThinPropertiesModelProcessor",
+  "allDeclaredFields":true,
+  "allDeclaredMethods":true,
+  "allDeclaredConstructors":true
+}
+]

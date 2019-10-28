@@ -182,11 +182,13 @@ public class PathResolver {
 
 	private List<Dependency> extract(Archive parent, Archive archive, String name,
 			String[] profiles) {
-		Properties properties = getProperties(archive, name, profiles);
 		Resource parentPom = getPom(parent);
-		List<Dependency> parentDependencies = engine.dependencies(parentPom, properties);
+		// Assume the profiles only apply to child
+		List<Dependency> parentDependencies = engine.dependencies(parentPom,
+				getProperties(archive, name, new String[0]));
 		Resource childPom = getPom(archive);
-		List<Dependency> childDependencies = engine.dependencies(childPom, properties);
+		List<Dependency> childDependencies = engine.dependencies(childPom,
+				getProperties(archive, name, profiles));
 		Map<String, Dependency> lookup = new HashMap<>();
 		for (Dependency dependency : parentDependencies) {
 			lookup.put(coordinates(dependency), dependency);
