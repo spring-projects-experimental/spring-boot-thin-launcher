@@ -326,6 +326,8 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 		else {
 			loader.setParentFirst(false);
 		}
+		// Restore default
+		LogUtils.setLogLevel(Level.INFO);
 		return loader;
 	}
 
