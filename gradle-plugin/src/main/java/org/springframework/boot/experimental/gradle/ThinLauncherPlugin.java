@@ -18,6 +18,7 @@ package org.springframework.boot.experimental.gradle;
 
 import java.io.File;
 import java.nio.file.Files;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -250,9 +251,9 @@ public class ThinLauncherPlugin implements Plugin<Project> {
 								exec.setWorkingDir(
 										copy.getOutputs().getFiles().getSingleFile());
 								exec.setCommandLine(Jvm.current().getJavaExecutable());
-								List<String> args = Arrays.asList("-Dthin.root=.",
-										"-Dthin.dryrun", "-jar",
-										thinJar.getArchiveName());
+								List<String> args = new ArrayList<>(
+										Arrays.asList("-Dthin.root=.", "-Dthin.dryrun",
+												"-jar", thinJar.getArchiveName()));
 								String thinRepo = getThinRepo(project);
 								if (thinRepo != null) {
 									args.add(1, "-Dthin.repo=" + thinRepo);
