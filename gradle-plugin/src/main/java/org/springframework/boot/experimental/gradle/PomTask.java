@@ -17,11 +17,20 @@
 package org.springframework.boot.experimental.gradle;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+
+import groovy.util.Node;
 
 import io.spring.gradle.dependencymanagement.dsl.DependencyManagementExtension;
 import io.spring.gradle.dependencymanagement.maven.PomDependencyManagementConfigurer;
-
+import org.gradle.api.Action;
 import org.gradle.api.DefaultTask;
+import org.gradle.api.Project;
+import org.gradle.api.XmlProvider;
+import org.gradle.api.artifacts.maven.MavenPom;
+import org.gradle.api.artifacts.repositories.ArtifactRepository;
+import org.gradle.api.artifacts.repositories.MavenArtifactRepository;
 import org.gradle.api.plugins.MavenPluginConvention;
 import org.gradle.api.publish.maven.tasks.GenerateMavenPom;
 import org.gradle.api.tasks.OutputFile;
@@ -53,17 +62,21 @@ public class PomTask extends DefaultTask {
 				MavenPluginConvention maven = getProject().getConvention()
 						.findPlugin(MavenPluginConvention.class);
 				if (maven != null) {
+					getLogger().info("Generating pom.xml with maven plugin");
 					output.mkdirs();
-					maven.pom().withXml(pomConfigurer)
-							.writeTo(new File(output, "pom.xml"));
+					MavenPom pom = maven.pom();
+					pom.withXml(new RepositoryAdder(getProject()));
+					pom.withXml(pomConfigurer).writeTo(new File(output, "pom.xml"));
 				}
 				else {
 					TaskCollection<GenerateMavenPom> tasks = getProject().getTasks()
 							.withType(GenerateMavenPom.class);
 					if (!tasks.isEmpty()) {
+						getLogger().info("Generating pom.xml with maven-publish plugin");
 						output.mkdirs();
 						GenerateMavenPom plugin = tasks.iterator().next();
 						plugin.setDestination(new File(output, "pom.xml"));
+						plugin.getPom().withXml(new RepositoryAdder(getProject()));
 						plugin.doGenerate();
 					}
 					else {
@@ -91,6 +104,66 @@ public class PomTask extends DefaultTask {
 	 */
 	public void setOutput(File output) {
 		this.output = output;
+	}
+
+	private final class RepositoryAdder implements Action<XmlProvider> {
+		private static final String NODE_NAME_REPOSITORIES = "repositories";
+		private static final String NODE_NAME_REPOSITORY = "repository";
+		private static final String NODE_NAME_ID = "id";
+		private static final String NODE_NAME_URL = "url";
+		private Project project;
+
+		public RepositoryAdder(Project project) {
+			this.project = project;
+		}
+
+		@Override
+		public void execute(XmlProvider xml) {
+			List<MavenArtifactRepository> repos = new ArrayList<>();
+			for (ArtifactRepository repo : project.getRepositories()) {
+				if (repo instanceof MavenArtifactRepository) {
+					MavenArtifactRepository maven = (MavenArtifactRepository) repo;
+					String proto = "" + maven.getUrl().getScheme();
+					String host = maven.getUrl().getHost();
+					if (proto.startsWith("http")
+							&& !host.contains("repo.maven.apache.org")) {
+						repos.add(maven);
+					}
+				}
+			}
+			if (repos.isEmpty()) {
+				return;
+			}
+			configurePom(xml.asNode(), repos);
+		}
+
+		private void configurePom(Node pom, List<MavenArtifactRepository> repos) {
+			Node repositoriesNode = findChild(pom, NODE_NAME_REPOSITORIES);
+			if (repositoriesNode == null) {
+				repositoriesNode = pom.appendNode(NODE_NAME_REPOSITORIES);
+			}
+			configureRepositories(repositoriesNode, repos);
+		}
+
+		private void configureRepositories(Node repositoriesNode,
+				List<MavenArtifactRepository> repos) {
+			for (MavenArtifactRepository repo : repos) {
+				Node node = repositoriesNode.appendNode(NODE_NAME_REPOSITORY);
+				node.appendNode(NODE_NAME_ID, repo.getName());
+				node.appendNode(NODE_NAME_URL, repo.getUrl().toString());
+			}
+		}
+
+		private Node findChild(Node node, String name) {
+			for (Object childObject : node.children()) {
+				if ((childObject instanceof Node)
+						&& ((Node) childObject).name().equals(name)) {
+					return (Node) childObject;
+				}
+
+			}
+			return null;
+		}
 	}
 
 }

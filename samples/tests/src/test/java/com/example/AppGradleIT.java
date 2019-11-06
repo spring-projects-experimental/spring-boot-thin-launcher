@@ -18,13 +18,18 @@ package com.example;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.Charset;
 
 import org.assertj.core.api.Condition;
 import org.junit.After;
 import org.junit.Test;
+
+import org.springframework.util.StreamUtils;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -53,6 +58,16 @@ public class AppGradleIT {
 				return value.length() < 1024 * 1024;
 			}
 		});
+	}
+
+	@Test
+	public void thinPom() throws FileNotFoundException, IOException {
+		File pom = new File(
+				"../app/build/resources/main/META-INF/maven/com.example/app/pom.xml");
+		assertThat(pom).exists();
+		assertThat(StreamUtils.copyToString(new FileInputStream(pom),
+				Charset.forName("UTF-8"))).contains("<repositories>",
+						"<id>spring-snapshot</id>");
 	}
 
 	@Test
