@@ -554,8 +554,9 @@ resolve and cache artifacts, using the standard Maven `settings.xml`
 file (with a top level element called `<localRepository/>`). You can
 also use a system property `maven.repo.local` (or `maven.home` which
 defaults to `${user.home}/.m2`) when you launch the thin jar, but not
-a command line flag. The Maven plugin responds to the `settings.xml`
-and also to `-Dmaven.repo.local` as a Maven command line flag.
+a command line flag. The Maven and Gradle plugins respond to the
+`settings.xml` and also (with Maven) to `-Dmaven.repo.local` as a
+command line flag.
 
 ## How to Configure a Proxy
 
@@ -610,6 +611,21 @@ $ ./gradlew thinResolve -P thin.repo=http://localhost:8081/repository/maven-cent
 ```
 
 System properties (`thin.repo`) and environment variables (`THIN_REPO`) work too.
+
+## Using a Custom Repository for Dependencies
+
+The thin launcher will use repository declarations from the `pom.xml`
+in the archive, and also from the `~/.m2/settings.xml` (by default,
+but can be relocated using `maven.home` or `thin.root`). If you have a
+private repository that requires credentials to access it, the best
+choice is
+[`settings.xml`](https://maven.apache.org/settings.html). This also
+applies to the Gradle plugin because it executes the jar file, and the
+underlying mechanism is implemented using Maven.
+
+> NOTE: The `thin.repo` setting only applies to the location of the
+> launcher jar itself. If your custom repo is not a mirror it is
+> unlikely to be that location.
 
 ## License
 This project is Open Source software released under the
