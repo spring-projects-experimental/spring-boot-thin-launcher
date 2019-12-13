@@ -214,11 +214,6 @@
   "allDeclaredMethods":true
 },
 {
-  "name":"hidden.org.apache.maven.execution.scope.internal.MojoExecutionScope$1",
-  "allDeclaredFields":true,
-  "allDeclaredMethods":true
-},
-{
   "name":"hidden.org.apache.maven.execution.scope.internal.MojoExecutionScopeCoreModule",
   "allDeclaredMethods":true,
   "methods":[{"name":"<init>","parameterTypes":[] }]
@@ -1351,20 +1346,6 @@
   "allDeclaredMethods":true
 },
 {
-  "name":"hidden.org.eclipse.sisu.wire.BeanProviders$3",
-  "allDeclaredFields":true,
-  "allDeclaredMethods":true
-},
-{
-  "name":"hidden.org.eclipse.sisu.wire.BeanProviders$7",
-  "allDeclaredFields":true,
-  "allDeclaredMethods":true
-},
-{
-  "name":"hidden.org.eclipse.sisu.wire.ElementAnalyzer$1",
-  "allDeclaredMethods":true
-},
-{
   "name":"hidden.org.eclipse.sisu.wire.MergedProperties",
   "allDeclaredFields":true,
   "allDeclaredMethods":true
@@ -1439,10 +1420,6 @@
   "allDeclaredFields":true,
   "allDeclaredMethods":true,
   "allDeclaredConstructors":true
-},
-{
-  "name":"org.codehaus.plexus.DefaultPlexusContainer$1",
-  "allDeclaredMethods":true
 },
 {
   "name":"org.codehaus.plexus.DefaultPlexusContainer$BootModule",
