@@ -108,7 +108,9 @@ public class ThinJarAppWrapper {
 		if (file.isDirectory()) {
 			return new ExplodedArchive(file);
 		}
-		return new JarFileArchive(file);
+		// Always use null for URL because after Spring Boot 2.2 it defaults to file: form
+		// which breaks the relative resource resolution
+		return new JarFileArchive(file, null);
 	}
 
 	private boolean isRunning() {
@@ -247,7 +249,8 @@ public class ThinJarAppWrapper {
 					mainClass = MainClassFinder.findSingleMainClass(root);
 				}
 				else {
-					mainClass = MainClassFinder.findSingleMainClass(new JarFile(root), "/");
+					mainClass = MainClassFinder.findSingleMainClass(new JarFile(root),
+							"/");
 				}
 				return mainClass;
 			}
@@ -303,7 +306,7 @@ public class ThinJarAppWrapper {
 						"Unable to determine code source archive from " + root);
 			}
 			return (root.isDirectory() ? new ExplodedArchive(root)
-					: new JarFileArchive(root));
+					: new JarFileArchive(root, null));
 		}
 		catch (Exception e) {
 			throw new IllegalStateException("Cannt create local archive", e);
