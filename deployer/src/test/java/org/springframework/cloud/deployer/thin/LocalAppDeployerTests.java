@@ -58,7 +58,7 @@ public class LocalAppDeployerTests {
 
 	@Test
 	public void appFromJarFile() throws Exception {
-		String deployed = deploy("app-with-db-in-lib-properties.jar");
+		String deployed = deploy("empty");
 		// Deployment is blocking so it either failed or succeeded.
 		assertThat(deployer.status(deployed).getState())
 				.isEqualTo(DeploymentState.deployed);
@@ -67,8 +67,8 @@ public class LocalAppDeployerTests {
 
 	@Test
 	public void twoApps() throws Exception {
-		String first = deploy("app-with-db-in-lib-properties.jar");
-		String second = deploy("app-with-cloud-in-lib-properties.jar");
+		String first = deploy("empty");
+		String second = deploy("cloud");
 		// Deployment is blocking so it either failed or succeeded.
 		assertThat(deployer.status(first).getState()).isEqualTo(DeploymentState.deployed);
 		assertThat(deployer.status(second).getState())
@@ -79,7 +79,7 @@ public class LocalAppDeployerTests {
 
 	@Test
 	public void appFromJarFileFails() throws Exception {
-		String deployed = deploy("app-with-cloud-in-lib-properties.jar", "--fail");
+		String deployed = deploy("cloud", "--fail");
 		Thread.sleep(500L);
 		assertThat(deployer.status(deployed).getState())
 				.isEqualTo(DeploymentState.failed);
@@ -87,7 +87,8 @@ public class LocalAppDeployerTests {
 	}
 
 	private String deploy(String jarName, String... args) {
-		Resource resource = new FileSystemResource("src/test/resources/" + jarName);
+		Resource resource = new FileSystemResource("../samples/tests/target/it/" + jarName
+				+ "/target/" + jarName + "-0.0.1-SNAPSHOT.jar");
 		AppDefinition definition = new AppDefinition(jarName,
 				Collections.<String, String>emptyMap());
 		AppDeploymentRequest request = new AppDeploymentRequest(definition, resource,
@@ -113,8 +114,7 @@ public class LocalAppDeployerTests {
 		// loaded should be variable but stable)
 		LocalAppDeployerTests deployer = new LocalAppDeployerTests();
 		while (true) {
-			String deployed = deployer.deploy("app-with-cloud-in-lib-properties.jar",
-					"--server.port=0");
+			String deployed = deployer.deploy("empty", "--server.port=0");
 			LocalAppDeployerTests.deployer.undeploy(deployed);
 		}
 	}

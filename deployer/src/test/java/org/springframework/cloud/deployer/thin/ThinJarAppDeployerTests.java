@@ -58,7 +58,8 @@ public class ThinJarAppDeployerTests {
 
 	@Test
 	public void appFromTargetClasses() throws Exception {
-		String deployed = deploy(new FileSystemResource("../samples/other/target/classes"), "other");
+		String deployed = deploy(
+				new FileSystemResource("../samples/simple/target/classes"), "other");
 		// Deployment is blocking so it either failed or succeeded.
 		assertThat(deployer.status(deployed).getState())
 				.isEqualTo(DeploymentState.deployed);
@@ -67,7 +68,8 @@ public class ThinJarAppDeployerTests {
 
 	@Test
 	public void appFromPom() throws Exception {
-		String deployed = deploy(new FileSystemResource("src/test/resources/apps/app"), "app");
+		String deployed = deploy(new FileSystemResource("src/test/resources/apps/app"),
+				"app");
 		// Deployment is blocking so it either failed or succeeded.
 		assertThat(deployer.status(deployed).getState())
 				.isEqualTo(DeploymentState.deployed);
@@ -76,7 +78,8 @@ public class ThinJarAppDeployerTests {
 
 	@Test
 	public void appFromDirectoryWithProperties() throws Exception {
-		String deployed = deploy(new FileSystemResource("src/test/resources/apps/props"), "props");
+		String deployed = deploy(new FileSystemResource("src/test/resources/apps/props"),
+				"props");
 		// Deployment is blocking so it either failed or succeeded.
 		assertThat(deployer.status(deployed).getState())
 				.isEqualTo(DeploymentState.deployed);
@@ -107,7 +110,7 @@ public class ThinJarAppDeployerTests {
 		Resource resource = new FileSystemResource("src/test/resources/" + jarName);
 		return deploy(resource, jarName, args);
 	}
-	
+
 	String deploy(Resource resource, String name, String... args) {
 		AppDefinition definition = new AppDefinition(name,
 				Collections.<String, String>emptyMap());
