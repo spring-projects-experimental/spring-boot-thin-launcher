@@ -49,7 +49,7 @@ public class ThinJarAppDeployerTests {
 
 	@Test
 	public void appFromJarFile() throws Exception {
-		String deployed = deploy("app-with-db-in-lib-properties.jar");
+		String deployed = deploy("empty");
 		// Deployment is blocking so it either failed or succeeded.
 		assertThat(deployer.status(deployed).getState())
 				.isEqualTo(DeploymentState.deployed);
@@ -88,8 +88,8 @@ public class ThinJarAppDeployerTests {
 
 	@Test
 	public void twoApps() throws Exception {
-		String first = deploy("app-with-db-in-lib-properties.jar");
-		String second = deploy("app-with-cloud-in-lib-properties.jar");
+		String first = deploy("empty");
+		String second = deploy("cloud");
 		// Deployment is blocking so it either failed or succeeded.
 		assertThat(deployer.status(first).getState()).isEqualTo(DeploymentState.deployed);
 		assertThat(deployer.status(second).getState())
@@ -100,14 +100,15 @@ public class ThinJarAppDeployerTests {
 
 	@Test
 	public void appFromJarFileFails() throws Exception {
-		String deployed = deploy("app-with-cloud-in-lib-properties.jar", "--fail");
+		String deployed = deploy("cloud", "--fail");
 		assertThat(deployer.status(deployed).getState())
 				.isEqualTo(DeploymentState.failed);
 		deployer.undeploy(deployed);
 	}
 
 	String deploy(String jarName, String... args) {
-		Resource resource = new FileSystemResource("src/test/resources/" + jarName);
+		Resource resource = new FileSystemResource("../samples/tests/target/it/" + jarName
+				+ "/target/" + jarName + "-0.0.1-SNAPSHOT.jar");
 		return deploy(resource, jarName, args);
 	}
 
@@ -125,7 +126,7 @@ public class ThinJarAppDeployerTests {
 		// loaded should be variable but stable)
 		ThinJarAppDeployerTests deployer = new ThinJarAppDeployerTests();
 		while (true) {
-			String deployed = deployer.deploy("app-with-cloud-in-lib-properties.jar");
+			String deployed = deployer.deploy("cloud");
 			ThinJarAppDeployerTests.deployer.undeploy(deployed);
 		}
 	}

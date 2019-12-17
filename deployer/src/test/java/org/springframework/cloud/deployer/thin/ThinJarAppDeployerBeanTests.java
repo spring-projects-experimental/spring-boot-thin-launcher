@@ -40,20 +40,21 @@ public class ThinJarAppDeployerBeanTests {
 
 	@Test
 	public void getBeans() throws Exception {
-		String deployed = deploy("app-with-db-in-lib-properties.jar");
+		String deployed = deploy("empty");
 		assertThat(deployer.getBeansOfType(deployed, DataSource.class)).isNotEmpty();
 		deployer.undeploy(deployed);
 	}
 
 	@Test
 	public void getBean() throws Exception {
-		String deployed = deploy("app-with-db-in-lib-properties.jar");
+		String deployed = deploy("empty");
 		assertThat(deployer.getBean(deployed, DataSource.class)).isNotNull();
 		deployer.undeploy(deployed);
 	}
 
 	String deploy(String jarName, String... args) {
-		Resource resource = new FileSystemResource("src/test/resources/" + jarName);
+		Resource resource = new FileSystemResource("../samples/tests/target/it/" + jarName
+				+ "/target/" + jarName + "-0.0.1-SNAPSHOT.jar");
 		AppDefinition definition = new AppDefinition(jarName,
 				Collections.<String, String>emptyMap());
 		AppDeploymentRequest request = new AppDeploymentRequest(definition, resource,
