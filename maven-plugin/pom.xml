@@ -18,6 +18,7 @@
 	<properties>
 		<maven.version>3.1.1</maven.version>
 		<plexus-archiver.version>3.4</plexus-archiver.version>
+		<dependency.version>2.3.1</dependency.version>
 	</properties>
 
 	<dependencies>
@@ -34,6 +35,11 @@
 			<groupId>org.apache.maven</groupId>
 			<artifactId>maven-plugin-api</artifactId>
 			<version>${maven.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.twdata.maven</groupId>
+			<artifactId>mojo-executor-maven-plugin</artifactId>
+			<version>${dependency.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.codehaus.plexus</groupId>
@@ -85,7 +91,7 @@
 		</plugins>
 		<pluginManagement>
 			<plugins>
-				<!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->
+				<!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself. -->
 				<plugin>
 					<groupId>org.eclipse.m2e</groupId>
 					<artifactId>lifecycle-mapping</artifactId>
