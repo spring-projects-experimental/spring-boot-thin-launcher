@@ -27,12 +27,14 @@ import org.apache.maven.artifact.resolver.ArtifactResolutionRequest;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.repository.RepositorySystem;
 import org.apache.maven.settings.Mirror;
 import org.apache.maven.settings.Settings;
+import org.codehaus.plexus.util.StringUtils;
 
 import org.springframework.boot.loader.tools.JavaExecutable;
 import org.springframework.boot.loader.tools.RunProcess;
@@ -71,6 +73,13 @@ public abstract class ThinJarMojo extends AbstractMojo {
 	 */
 	@Parameter(property = "skip", defaultValue = "false")
 	protected boolean skip;
+
+	/**
+	 * Artifact containing the thin launcher
+	 * (group:artifact:version[:packaging[:classifier]]).
+	 */
+	@Parameter(defaultValue = "org.springframework.boot.experimental:spring-boot-thin-launcher:1.0.24.BUILD-SNAPSHOT:jar:exec", required = true, property = "thin.launcherArtifact")
+	private String thinLauncherArtifact;
 
 	@Component
 	private RepositorySystem repositorySystem;
@@ -160,6 +169,30 @@ public abstract class ThinJarMojo extends AbstractMojo {
 		request.setArtifact(artifact);
 		request.setResolveTransitively(false);
 		return request;
+	}
+
+	protected File downloadThinJar() throws MojoFailureException {
+		Dependency deployable = decode(thinLauncherArtifact);
+		return resolveFile(deployable);
+	}
+
+	private Dependency decode(String artifact) throws MojoFailureException {
+		String[] tokens = StringUtils.split(artifact, ":");
+		if (tokens.length < 3 || tokens.length > 5) {
+			throw new MojoFailureException("Invalid artifact, you must specify "
+					+ "groupId:artifactId:version[:packaging[:classifier]] " + artifact);
+		}
+		Dependency dependency = new Dependency();
+		dependency.setGroupId(tokens[0]);
+		dependency.setArtifactId(tokens[1]);
+		if (tokens.length >= 4) {
+			dependency.setType(tokens[3]);
+		}
+		if (tokens.length == 5) {
+			dependency.setClassifier(tokens[4]);
+		}
+		dependency.setVersion(tokens[2]);
+		return dependency;
 	}
 
 	private static final class RunProcessKiller implements Runnable {

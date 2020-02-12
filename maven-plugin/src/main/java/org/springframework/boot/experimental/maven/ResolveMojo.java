@@ -17,7 +17,6 @@
 package org.springframework.boot.experimental.maven;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -36,20 +35,6 @@ import org.codehaus.plexus.archiver.UnArchiver;
 import org.codehaus.plexus.archiver.manager.ArchiverManager;
 import org.codehaus.plexus.archiver.manager.NoSuchArchiverException;
 import org.codehaus.plexus.util.FileUtils;
-import org.codehaus.plexus.util.StringUtils;
-import org.eclipse.aether.artifact.Artifact;
-import org.eclipse.aether.artifact.DefaultArtifact;
-
-import static org.twdata.maven.mojoexecutor.MojoExecutor.artifactId;
-import static org.twdata.maven.mojoexecutor.MojoExecutor.configuration;
-import static org.twdata.maven.mojoexecutor.MojoExecutor.element;
-import static org.twdata.maven.mojoexecutor.MojoExecutor.executeMojo;
-import static org.twdata.maven.mojoexecutor.MojoExecutor.executionEnvironment;
-import static org.twdata.maven.mojoexecutor.MojoExecutor.goal;
-import static org.twdata.maven.mojoexecutor.MojoExecutor.groupId;
-import static org.twdata.maven.mojoexecutor.MojoExecutor.name;
-import static org.twdata.maven.mojoexecutor.MojoExecutor.plugin;
-import static org.twdata.maven.mojoexecutor.MojoExecutor.version;
 
 /**
  * Resolves the dependencies for a thin jar artifact (or a set of them). The deployable
@@ -76,24 +61,7 @@ public class ResolveMojo extends ThinJarMojo {
 	private File outputDirectory;
 
 	/**
-	 * Directory containing the thin launcher.
-	 */
-	@Parameter(defaultValue = "${project.build.directory}/thin", required = true, property = "thin.jarDirectory")
-	private File jarDirectory;
-
-	/**
-	 * Artifact containing the thin launcher
-	 * (group:artifact:version[:packaging[:classifier]]).
-	 */
-	@Parameter(defaultValue = "org.springframework.boot.experimental:spring-boot-thin-launcher:1.0.24.BUILD-SNAPSHOT:jar:exec", required = true, property = "thin.launcherArtifact")
-	private String thinLauncherArtifact;
-
-	/**
-	 * A list of the deployable thin libraries that must be do
-	 * 
-	 * @Component private RepositorySystemSession session;
-	 * 
-	 * @Component private RemoteRepositoryManager remoteRepositoryManager;wnloaded and
+	 * A list of the deployable thin libraries that must be downloaded and
 	 * assembled.
 	 */
 	@Parameter
@@ -202,55 +170,6 @@ public class ResolveMojo extends ThinJarMojo {
 		}
 
 		getLog().info("All deployables and dependencies ready in: " + outputDirectory);
-	}
-
-	private File downloadThinJar() throws MojoExecutionException, MojoFailureException {
-
-		executeMojo(
-				plugin(groupId("org.apache.maven.plugins"),
-						artifactId("maven-dependency-plugin"), version("3.1.1")),
-				goal("copy"),
-				configuration(
-						element(name("outputDirectory"), jarDirectory.getAbsolutePath()),
-						element(name("artifact"), thinLauncherArtifact),
-						element(name("stripVersion"), "true")),
-				executionEnvironment(mavenProject, mavenSession, pluginManager));
-		Artifact jar = decode(thinLauncherArtifact);
-		File from = new File(jarDirectory, jarFile(jar, null));
-		File to = new File(jarDirectory, jarFile(jar, jar.getVersion()));
-		try {
-			FileUtils.rename(from, to);
-		}
-		catch (IOException e) {
-			throw new MojoFailureException("Cannot rename file", e);
-		}
-		return to;
-
-	}
-
-	private String jarFile(Artifact jar, String version) {
-		return jar.getArtifactId() + (StringUtils.isEmpty(version) ? "" : "-" + version)
-				+ (StringUtils.isEmpty(jar.getClassifier()) ? ""
-						: "-" + jar.getClassifier())
-				+ "." + jar.getExtension();
-	}
-
-	private Artifact decode(String artifact) throws MojoFailureException {
-		String[] tokens = StringUtils.split(artifact, ":");
-		if (tokens.length < 3 || tokens.length > 5) {
-			throw new MojoFailureException("Invalid artifact, you must specify "
-					+ "groupId:artifactId:version[:packaging[:classifier]] " + artifact);
-		}
-		String classifier = null;
-		String packaging = "jar";
-		if (tokens.length >= 4) {
-			packaging = tokens[3];
-		}
-		if (tokens.length == 5) {
-			classifier = tokens[4];
-		}
-		return new DefaultArtifact(tokens[0], tokens[1], classifier, packaging,
-				tokens[2]);
 	}
 
 }

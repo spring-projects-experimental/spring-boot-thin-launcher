@@ -187,8 +187,7 @@
 				<artifactId>maven-invoker-plugin</artifactId>
 				<version>3.0.1</version>
 				<configuration>
-					<localRepositoryPath>${project.build.directory}/local-repo
-					</localRepositoryPath>
+					<localRepositoryPath>${project.build.directory}/local-repo</localRepositoryPath>
 				</configuration>
 				<executions>
 					<execution>
@@ -198,8 +197,7 @@
 							<goal>run</goal>
 						</goals>
 						<configuration>
-							<cloneProjectsTo>${project.build.directory}/it
-							</cloneProjectsTo>
+							<cloneProjectsTo>${project.build.directory}/it</cloneProjectsTo>
 							<settingsFile>src/it/settings.xml</settingsFile>
 							<addTestClassPath>true</addTestClassPath>
 							<streamLogs>true</streamLogs>
