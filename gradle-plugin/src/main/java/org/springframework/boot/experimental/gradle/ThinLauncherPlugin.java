@@ -17,6 +17,7 @@
 package org.springframework.boot.experimental.gradle;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -41,6 +42,7 @@ import org.gradle.api.tasks.SourceSetContainer;
 import org.gradle.api.tasks.TaskContainer;
 import org.gradle.internal.jvm.Jvm;
 import org.gradle.jvm.tasks.Jar;
+import org.gradle.profile.TaskExecution;
 
 import org.springframework.util.StringUtils;
 
@@ -222,6 +224,20 @@ public class ThinLauncherPlugin implements Plugin<Project> {
 						copy.dependsOn(bootJarTask);
 						copy.from(targetJar.getOutputs().getFiles());
 						copy.into(new File(project.getBuildDir(), "thin/root"));
+						try {
+							File wrapper = new File(project.getBuildDir(),
+									"thin/spring-boot-thin-wrapper.jar");
+							if (!wrapper.exists()) {
+								wrapper.getParentFile().mkdirs();
+								Files.copy(
+										getClass().getClassLoader().getResourceAsStream(
+												"META-INF/loader/spring-boot-thin-wrapper.jar"),
+										wrapper.toPath());
+							}
+						}
+						catch (IOException e) {
+							throw new RuntimeException("Cannot copy thin jar wrapper", e);
+						}
 					}
 				});
 	}
@@ -251,9 +267,10 @@ public class ThinLauncherPlugin implements Plugin<Project> {
 								exec.setWorkingDir(
 										copy.getOutputs().getFiles().getSingleFile());
 								exec.setCommandLine(Jvm.current().getJavaExecutable());
-								List<String> args = new ArrayList<>(
-										Arrays.asList("-Dthin.root=.", "-Dthin.dryrun",
-												"-jar", thinJar.getArchiveName()));
+								List<String> args = new ArrayList<>(Arrays.asList(
+										"-Dthin.root=.", "-Dthin.dryrun", "-jar",
+										"../spring-boot-thin-wrapper.jar"));
+								args.add(1, "-Dthin.archive=" + thinJar.getArchiveName());
 								String thinRepo = getThinRepo(project);
 								if (thinRepo != null) {
 									args.add(1, "-Dthin.repo=" + thinRepo);
