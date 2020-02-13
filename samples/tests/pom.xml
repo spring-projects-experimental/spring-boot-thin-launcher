@@ -185,14 +185,28 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-invoker-plugin</artifactId>
-				<version>3.0.1</version>
+				<version>3.2.1</version>
 				<configuration>
 					<localRepositoryPath>${project.build.directory}/local-repo</localRepositoryPath>
 				</configuration>
 				<executions>
 					<execution>
+						<id>prepare-integration-test</id>
+						<phase>pre-integration-test</phase>
+						<goals>
+							<goal>install</goal>
+						</goals>
+						<configuration>
+							<extraArtifacts>
+								<extraArtifact>org.springframework.boot.experimental:spring-boot-thin-maven-plugin:${wrapper.version}:maven-plugin</extraArtifact>
+								<extraArtifact>org.springframework.boot.experimental:spring-boot-thin-launcher:${wrapper.version}:jar:exec</extraArtifact>
+							</extraArtifacts>
+							<useLocalRepository>true</useLocalRepository>
+						</configuration>
+					</execution>
+					<execution>
 						<id>prepare-test</id>
-						<phase>test-compile</phase>
+						<phase>integration-test</phase>
 						<goals>
 							<goal>run</goal>
 						</goals>
