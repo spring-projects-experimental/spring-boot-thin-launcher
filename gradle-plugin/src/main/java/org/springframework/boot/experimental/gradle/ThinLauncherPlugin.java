@@ -42,7 +42,6 @@ import org.gradle.api.tasks.SourceSetContainer;
 import org.gradle.api.tasks.TaskContainer;
 import org.gradle.internal.jvm.Jvm;
 import org.gradle.jvm.tasks.Jar;
-import org.gradle.profile.TaskExecution;
 
 import org.springframework.util.StringUtils;
 

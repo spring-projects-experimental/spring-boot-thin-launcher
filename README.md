@@ -53,29 +53,49 @@ apply plugin: 'maven'
 apply plugin: 'org.springframework.boot.experimental.thin-launcher'
 ```
 
-and for Spring Boot 2.0.x:
+For Spring Boot 2.x you can use the newer `id` style declaration:
 
 
 ```groovy
-buildscript {
-	ext {
-		springBootVersion = '2.0.1.RELEASE'
-		wrapperVersion = '1.0.21.RELEASE'
+plugins {
+	id 'org.springframework.boot' version '2.2.4.RELEASE'
+	id 'io.spring.dependency-management' version '1.0.9.RELEASE'
+	id 'java'
+	id 'maven'
+	id 'org.springframework.boot.experimental.thin-launcher' version '1.0.23.RELEASE'
+}
+
+group = 'com.example'
+version = '0.0.1-SNAPSHOT'
+sourceCompatibility = '1.8'
+
+repositories {
+	mavenLocal()
+	mavenCentral()
+	maven { url "https://repo.spring.io/snapshot" }
+	maven { url "https://repo.spring.io/milestone" }
+}
+```
+
+For Spring Boot 2.x you also need a `settings.gradle` with the repository configuration for the plugin:
+
+```groovy
+pluginManagement{
+	repositories{
+		maven{url'https://repo.spring.io/libs-snapshot'}
+		gradlePluginPortal()
 	}
-	repositories {
-		mavenLocal()
-		mavenCentral()
-	}
-	dependencies {
-		classpath("org.springframework.boot.experimental:spring-boot-thin-gradle-plugin:${wrapperVersion}")
-		classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+	resolutionStrategy{
+		eachPlugin{
+			if (requested.id.id=='org.springframework.boot.experimental.thin-launcher'){
+				useModule("org.springframework.boot.experimental:spring-boot-thin-gradle-plugin:${requested.version}")
+			}
+		}
 	}
 }
-apply plugin: 'maven'
-apply plugin: 'io.spring.dependency-management'
-apply plugin: 'org.springframework.boot'
-apply plugin: 'org.springframework.boot.experimental.thin-launcher'
 ```
+
+If you don't need snapshots you can replace `libs-snapshot` in the URL with just `release`.
 
 In Gradle you also need to generate a `pom.xml` or a `thin.properties` (unless you want to maintain it by hand). A `pom.xml` will be generated automatically by the "thinPom" task in the Thin Gradle plugin. It does this by calling out to the maven plugin and the dependency management plugin; the maven plugin is always present, and the dependency management plugin is present if you are using the Spring Boot plugin. To generate a `pom.xml` remember to apply the maven and Thin Gradle plugins.
 

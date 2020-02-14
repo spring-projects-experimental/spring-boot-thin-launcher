@@ -1,0 +1,13 @@
+pluginManagement{
+	repositories{
+		maven{url'https://repo.spring.io/snapshot'}
+		gradlePluginPortal()
+	}
+	resolutionStrategy{
+		eachPlugin{
+			if (requested.id.id=='org.springframework.boot.experimental.thin-launcher'){
+				useModule("org.springframework.boot.experimental:spring-boot-thin-gradle-plugin:${requested.version}")
+			}
+		}
+	}
+}
