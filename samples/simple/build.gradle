@@ -50,7 +50,3 @@ dependencyManagement {
 test {
 	useJUnitPlatform()
 }
-
-thinResolvePrepare {
-	into new File("${buildDir}/thin/deploy")
-}

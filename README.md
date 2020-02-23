@@ -77,7 +77,7 @@ repositories {
 }
 ```
 
-For Spring Boot 2.x you also need a `settings.gradle` with the repository configuration for the plugin:
+For Spring Boot 2.x and snapshot versions of the plugin (or older releases) you also need a `settings.gradle` with the repository configuration for the plugin. e.g:
 
 ```groovy
 pluginManagement{
@@ -95,7 +95,7 @@ pluginManagement{
 }
 ```
 
-If you don't need snapshots you can replace `libs-snapshot` in the URL with just `release`.
+If you don't need snapshots you can leave it all out and rely on the defaults. If you are testing a change you made to the plugin you might want to put `mavenLocal()` in the `repositories` as well.
 
 In Gradle you also need to generate a `pom.xml` or a `thin.properties` (unless you want to maintain it by hand). A `pom.xml` will be generated automatically by the "thinPom" task in the Thin Gradle plugin. It does this by calling out to the maven plugin and the dependency management plugin; the maven plugin is always present, and the dependency management plugin is present if you are using the Spring Boot plugin. To generate a `pom.xml` remember to apply the maven and Thin Gradle plugins.
 
