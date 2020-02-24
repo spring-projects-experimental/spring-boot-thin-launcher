@@ -74,4 +74,17 @@
 		</dependency>
 	</dependencies>
 
+	<profiles>
+		<profile>
+			<!-- Pushes plugin to Bintray -->
+			<id>bintray</id>
+			<distributionManagement>
+				<repository>
+					<id>bintray-spring</id>
+					<url>https://api.bintray.com/maven/spring/jars/spring-boot-thin/;publish=1</url>
+				</repository>
+			</distributionManagement>
+		</profile>
+	</profiles>
+
 </project>
