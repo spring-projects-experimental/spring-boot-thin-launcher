@@ -69,10 +69,11 @@ public class SimpleGradleIT {
 
 	@Test
 	public void resolveDependencies() throws Exception {
+		new File("../simple/build/thin/deploy/").mkdirs();
 		ProcessBuilder builder = new ProcessBuilder(Utils.javaCommand(), "-Dthin.root=.",
 				"-Xmx128m", "-noverify", "-XX:TieredStopAtLevel=1",
 				"-Djava.security.egd=file:/dev/./urandom", "-jar",
-				"simple-0.0.1-SNAPSHOT.jar", "--server.port=0");
+				"../../libs/simple-0.0.1-SNAPSHOT.jar", "--server.port=0");
 		builder.directory(new File("../simple/build/thin/deploy/"));
 		builder.redirectErrorStream(true);
 		started = builder.start();
