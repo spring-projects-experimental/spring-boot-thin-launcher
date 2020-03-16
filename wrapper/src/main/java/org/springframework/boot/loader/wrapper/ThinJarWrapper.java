@@ -316,11 +316,11 @@ public class ThinJarWrapper {
 	}
 
 	private String getUrl(String path) {
-		if (!path.startsWith("./") && !path.startsWith("/")) {
+		if (!path.startsWith("./") && !path.startsWith("/") && !Pattern.compile(":[\\\\|/]").matcher(path).find()) {
 			path = "./" + path;
 		}
 		File file = new File(path);
-		return "file://" + file.getAbsolutePath();
+		return file.toURI().toString();
 	}
 
 	private boolean downloadFromUrl(String path, File target) {
