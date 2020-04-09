@@ -30,7 +30,7 @@
 
 		<start-class>org.springframework.samples.petclinic.PetClinicApplication</start-class>
 
-		<thin-launcher.version>1.0.24.BUILD-SNAPSHOT</thin-launcher.version>
+		<thin-launcher.version>1.0.24.RELEASE</thin-launcher.version>
 
 	</properties>
 

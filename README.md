@@ -1,5 +1,5 @@
 # Spring Boot Thin Launcher [![ci.spring.io](https://ci.spring.io/api/v1/teams/spring-team/pipelines/spring-boot-thin-launcher/badge)](https://ci.spring.io/teams/spring-team/pipelines/spring-boot-thin-launcher)
-A "thin" jar launcher for java apps. Version 1.0.23.RELEASE is in Maven Central, snapshots are in https://repo.spring.io/libs-snapshot. See https://github.com/spring-projects/spring-boot/issues/1813 for more discussion and ideas.
+A "thin" jar launcher for java apps. Version 1.0.24.RELEASE is in Maven Central, snapshots are in https://repo.spring.io/libs-snapshot. See https://github.com/spring-projects/spring-boot/issues/1813 for more discussion and ideas.
 
 ## Getting Started
 
@@ -62,7 +62,7 @@ plugins {
 	id 'io.spring.dependency-management' version '1.0.9.RELEASE'
 	id 'java'
 	id 'maven'
-	id 'org.springframework.boot.experimental.thin-launcher' version '1.0.23.RELEASE'
+	id 'org.springframework.boot.experimental.thin-launcher' version '1.0.24.RELEASE'
 }
 
 group = 'com.example'
