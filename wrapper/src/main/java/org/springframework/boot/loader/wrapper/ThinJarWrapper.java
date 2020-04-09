@@ -39,21 +39,21 @@ import java.util.regex.Pattern;
 public class ThinJarWrapper {
 
 	/**
-	 * Property key for the root where the launcher jar is downloaded and cached (level
-	 * above /repository). Defaults to <code>${user.home}/.m2</code>.
+	 * Property key for the root where the launcher jar is downloaded and cached
+	 * (level above /repository). Defaults to <code>${user.home}/.m2</code>.
 	 */
 	public static final String THIN_ROOT = "thin.root";
 
 	/**
-	 * Property key for the maven co-ordinates of the main library where the launcher
-	 * class is located.
+	 * Property key for the maven co-ordinates of the main library where the
+	 * launcher class is located.
 	 */
 	public static final String THIN_LIBRARY = "thin.library";
 
 	/**
-	 * Property key used to store location of main archive (the one that this class is
-	 * found in). Can also be used to run a different archive, resolving it via a URL or a
-	 * "maven://group:artifact:version".
+	 * Property key used to store location of main archive (the one that this class
+	 * is found in). Can also be used to run a different archive, resolving it via a
+	 * URL or a "maven://group:artifact:version".
 	 */
 	public static final String THIN_ARCHIVE = "thin.archive";
 
@@ -63,16 +63,17 @@ public class ThinJarWrapper {
 	private static final String THIN_SOURCE = "thin.source";
 
 	/**
-	 * Property key for remote location of the launcher jar. Defaults to Maven Central
-	 * with a fallback to the public Spring repos for snapshots and milestones. If you
-	 * have a mirror for Maven Central in your local settings, that's the value you need
-	 * here (the thin wrapper does not parse Maven settings).
+	 * Property key for remote location of the launcher jar. Defaults to Maven
+	 * Central with a fallback to the public Spring repos for snapshots and
+	 * milestones. If you have a mirror for Maven Central in your local settings,
+	 * that's the value you need here (the thin wrapper does not parse Maven
+	 * settings).
 	 */
 	public static final String THIN_REPO = "thin.repo";
 
 	/**
-	 * Property key used to override the launcher main class if necessary. Defaults to
-	 * <code>ThinJarLauncher</code>.
+	 * Property key used to override the launcher main class if necessary. Defaults
+	 * to <code>ThinJarLauncher</code>.
 	 */
 	public static final String THIN_LAUNCHER = "thin.launcher";
 
@@ -82,9 +83,9 @@ public class ThinJarWrapper {
 	public static final String THIN_DEBUG = "thin.debug";
 
 	/**
-	 * Property key to override the location of local Maven cache. If the launcher jar is
-	 * available here it will be used before trying the remote repo. Useful in cases where
-	 * the local cache location is different from the target root.
+	 * Property key to override the location of local Maven cache. If the launcher
+	 * jar is available here it will be used before trying the remote repo. Useful
+	 * in cases where the local cache location is different from the target root.
 	 */
 	private static final String MAVEN_REPO_LOCAL = "maven.repo.local";
 
@@ -100,9 +101,8 @@ public class ThinJarWrapper {
 		Class<?> launcher = ThinJarWrapper.class;
 		ThinJarWrapper wrapper = new ThinJarWrapper(args);
 		if (wrapper.getProperty(THIN_ARCHIVE) == null) {
-			System.setProperty(THIN_ARCHIVE, new File(
-					launcher.getProtectionDomain().getCodeSource().getLocation().toURI())
-							.getAbsolutePath());
+			System.setProperty(THIN_ARCHIVE,
+					new File(launcher.getProtectionDomain().getCodeSource().getLocation().toURI()).getAbsolutePath());
 		}
 		wrapper.launch(args);
 	}
@@ -119,8 +119,7 @@ public class ThinJarWrapper {
 			if (arg.startsWith("--") && arg.length() > 2) {
 				arg = arg.substring(2);
 				String[] split = arg.split("=");
-				properties.setProperty(split[0].trim(),
-						split.length > 1 ? split[1].trim() : "");
+				properties.setProperty(split[0].trim(), split.length > 1 ? split[1].trim() : "");
 			}
 		}
 		return properties;
@@ -167,8 +166,7 @@ public class ThinJarWrapper {
 		File target = new File(parent + file);
 		if (!target.exists()) {
 			if (!target.getParentFile().exists() && !target.getParentFile().mkdirs()) {
-				throw new IllegalStateException(
-						"Cannot create directory for library at " + target);
+				throw new IllegalStateException("Cannot create directory for library at " + target);
 			}
 			boolean result = false;
 			String defaultPath = mavenLocal();
@@ -184,8 +182,7 @@ public class ThinJarWrapper {
 				}
 				downloadFromUrl(repo + file, target);
 			}
-		}
-		else {
+		} else {
 			if (this.debug) {
 				System.err.println("Cached launcher found: " + parent);
 			}
@@ -235,21 +232,17 @@ public class ThinJarWrapper {
 				jar = new JarFile(library);
 				Manifest manifest = jar.getManifest();
 				if (manifest != null) {
-					String mainClass = manifest.getMainAttributes()
-							.getValue("Main-Class");
+					String mainClass = manifest.getMainAttributes().getValue("Main-Class");
 					if (mainClass != null) {
 						return mainClass;
 					}
 				}
-			}
-			catch (IOException e) {
-			}
-			finally {
+			} catch (IOException e) {
+			} finally {
 				if (jar != null) {
 					try {
 						jar.close();
-					}
-					catch (IOException e) {
+					} catch (IOException e) {
 					}
 				}
 			}
@@ -263,8 +256,7 @@ public class ThinJarWrapper {
 
 	private ClassLoader getClassLoader(String library) throws Exception {
 		URL[] urls = new URL[] { new File(library).toURI().toURL() };
-		URLClassLoader classLoader = new URLClassLoader(urls,
-				ThinJarWrapper.class.getClassLoader().getParent());
+		URLClassLoader classLoader = new URLClassLoader(urls, ThinJarWrapper.class.getClassLoader().getParent());
 		Thread.currentThread().setContextClassLoader(classLoader);
 		return classLoader;
 	}
@@ -316,11 +308,12 @@ public class ThinJarWrapper {
 	}
 
 	private String getUrl(String path) {
-		if (!path.startsWith("./") && !path.startsWith("/")) {
-			path = "./" + path;
-		}
 		File file = new File(path);
-		return "file://" + file.getAbsolutePath();
+		try {
+			return file.getCanonicalFile().toURI().toString();
+		} catch (IOException e) {
+			throw new IllegalStateException("Cannot locate file: " + path, e);
+		}
 	}
 
 	private boolean downloadFromUrl(String path, File target) {
@@ -339,25 +332,21 @@ public class ThinJarWrapper {
 				count = input.read(bytes);
 			}
 			return true;
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			if (this.debug) {
 				System.err.println("Failed to download: " + path);
 			}
-		}
-		finally {
+		} finally {
 			if (input != null) {
 				try {
 					input.close();
-				}
-				catch (Exception e) {
+				} catch (Exception e) {
 				}
 			}
 			if (output != null) {
 				try {
 					output.close();
-				}
-				catch (Exception e) {
+				} catch (Exception e) {
 				}
 			}
 		}
@@ -376,8 +365,7 @@ public class ThinJarWrapper {
 		String extension = get(m.group(4), "jar");
 		String classifier = get(m.group(6), null);
 		String version = m.group(7);
-		return "/" + groupId.replace(".", "/") + "/" + artifactId + "/" + version + "/"
-				+ artifactId + "-" + version
+		return "/" + groupId.replace(".", "/") + "/" + artifactId + "/" + version + "/" + artifactId + "-" + version
 				+ (classifier != null ? "-" + classifier : "") + "." + extension;
 	}
 

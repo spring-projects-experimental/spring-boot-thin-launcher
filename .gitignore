@@ -34,4 +34,6 @@ dist/
 nbdist/
 .nb-gradle/
 
+### VS Code ###
+.vscode/
 credentials.yml

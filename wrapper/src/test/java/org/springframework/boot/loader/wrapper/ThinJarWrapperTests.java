@@ -24,10 +24,10 @@ import java.util.Map.Entry;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.util.FileSystemUtils;
 
-import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
@@ -60,8 +60,7 @@ public class ThinJarWrapperTests {
 		ThinJarWrapper wrapper = new ThinJarWrapper();
 		assertThat(wrapper.download(), containsString("spring-boot-thin-launcher"));
 		if (System.getProperty("project.version") != null) {
-			assertThat(wrapper.download(),
-					containsString(System.getProperty("project.version")));
+			assertThat(wrapper.download(), containsString(System.getProperty("project.version")));
 		}
 	}
 
@@ -75,16 +74,15 @@ public class ThinJarWrapperTests {
 	@Test
 	public void testCustomLibraryFilePrefix() throws Exception {
 		ThinJarWrapper wrapper = new ThinJarWrapper();
-		System.setProperty("thin.library", "file:" + wrapper.thinRootRepository()
-				+ "/com/example/main/0.0.1-SNAPSHOT/main-0.0.1-SNAPSHOT.jar");
+		System.setProperty("thin.library",
+				"file:" + wrapper.thinRootRepository() + "/com/example/main/0.0.1-SNAPSHOT/main-0.0.1-SNAPSHOT.jar");
 		assertThat(wrapper.download(), containsString("com/example/main"));
 	}
 
 	@Test
 	public void testCustomLibraryFile() throws Exception {
 		ThinJarWrapper wrapper = new ThinJarWrapper();
-		System.setProperty("thin.library",
-				"target/rubbish/com/example/main/0.0.1-SNAPSHOT/main-0.0.1-SNAPSHOT.jar");
+		System.setProperty("thin.library", "target/rubbish/com/example/main/0.0.1-SNAPSHOT/main-0.0.1-SNAPSHOT.jar");
 		assertThat(wrapper.download(), containsString("com/example/main"));
 	}
 
@@ -106,12 +104,23 @@ public class ThinJarWrapperTests {
 	}
 
 	@Test
+	public void testUrlFromFileAbsolutePath() throws Exception {
+		ThinJarWrapper wrapper = new ThinJarWrapper();
+		// This works on Windows as well
+		String path = new File("target/thin").getAbsolutePath();
+		String uri = ReflectionTestUtils.invokeMethod(wrapper, "getUrl", path);
+		assertThat(uri, startsWith("file:/"));
+		assertThat(uri, containsString("target/thin"));
+	}
+
+	@Test
 	public void testMavenLocalRepoDownload() throws Exception {
 		System.setProperty("thin.root", "target");
 		// Use the default local repo, to force a copy instead of a download
 		System.setProperty("maven.repo.local", System.getProperty("user.home") + "/.m2/repository");
 		ThinJarWrapper wrapper = new ThinJarWrapper();
-		// puts the launcher in target/repository (faster than downloading from internet)
+		// puts the launcher in target/repository (faster than downloading from
+		// internet)
 		wrapper.download();
 		FileSystemUtils.copyRecursively(new File("target/repository"), new File("target/local"));
 		FileSystemUtils.deleteRecursively(new File("target/repository"));
@@ -136,8 +145,8 @@ public class ThinJarWrapperTests {
 	@Test
 	public void testLaunch() throws Exception {
 		System.setProperty("thin.root", "target");
-		System.setProperty("thin.repo", new File("./src/test/resources/repository")
-				.getAbsoluteFile().toURI().toURL().toString());
+		System.setProperty("thin.repo",
+				new File("./src/test/resources/repository").getAbsoluteFile().toURI().toURL().toString());
 		System.setProperty("thin.library", "com.example:main:0.0.1-SNAPSHOT");
 		System.setProperty("thin.launcher", "main.Main");
 		ByteArrayOutputStream stream = new ByteArrayOutputStream();
@@ -157,8 +166,7 @@ public class ThinJarWrapperTests {
 				String relaxedKey = var.toLowerCase().replace("_", ".");
 				// since ThinJarWrapper gives system properties precedence, we only want
 				// an env var whose key is not also in relaxed form as a system property
-				if (System.getProperty(relaxedKey) == null
-						&& System.getenv(var) != null) {
+				if (System.getProperty(relaxedKey) == null && System.getenv(var) != null) {
 					key = relaxedKey;
 					value = entry.getValue();
 				}
@@ -166,10 +174,8 @@ public class ThinJarWrapperTests {
 			}
 		}
 		if (key != null) {
-			assertEquals("Wrong value for key=" + key, value,
-					new ThinJarWrapper().getProperty(key));
-		}
-		else {
+			assertEquals("Wrong value for key=" + key, value, new ThinJarWrapper().getProperty(key));
+		} else {
 			System.err.println("WARN: no testable env var");
 		}
 	}
