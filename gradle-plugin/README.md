@@ -13,7 +13,7 @@ $ ../mvnw deploy -P bintray
 To sync with Gradle Plugin Registry you also need to POST some JSON to Bintray
 
 ```
-$ curl -u <user>:<token> https://api.bintray.com/packages/spring/jars/spring-boot-thin/versions/<version>/attributes \
+$ curl -H "Content-Type: application/json" -u <user>:<token> https://api.bintray.com/packages/spring/jars/spring-boot-thin/versions/<version>/attributes \
   -d '[{"name":"gradle-plugin","type":"string","values":["org.springframework.boot.experimental.thin-launcher:org.springframework.boot.experimental:spring-boot-thin-gradle-plugin"]}]'
 ```
 
