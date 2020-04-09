@@ -78,7 +78,7 @@ public abstract class ThinJarMojo extends AbstractMojo {
 	 * Artifact containing the thin launcher
 	 * (group:artifact:version[:packaging[:classifier]]).
 	 */
-	@Parameter(defaultValue = "org.springframework.boot.experimental:spring-boot-thin-launcher:1.0.24.RELEASE:jar:exec", required = true, property = "thin.launcherArtifact")
+	@Parameter(defaultValue = "org.springframework.boot.experimental:spring-boot-thin-launcher:1.0.25.BUILD-SNAPSHOT:jar:exec", required = true, property = "thin.launcherArtifact")
 	private String thinLauncherArtifact;
 
 	@Component

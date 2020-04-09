@@ -1,4 +1,5 @@
 # Spring Boot Thin Launcher [![ci.spring.io](https://ci.spring.io/api/v1/teams/spring-team/pipelines/spring-boot-thin-launcher/badge)](https://ci.spring.io/teams/spring-team/pipelines/spring-boot-thin-launcher)
+
 A "thin" jar launcher for java apps. Version 1.0.24.RELEASE is in Maven Central, snapshots are in https://repo.spring.io/libs-snapshot. See https://github.com/spring-projects/spring-boot/issues/1813 for more discussion and ideas.
 
 ## Getting Started
@@ -12,7 +13,6 @@ either need to build it locally or include the snapshot repository
 declarations. You can use https://start.spring.io to find suitable
 repository declarations for Maven and Gradle, or look at the samples
 in this project.
-
 
 With Maven, build a Spring Boot application and add the layout. This
 means adding it to the Spring Boot plugin declaration:
@@ -55,14 +55,13 @@ apply plugin: 'org.springframework.boot.experimental.thin-launcher'
 
 For Spring Boot 2.x you can use the newer `id` style declaration:
 
-
 ```groovy
 plugins {
 	id 'org.springframework.boot' version '2.2.4.RELEASE'
 	id 'io.spring.dependency-management' version '1.0.9.RELEASE'
 	id 'java'
 	id 'maven'
-	id 'org.springframework.boot.experimental.thin-launcher' version '1.0.24.RELEASE'
+	id 'org.springframework.boot.experimental.thin-launcher' version '1.0.25.BUILD-SNAPSHOT'
 }
 
 group = 'com.example'
@@ -262,7 +261,7 @@ apply plugin: 'org.springframework.boot.experimental.thin-launcher'
 
 The plugin creates 2 tasks for every jar task in the project, one that
 reolves the dependencies, and one that copies the jar into the same
-location to make it easy to launch.  A "dry run" can be executed in
+location to make it easy to launch. A "dry run" can be executed in
 Gradle by calling the "thinResolve" task defined by the plugin, e.g.
 
 ```
@@ -304,31 +303,30 @@ $ cf push myapp -p target/thin
 
 The Maven plugin has a "resolve" task with a flag unpack (or `-Dthin.unpack` on the command line) that creates the cache in the precise form that you need to push to Cloud Foundry. The unpack flag is false by default, so remember to set it if you want to use Maven to prepare the push.
 
-
 ## Command Line Options
 
 You can set a variety of options on the command line or with system properties (`-D...`). The `thin.*` properties are all removed from the command line before calling the main class, so the main class doesn't have to know how it was launched.
 
-| Option | Default | Description |
-|--------|---------|-------------|
-| `thin.main` | Start-Class in MANIFEST.MF| The main class to launch (for a Spring Boot app, usually the one with `@SpringBootApplication`)|
-| `thin.dryrun` | false | Only resolve and download the dependencies. Don't run any main class. N.B. any value other than "false" (even empty) is true. |
-| `thin.offline` | false | Switch to "offline" mode. All dependencies must be available locally (e.g. via a previous dry run) or there will be an exception. |
-| `thin.force` | false | Force dependency resolution to happen, even if dependencies have been computed, and marked as "computed" in `thin.properties`. |
-| `thin.classpath` | false | Only print the classpath. Don't run the main class. Two formats are supported: "path" and "properties". For backwards compatibility "true" or empty are equivalent to "path". |
-| `thin.root` | `${user.home}/.m2` | The location of the local jar cache, laid out as a maven repository. The launcher creates a new directory here called "repository" if it doesn't exist. |
-| `thin.archive` | the same as the target archive | The archive to launch. Can be used to launch a JAR file that was build with a different version of the thin launcher, for instance, or a fat jar built by Spring Boot without the thin launcher. |
-| `thin.parent` | `<empty>` | A parent archive to use for dependency management and common classpath entries. If you run two apps with the same parent, they will have a classpath that is the same, reading from left to right, until they actually differ. |
-| `thin.location` | `file:.,classpath:/` | The path to directory containing thin properties files (as per `thin.name`), as a comma-separated list of resource locations (directories). These locations plus the same paths relative /META-INF will be searched. |
-| `thin.name` | "thin" | The name of the properties file to search for dependency specifications and overrides. |
-| `thin.profile` |<empty> | Comma-separated list of profiles to use to locate thin properties. E.g. if `thin.profile=foo` the launcher searches for files called `thin.properties` and `thin-foo.properties`. |
-| `thin.library` | `org.springframework.boot.experimental:spring-boot-thin-launcher:1.0.21.RELEASE` | A locator for the launcher library. Can be Maven coordinates (with optional `maven://` prefix), or a file (with optional `file://` prefix). |
-| `thin.repo`    | `https://repo.spring.io/libs-snapshot` (also contains GA releases) | Base URL for the `thin.library` if it is in Maven form (the default). |
-| `thin.launcher` | `org.springframework.boot.thin.ThinJarLauncher` | The main class in the `thin.library`. If not specified it is discovered from the manifest `Main-Class` attribute. |
-| `thin.parent.first` | true | Flag to say that the class loader is "parent first" (i.e. the system class loader will be used as the default). This is the "standard" JDK class loader strategy. Setting it to false is similar to what is normally used in web containers and application servers. |
-| `thin.parent.boot` | true | Flag to say that the parent class loader should be the boot class loader not the "system" class loader. The boot loader normally includes the JDK classes, but not the target archive, nor any agent jars added on the command line. |
-| `thin.debug` | false | Flag to switch on some slightly verbose logging during the dependency resolution. Can also be switched on with `debug` (like in Spring Boot).|
-| `thin.trace` | false | Super verbose logging of all activity during the dependency resolution and launch process. Can also be switched on with `trace`.|
+| Option              | Default                                                                          | Description                                                                                                                                                                                                                                                          |
+| ------------------- | -------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `thin.main`         | Start-Class in MANIFEST.MF                                                       | The main class to launch (for a Spring Boot app, usually the one with `@SpringBootApplication`)                                                                                                                                                                      |
+| `thin.dryrun`       | false                                                                            | Only resolve and download the dependencies. Don't run any main class. N.B. any value other than "false" (even empty) is true.                                                                                                                                        |
+| `thin.offline`      | false                                                                            | Switch to "offline" mode. All dependencies must be available locally (e.g. via a previous dry run) or there will be an exception.                                                                                                                                    |
+| `thin.force`        | false                                                                            | Force dependency resolution to happen, even if dependencies have been computed, and marked as "computed" in `thin.properties`.                                                                                                                                       |
+| `thin.classpath`    | false                                                                            | Only print the classpath. Don't run the main class. Two formats are supported: "path" and "properties". For backwards compatibility "true" or empty are equivalent to "path".                                                                                        |
+| `thin.root`         | `${user.home}/.m2`                                                               | The location of the local jar cache, laid out as a maven repository. The launcher creates a new directory here called "repository" if it doesn't exist.                                                                                                              |
+| `thin.archive`      | the same as the target archive                                                   | The archive to launch. Can be used to launch a JAR file that was build with a different version of the thin launcher, for instance, or a fat jar built by Spring Boot without the thin launcher.                                                                     |
+| `thin.parent`       | `<empty>`                                                                        | A parent archive to use for dependency management and common classpath entries. If you run two apps with the same parent, they will have a classpath that is the same, reading from left to right, until they actually differ.                                       |
+| `thin.location`     | `file:.,classpath:/`                                                             | The path to directory containing thin properties files (as per `thin.name`), as a comma-separated list of resource locations (directories). These locations plus the same paths relative /META-INF will be searched.                                                 |
+| `thin.name`         | "thin"                                                                           | The name of the properties file to search for dependency specifications and overrides.                                                                                                                                                                               |
+| `thin.profile`      | <empty>                                                                          | Comma-separated list of profiles to use to locate thin properties. E.g. if `thin.profile=foo` the launcher searches for files called `thin.properties` and `thin-foo.properties`.                                                                                    |
+| `thin.library`      | `org.springframework.boot.experimental:spring-boot-thin-launcher:1.0.21.RELEASE` | A locator for the launcher library. Can be Maven coordinates (with optional `maven://` prefix), or a file (with optional `file://` prefix).                                                                                                                          |
+| `thin.repo`         | `https://repo.spring.io/libs-snapshot` (also contains GA releases)               | Base URL for the `thin.library` if it is in Maven form (the default).                                                                                                                                                                                                |
+| `thin.launcher`     | `org.springframework.boot.thin.ThinJarLauncher`                                  | The main class in the `thin.library`. If not specified it is discovered from the manifest `Main-Class` attribute.                                                                                                                                                    |
+| `thin.parent.first` | true                                                                             | Flag to say that the class loader is "parent first" (i.e. the system class loader will be used as the default). This is the "standard" JDK class loader strategy. Setting it to false is similar to what is normally used in web containers and application servers. |
+| `thin.parent.boot`  | true                                                                             | Flag to say that the parent class loader should be the boot class loader not the "system" class loader. The boot loader normally includes the JDK classes, but not the target archive, nor any agent jars added on the command line.                                 |
+| `thin.debug`        | false                                                                            | Flag to switch on some slightly verbose logging during the dependency resolution. Can also be switched on with `debug` (like in Spring Boot).                                                                                                                        |
+| `thin.trace`        | false                                                                            | Super verbose logging of all activity during the dependency resolution and launch process. Can also be switched on with `trace`.                                                                                                                                     |
 
 Any other `thin.properties.*` properties are used by the launcher to override or supplement the ones from `thin.properties`, so you can add additional individual dependencies on the command line using `thin.properties.dependencies.*` (for instance).
 
@@ -375,7 +373,6 @@ EXPOSE 8080
 ```
 
 The step to add a `thin.properties` is optional, as is its calculation (you could maintain a hand-written properties file inside the JAR as well).
-
 
 ## How to Change Dependencies
 
@@ -483,7 +480,6 @@ $ java -jar ./app/target/*.jar
 
 You can also build the samples independently.
 
-
 ## Classpath Computation
 
 The launcher has some optional arguments that result in classpath
@@ -526,7 +522,7 @@ $ java -XX:+UnlockCommercialFeatures -XX:+UseAppCDS -Xshare:dump \
   -noverify -cp $CP1
 
 $ java -XX:+UnlockCommercialFeatures -XX:+UseAppCDS -Xshare:on \
-  -XX:SharedArchiveFile=app.jsa -noverify -cp $CP1:myapp.jar demo.MyApplication 
+  -XX:SharedArchiveFile=app.jsa -noverify -cp $CP1:myapp.jar demo.MyApplication
 $ java -XX:+UnlockCommercialFeatures -XX:+UseAppCDS -Xshare:on \
   -XX:SharedArchiveFile=app.jsa -noverify -cp $CP1:otherapp.jar demo.OtherApplication
 ```
@@ -594,7 +590,7 @@ uses the mirror settings there. To download the launcher itself, and
 bootstrap the process, you need to explicitly provide a `thin.repo` to
 the wrapper (the same as the mirror). You can do this on the command
 line when running the jar, using all the usual mechanisms. To run the
-build plugins `resolve` goals you can make the thin launcher jar 
+build plugins `resolve` goals you can make the thin launcher jar
 a dependency of the plugin, to ensure it is cached locally before the
 plugin runs. E.g.
 
@@ -624,7 +620,7 @@ Or else you can set a project, system property or environment variable. E.g.
 $ ./mvnw spring-boot-thin:resolve -Dthin.repo=http://localhost:8081/repository/maven-central
 ```
 
-or 
+or
 
 ```
 $ ./gradlew thinResolve -P thin.repo=http://localhost:8081/repository/maven-central
@@ -648,6 +644,6 @@ underlying mechanism is implemented using Maven.
 > unlikely to be that location.
 
 ## License
+
 This project is Open Source software released under the
 [Apache 2.0 license](https://www.apache.org/licenses/LICENSE-2.0.html).
-
