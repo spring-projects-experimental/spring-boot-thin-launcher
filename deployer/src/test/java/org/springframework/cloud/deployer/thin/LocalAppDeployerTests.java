@@ -19,7 +19,9 @@ package org.springframework.cloud.deployer.thin;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
+import org.awaitility.Awaitility;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -60,8 +62,7 @@ public class LocalAppDeployerTests {
 	public void appFromJarFile() throws Exception {
 		String deployed = deploy("empty");
 		// Deployment is blocking so it either failed or succeeded.
-		assertThat(deployer.status(deployed).getState())
-				.isEqualTo(DeploymentState.deployed);
+		assertThat(deployer.status(deployed).getState()).isEqualTo(DeploymentState.deployed);
 		deployer.undeploy(deployed);
 	}
 
@@ -71,8 +72,7 @@ public class LocalAppDeployerTests {
 		String second = deploy("cloud");
 		// Deployment is blocking so it either failed or succeeded.
 		assertThat(deployer.status(first).getState()).isEqualTo(DeploymentState.deployed);
-		assertThat(deployer.status(second).getState())
-				.isEqualTo(DeploymentState.deployed);
+		assertThat(deployer.status(second).getState()).isEqualTo(DeploymentState.deployed);
 		deployer.undeploy(first);
 		deployer.undeploy(second);
 	}
@@ -80,32 +80,24 @@ public class LocalAppDeployerTests {
 	@Test
 	public void appFromJarFileFails() throws Exception {
 		String deployed = deploy("cloud", "--fail");
-		Thread.sleep(500L);
-		assertThat(deployer.status(deployed).getState())
-				.isEqualTo(DeploymentState.failed);
+		Awaitility.await().atMost(10000, TimeUnit.MILLISECONDS).until(() -> {
+			System.err.println("State: " + deployer.status(deployed).getState());
+			return deployer.status(deployed).getState() != DeploymentState.deployed;
+		});
+		assertThat(deployer.status(deployed).getState() == DeploymentState.failed);
 		deployer.undeploy(deployed);
 	}
 
 	private String deploy(String jarName, String... args) {
-		Resource resource = new FileSystemResource("../samples/tests/target/it/" + jarName
-				+ "/target/" + jarName + "-0.0.1-SNAPSHOT.jar");
-		AppDefinition definition = new AppDefinition(jarName,
-				Collections.<String, String>emptyMap());
+		Resource resource = new FileSystemResource(
+				"../samples/tests/target/it/" + jarName + "/target/" + jarName + "-0.0.1-SNAPSHOT.jar");
+		AppDefinition definition = new AppDefinition(jarName, Collections.<String, String>emptyMap());
 		AppDeploymentRequest request = new AppDeploymentRequest(definition, resource,
-				Collections.singletonMap("spring.cloud.deployer.group", "test"),
-				Arrays.asList(args));
+				Collections.singletonMap("spring.cloud.deployer.group", "test"), Arrays.asList(args));
 		String deployed = deployer.deploy(request);
-		DeploymentState state = deployer.status(deployed).getState();
-		while (state == DeploymentState.deploying) {
-			try {
-				Thread.sleep(100L);
-				state = deployer.status(deployed).getState();
-			}
-			catch (InterruptedException e) {
-				Thread.currentThread().interrupt();
-			}
-		}
-		System.err.println("State: " + state);
+		Awaitility.await().atMost(10000, TimeUnit.MILLISECONDS)
+				.until(() -> deployer.status(deployed).getState() != DeploymentState.deploying);
+		System.err.println("State: " + deployer.status(deployed).getState());
 		return deployed;
 	}
 
