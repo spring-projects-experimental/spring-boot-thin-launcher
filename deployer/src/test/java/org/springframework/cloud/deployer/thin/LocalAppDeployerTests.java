@@ -80,7 +80,7 @@ public class LocalAppDeployerTests {
 	@Test
 	public void appFromJarFileFails() throws Exception {
 		String deployed = deploy("cloud", "--fail");
-		Awaitility.await().atMost(10000, TimeUnit.MILLISECONDS).until(() -> {
+		Awaitility.await().atMost(20000, TimeUnit.MILLISECONDS).until(() -> {
 			System.err.println("State: " + deployer.status(deployed).getState());
 			return deployer.status(deployed).getState() != DeploymentState.deployed;
 		});
@@ -95,7 +95,7 @@ public class LocalAppDeployerTests {
 		AppDeploymentRequest request = new AppDeploymentRequest(definition, resource,
 				Collections.singletonMap("spring.cloud.deployer.group", "test"), Arrays.asList(args));
 		String deployed = deployer.deploy(request);
-		Awaitility.await().atMost(10000, TimeUnit.MILLISECONDS)
+		Awaitility.await().atMost(20000, TimeUnit.MILLISECONDS)
 				.until(() -> deployer.status(deployed).getState() != DeploymentState.deploying);
 		System.err.println("State: " + deployer.status(deployed).getState());
 		return deployed;
