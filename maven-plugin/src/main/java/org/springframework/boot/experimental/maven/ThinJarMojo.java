@@ -78,7 +78,9 @@ public abstract class ThinJarMojo extends AbstractMojo {
 	 * Artifact containing the thin launcher
 	 * (group:artifact:version[:packaging[:classifier]]).
 	 */
-	@Parameter(defaultValue = "org.springframework.boot.experimental:spring-boot-thin-launcher:1.0.25.BUILD-SNAPSHOT:jar:exec", required = true, property = "thin.launcherArtifact")
+	@Parameter(
+			defaultValue = "org.springframework.boot.experimental:spring-boot-thin-launcher:1.0.25.BUILD-SNAPSHOT:jar:exec",
+			required = true, property = "thin.launcherArtifact")
 	private String thinLauncherArtifact;
 
 	@Component
@@ -87,25 +89,20 @@ public abstract class ThinJarMojo extends AbstractMojo {
 	private static final int EXIT_CODE_SIGINT = 130;
 
 	protected File resolveFile(Dependency deployable) {
-		Artifact artifact = repositorySystem.createArtifactWithClassifier(
-				deployable.getGroupId(), deployable.getArtifactId(),
-				deployable.getVersion(), deployable.getType(),
-				deployable.getClassifier());
-		artifact = repositorySystem.resolve(getRequest(artifact)).getArtifacts()
-				.iterator().next();
+		Artifact artifact = repositorySystem.createArtifactWithClassifier(deployable.getGroupId(),
+				deployable.getArtifactId(), deployable.getVersion(), deployable.getType(), deployable.getClassifier());
+		artifact = repositorySystem.resolve(getRequest(artifact)).getArtifacts().iterator().next();
 		return artifact.getFile();
 	}
 
-	protected void runWithForkedJvm(File archive, File workingDirectory, String... args)
-			throws MojoExecutionException {
+	protected void runWithForkedJvm(File archive, File workingDirectory, String... args) throws MojoExecutionException {
 
 		try {
 			String localRepo = this.settings.getLocalRepository();
 			String thinRepo = getThinRepo();
 			String debug = getProperty("thin.debug");
-			List<String> cmd = new ArrayList<>(
-					Arrays.asList(new JavaExecutable().toString(), "-Dthin.dryrun",
-							"-Dthin.root=.", "-jar", archive.getAbsolutePath()));
+			List<String> cmd = new ArrayList<>(Arrays.asList(new JavaExecutable().toString(), "-Dthin.dryrun",
+					"-Dthin.root=.", "-jar", archive.getAbsolutePath()));
 			if (localRepo != null) {
 				getLog().debug("Local repo: " + localRepo);
 				cmd.add(1, "-Dmaven.repo.local=" + localRepo);
@@ -117,17 +114,14 @@ public abstract class ThinJarMojo extends AbstractMojo {
 				getLog().debug("Thin repo: " + thinRepo);
 				cmd.add(1, "-Dthin.repo=" + thinRepo);
 			}
-			RunProcess runProcess = new RunProcess(workingDirectory,
-					cmd.toArray(new String[0]));
-			Runtime.getRuntime()
-					.addShutdownHook(new Thread(new RunProcessKiller(runProcess)));
+			RunProcess runProcess = new RunProcess(workingDirectory, cmd.toArray(new String[0]));
+			Runtime.getRuntime().addShutdownHook(new Thread(new RunProcessKiller(runProcess)));
 			getLog().debug("Running: " + archive);
 			int exitCode = runProcess.run(true, args);
 			if (exitCode == 0 || exitCode == EXIT_CODE_SIGINT) {
 				return;
 			}
-			throw new MojoExecutionException(
-					"Application finished with exit code: " + exitCode);
+			throw new MojoExecutionException("Application finished with exit code: " + exitCode);
 		}
 		catch (Exception ex) {
 			throw new MojoExecutionException("Could not exec java", ex);
@@ -141,8 +135,7 @@ public abstract class ThinJarMojo extends AbstractMojo {
 		}
 		for (Mirror mirror : this.settings.getMirrors()) {
 			String of = mirror.getMirrorOf();
-			if ("*".equals(of) || "central".equals(of)
-					|| (of != null && of.contains("spring"))) {
+			if ("*".equals(of) || "central".equals(of) || (of != null && of.contains("spring"))) {
 				return mirror.getUrl();
 			}
 		}
@@ -168,6 +161,7 @@ public abstract class ThinJarMojo extends AbstractMojo {
 		ArtifactResolutionRequest request = new ArtifactResolutionRequest();
 		request.setArtifact(artifact);
 		request.setResolveTransitively(false);
+		request.setRemoteRepositories(project.getRemoteArtifactRepositories());
 		return request;
 	}
 
