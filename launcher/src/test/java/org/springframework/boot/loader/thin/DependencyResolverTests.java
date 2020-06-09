@@ -69,6 +69,19 @@ public class DependencyResolverTests {
 	}
 
 	@Test
+	public void launcher() throws Exception {
+		Resource resource = new ClassPathResource("apps/launcher/pom.xml");
+		// Resource resource = new UrlResource("jar:file:/home/dsyer/.m2/repository/org/springframework/cloud/launcher/spring-cloud-launcher-deployer/2.2.1.RELEASE/spring-cloud-launcher-deployer-2.2.1.RELEASE.jar!/META-INF/maven/org.springframework.cloud.launcher/spring-cloud-launcher-deployer/pom.xml");
+		Properties properties = new Properties();
+		properties.setProperty(ThinJarLauncher.THIN_PROFILE, "thin");
+		List<Dependency> dependencies = resolver.dependencies(resource, properties);
+		// System.err.println(dependencies);
+		assertThat(dependencies.size()).isGreaterThan(1);
+	}
+
+
+
+	@Test
 	public void mavenProfiles() throws Exception {
 		Resource resource = new ClassPathResource("apps/profiles/pom.xml");
 		Properties props = new Properties();

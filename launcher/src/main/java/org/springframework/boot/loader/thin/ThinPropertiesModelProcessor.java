@@ -77,8 +77,7 @@ class ThinPropertiesModelProcessor extends DefaultModelProcessor {
 				}
 			}, options);
 			return process(model);
-		}
-		finally {
+		} finally {
 			input.close();
 		}
 	}
@@ -93,19 +92,15 @@ class ThinPropertiesModelProcessor extends DefaultModelProcessor {
 			Set<String> exclusions = new HashSet<>();
 			for (String name : properties.stringPropertyNames()) {
 				if (name.startsWith("boms.")) {
-					String bom = replacePlaceholder(properties,
-							properties.getProperty(name));
+					String bom = replacePlaceholder(properties, properties.getProperty(name));
 					DefaultArtifact artifact = artifact(bom);
 					if (model.getDependencyManagement() == null) {
 						model.setDependencyManagement(new DependencyManagement());
 					}
 					boolean replaced = false;
-					for (Dependency dependency : model.getDependencyManagement()
-							.getDependencies()) {
-						if (ObjectUtils.nullSafeEquals(artifact.getArtifactId(),
-								dependency.getArtifactId())
-								&& ObjectUtils.nullSafeEquals(artifact.getGroupId(),
-										dependency.getGroupId())) {
+					for (Dependency dependency : model.getDependencyManagement().getDependencies()) {
+						if (ObjectUtils.nullSafeEquals(artifact.getArtifactId(), dependency.getArtifactId())
+								&& ObjectUtils.nullSafeEquals(artifact.getGroupId(), dependency.getGroupId())) {
 							dependency.setVersion(artifact.getVersion());
 						}
 					}
@@ -116,24 +111,17 @@ class ThinPropertiesModelProcessor extends DefaultModelProcessor {
 					if (!replaced) {
 						model.getDependencyManagement().addDependency(bom(artifact));
 					}
-				}
-				else if (name.startsWith("dependencies.")) {
-					String pom = replacePlaceholder(properties,
-							properties.getProperty(name));
+				} else if (name.startsWith("dependencies.")) {
+					String pom = replacePlaceholder(properties, properties.getProperty(name));
 					DefaultArtifact artifact = artifact(pom);
 					boolean replaced = false;
 					for (Dependency dependency : model.getDependencies()) {
-						if (ObjectUtils.nullSafeEquals(artifact.getArtifactId(),
-								dependency.getArtifactId())
-								&& ObjectUtils.nullSafeEquals(artifact.getGroupId(),
-										dependency.getGroupId())
-								&& ObjectUtils.nullSafeEquals(artifact.getClassifier(),
-										dependency.getClassifier())
-								&& artifact.getVersion() != null) {
-							dependency.setVersion(
-									StringUtils.hasLength(artifact.getVersion())
-											? artifact.getVersion()
-											: null);
+						if (ObjectUtils.nullSafeEquals(artifact.getArtifactId(), dependency.getArtifactId())
+								&& ObjectUtils.nullSafeEquals(artifact.getGroupId(), dependency.getGroupId())
+								&& equalOrEmpty(artifact.getClassifier(), dependency.getClassifier())) {
+							if (StringUtils.hasText(artifact.getVersion())) {
+								dependency.setVersion(artifact.getVersion());
+							}
 							dependency.setScope("runtime");
 							replaced = true;
 						}
@@ -141,10 +129,8 @@ class ThinPropertiesModelProcessor extends DefaultModelProcessor {
 					if (!replaced) {
 						model.getDependencies().add(dependency(artifact));
 					}
-				}
-				else if (name.startsWith("exclusions.")) {
-					String pom = replacePlaceholder(properties,
-							properties.getProperty(name));
+				} else if (name.startsWith("exclusions.")) {
+					String pom = replacePlaceholder(properties, properties.getProperty(name));
 					exclusions.add(pom);
 				}
 			}
@@ -164,22 +150,22 @@ class ThinPropertiesModelProcessor extends DefaultModelProcessor {
 			}
 		}
 		for (Dependency dependency : new ArrayList<>(model.getDependencies())) {
-			if ("test".equals(dependency.getScope())
-					|| "provided".equals(dependency.getScope())) {
+			if ("test".equals(dependency.getScope()) || "provided".equals(dependency.getScope())) {
 				model.getDependencies().remove(dependency);
 			}
 		}
 		return model;
 	}
 
+	private static boolean equalOrEmpty(String first, String second) {
+		return ObjectUtils.nullSafeEquals(first, second) || (!StringUtils.hasText(first) && !StringUtils.hasText(second));
+	}
+
 	static boolean isSameArtifact(Dependency target, Dependency dependency) {
-		boolean classifierMatch = (target.getClassifier() == null
-				&& dependency.getClassifier() == null)
-				|| (target.getClassifier() == null ? false
-						: target.getClassifier().equals(dependency.getClassifier()));
+		boolean classifierMatch = (target.getClassifier() == null && dependency.getClassifier() == null)
+				|| (target.getClassifier() == null ? false : target.getClassifier().equals(dependency.getClassifier()));
 		return dependency.getGroupId().equals(target.getGroupId())
-				&& dependency.getArtifactId().equals(target.getArtifactId())
-				&& classifierMatch;
+				&& dependency.getArtifactId().equals(target.getArtifactId()) && classifierMatch;
 	}
 
 	private static String replacePlaceholder(Properties properties, String value) {
@@ -206,16 +192,12 @@ class ThinPropertiesModelProcessor extends DefaultModelProcessor {
 		if (model.getParent() == null) {
 			return false;
 		}
-		if (ObjectUtils.nullSafeEquals(artifact.getArtifactId(),
-				model.getParent().getArtifactId())
-				&& ObjectUtils.nullSafeEquals(artifact.getGroupId(),
-						model.getParent().getGroupId())) {
+		if (ObjectUtils.nullSafeEquals(artifact.getArtifactId(), model.getParent().getArtifactId())
+				&& ObjectUtils.nullSafeEquals(artifact.getGroupId(), model.getParent().getGroupId())) {
 			return true;
 		}
-		if (ObjectUtils.nullSafeEquals("spring-boot-starter-parent",
-				model.getParent().getArtifactId())
-				&& ObjectUtils.nullSafeEquals(artifact.getArtifactId(),
-						"spring-boot-dependencies")) {
+		if (ObjectUtils.nullSafeEquals("spring-boot-starter-parent", model.getParent().getArtifactId())
+				&& ObjectUtils.nullSafeEquals(artifact.getArtifactId(), "spring-boot-dependencies")) {
 			return true;
 		}
 		return false;
@@ -225,19 +207,14 @@ class ThinPropertiesModelProcessor extends DefaultModelProcessor {
 		Dependency dependency = new Dependency();
 		dependency.setGroupId(artifact.getGroupId());
 		dependency.setArtifactId(artifact.getArtifactId());
-		dependency.setVersion(
-				StringUtils.hasLength(artifact.getVersion()) ? artifact.getVersion()
-						: null);
-		dependency.setClassifier(
-				StringUtils.hasLength(artifact.getClassifier()) ? artifact.getClassifier()
-						: null);
+		dependency.setVersion(StringUtils.hasLength(artifact.getVersion()) ? artifact.getVersion() : null);
+		dependency.setClassifier(StringUtils.hasLength(artifact.getClassifier()) ? artifact.getClassifier() : null);
 		dependency.setType(artifact.getExtension());
 		return dependency;
 	}
 
 	static DefaultArtifact artifact(String coordinates) {
-		Pattern p = Pattern
-				.compile("([^: ]+):([^: ]+)(:([^: ]*)(:([^: ]+))?)?(:([^: ]+))?");
+		Pattern p = Pattern.compile("([^: ]+):([^: ]+)(:([^: ]*)(:([^: ]+))?)?(:([^: ]+))?");
 		Matcher m = p.matcher(coordinates);
 		Assert.isTrue(m.matches(), "Bad artifact coordinates " + coordinates
 				+ ", expected format is <groupId>:<artifactId>[:<extension>[:<classifier>]][:<version>]");
@@ -258,8 +235,7 @@ class ThinPropertiesModelProcessor extends DefaultModelProcessor {
 				version = classifier;
 				classifier = "";
 			}
-		}
-		else {
+		} else {
 			if (version == null && isVersion(extension)) {
 				version = extension;
 				extension = DEFAULT_EXTENSION;

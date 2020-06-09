@@ -131,6 +131,15 @@ public class ThinJarLauncherTests {
 	}
 
 	@Test
+	public void launcher() throws Exception {
+		String[] args = new String[] { "--thin.classpath",
+				"--thin.archive=src/test/resources/apps/launcher" };
+		ThinJarLauncher.main(args);
+		assertThat(output.toString())
+				.contains("spring-cloud-deployer-thin-1.0.22.RELEASE.jar" + File.pathSeparator);
+	}
+
+	@Test
 	public void fatClasspath() throws Exception {
 		String[] args = new String[] { "--thin.classpath",
 				"--thin.archive=src/test/resources/apps/boot" };
