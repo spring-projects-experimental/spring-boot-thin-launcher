@@ -354,8 +354,13 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 		if (StringUtils.hasText(parent)) {
 			parentArchive = ArchiveUtils.getArchive(parent);
 		}
+		long t0 = System.currentTimeMillis();
 		List<Archive> archives = resolver.resolve(parentArchive, getArchive(), name,
 				profiles);
+		long t1 = System.currentTimeMillis();
+		if (log.isInfoEnabled()) {
+			log.info("Dependencies resolved in: " + (t1-t0) + "ms");
+		}
 		return archives;
 	}
 
