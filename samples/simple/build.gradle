@@ -3,7 +3,7 @@ plugins {
 	id 'io.spring.dependency-management' version '1.0.9.RELEASE'
 	id 'java'
 	id 'maven'
-	id 'org.springframework.boot.experimental.thin-launcher' version '1.0.25.RELEASE'
+	id 'org.springframework.boot.experimental.thin-launcher' version '1.0.26.BUILD-SNAPSHOT'
 }
 
 group = 'com.example'
