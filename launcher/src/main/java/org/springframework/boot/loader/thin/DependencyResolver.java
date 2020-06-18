@@ -41,7 +41,6 @@ import org.apache.maven.artifact.repository.ArtifactRepositoryPolicy;
 import org.apache.maven.artifact.repository.MavenArtifactRepository;
 import org.apache.maven.artifact.repository.layout.DefaultRepositoryLayout;
 import org.apache.maven.model.Model;
-import org.apache.maven.model.ModelBase;
 import org.apache.maven.model.building.ModelProcessor;
 import org.apache.maven.model.io.DefaultModelReader;
 import org.apache.maven.model.io.ModelReader;
@@ -78,7 +77,6 @@ import org.eclipse.aether.artifact.Artifact;
 import org.eclipse.aether.artifact.DefaultArtifact;
 import org.eclipse.aether.connector.basic.BasicRepositoryConnectorFactory;
 import org.eclipse.aether.graph.Dependency;
-import org.eclipse.aether.graph.DependencyNode;
 import org.eclipse.aether.impl.ArtifactDescriptorReader;
 import org.eclipse.aether.impl.MetadataGeneratorFactory;
 import org.eclipse.aether.impl.VersionRangeResolver;
@@ -150,7 +148,8 @@ public class DependencyResolver {
 			if (this.container != null) {
 				this.container.dispose();
 			}
-		} catch (Exception e) {
+		}
+		catch (Exception e) {
 			// swallow
 		}
 	}
@@ -177,7 +176,8 @@ public class DependencyResolver {
 								ClassRealmManager.class.getName());
 						projectBuilder = container.lookup(ProjectBuilder.class);
 						repositorySystem = container.lookup(RepositorySystem.class);
-					} catch (Exception e) {
+					}
+					catch (Exception e) {
 						throw new IllegalStateException("Cannot create container", e);
 					}
 					this.container = container;
@@ -229,7 +229,8 @@ public class DependencyResolver {
 				}
 				return output;
 			}
-		} catch (ProjectBuildingException | NoLocalRepositoryManagerException e) {
+		}
+		catch (ProjectBuildingException | NoLocalRepositoryManagerException e) {
 			throw new IllegalStateException("Cannot build model", e);
 		}
 	}
@@ -489,7 +490,8 @@ public class DependencyResolver {
 		try {
 			return repo(settings, session, "cache",
 					localRepositoryPath(properties, settings, preferThinRoot).toURI().toURL().toString(), true, true);
-		} catch (MalformedURLException e) {
+		}
+		catch (MalformedURLException e) {
 			throw new IllegalStateException("Cannot locate local repo", e);
 		}
 	}
@@ -517,7 +519,8 @@ public class DependencyResolver {
 			ProjectBuildingResult result = projectBuilder.build(new PropertiesModelSource(properties, resource),
 					request);
 			return result.getProject().getModel();
-		} catch (Exception e) {
+		}
+		catch (Exception e) {
 			throw new IllegalStateException("Failed to build model from effective pom", e);
 		}
 	}
@@ -544,7 +547,8 @@ public class DependencyResolver {
 			List<ArtifactRequest> artifactRequests = getArtifactRequests(dependencies, session, properties);
 			List<ArtifactResult> result = this.repositorySystem.resolveArtifacts(session, artifactRequests);
 			return result;
-		} catch (Exception ex) {
+		}
+		catch (Exception ex) {
 			throw new IllegalStateException(ex);
 		}
 	}
