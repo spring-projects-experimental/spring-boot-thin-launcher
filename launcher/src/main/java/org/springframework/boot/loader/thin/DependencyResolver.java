@@ -298,7 +298,7 @@ public class DependencyResolver {
 		DefaultRepositorySystemSession session = createSession(properties);
 		projectBuildingRequest.setRepositoryMerging(RepositoryMerging.REQUEST_DOMINANT);
 		projectBuildingRequest.setRemoteRepositories(mavenRepositories(settings, session, properties));
-		projectBuildingRequest.setLocalRepository(localArtifactRepository(properties, settings, session, true));
+		projectBuildingRequest.setLocalRepository(localArtifactRepository(properties, settings, session));
 		projectBuildingRequest.setRepositorySession(session);
 		projectBuildingRequest.setProcessPlugins(false);
 		projectBuildingRequest.setBuildStartTime(new Date());
@@ -325,7 +325,7 @@ public class DependencyResolver {
 		List<ArtifactRepository> list = new ArrayList<>();
 		if (properties.containsKey(ThinJarLauncher.THIN_ROOT)) {
 			addRepositoryIfMissing(settings, session, list, "local",
-					"file://" + localRepositoryPath(new Properties(), settings, false), true, true);
+					"file://" + localRepositoryPath(new Properties(), settings), true, true);
 		}
 		for (Profile profile : settings.getActiveProfiles()) {
 			for (Repository repository : profile.getRepositories()) {
@@ -482,22 +482,22 @@ public class DependencyResolver {
 	}
 
 	private LocalRepository localRepository(Properties properties) {
-		return new LocalRepository(localRepositoryPath(properties, settings, true));
+		return new LocalRepository(localRepositoryPath(properties, settings));
 	}
 
 	private ArtifactRepository localArtifactRepository(Properties properties, MavenSettings settings,
-			DefaultRepositorySystemSession session, boolean preferThinRoot) {
+			DefaultRepositorySystemSession session) {
 		try {
 			return repo(settings, session, "cache",
-					localRepositoryPath(properties, settings, preferThinRoot).toURI().toURL().toString(), true, true);
+					localRepositoryPath(properties, settings).toURI().toURL().toString(), true, true);
 		}
 		catch (MalformedURLException e) {
 			throw new IllegalStateException("Cannot locate local repo", e);
 		}
 	}
 
-	private File localRepositoryPath(Properties properties, MavenSettings settings, boolean preferThinRoot) {
-		if (!properties.containsKey(THIN_ROOT) || !preferThinRoot) {
+	private File localRepositoryPath(Properties properties, MavenSettings settings) {
+		if (!properties.containsKey(THIN_ROOT)) {
 			if (settings != null && StringUtils.hasText(settings.getLocalRepository())) {
 				return new File(settings.getLocalRepository());
 			}
