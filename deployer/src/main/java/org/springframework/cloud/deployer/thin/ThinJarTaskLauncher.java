@@ -3,6 +3,7 @@ package org.springframework.cloud.deployer.thin;
 import java.util.Collections;
 
 import org.springframework.cloud.deployer.spi.core.AppDeploymentRequest;
+import org.springframework.cloud.deployer.spi.core.RuntimeEnvironmentInfo;
 import org.springframework.cloud.deployer.spi.task.LaunchState;
 import org.springframework.cloud.deployer.spi.task.TaskLauncher;
 import org.springframework.cloud.deployer.spi.task.TaskStatus;
@@ -21,8 +22,7 @@ public class ThinJarTaskLauncher extends AbstractThinJarSupport implements TaskL
 	public String launch(AppDeploymentRequest request) {
 		String id = super.deploy(request);
 		ThinJarAppWrapper wrapper = super.getWrapper(id);
-		wrapper.status(new TaskStatus(id, LaunchState.launching,
-				request.getDeploymentProperties()));
+		wrapper.status(new TaskStatus(id, LaunchState.launching, request.getDeploymentProperties()));
 		return id;
 	}
 
@@ -35,8 +35,7 @@ public class ThinJarTaskLauncher extends AbstractThinJarSupport implements TaskL
 	public TaskStatus status(String id) {
 		ThinJarAppWrapper wrapper = super.getWrapper(id);
 		if (wrapper != null) {
-			return new TaskStatus(id, wrapper.getState(),
-					Collections.<String, String>emptyMap());
+			return new TaskStatus(id, wrapper.getState(), Collections.<String, String>emptyMap());
 		}
 		return null;
 	}
@@ -48,6 +47,14 @@ public class ThinJarTaskLauncher extends AbstractThinJarSupport implements TaskL
 	@Override
 	public void destroy(String appName) {
 		super.getWrapper(appName).cancel();
+	}
+
+	@Override
+	public RuntimeEnvironmentInfo environmentInfo() {
+		return new RuntimeEnvironmentInfo.Builder().spiClass(RuntimeEnvironmentInfo.class).implementationName("thin")
+				.implementationVersion("1.0.26.BUILD-SNAPSHOT").platformApiVersion("N/A").platformApiVersion("N/A")
+				.platformClientVersion("1.0.26.BUILD-SNAPSHOT").platformHostVersion("N/A").platformType("local")
+				.build();
 	}
 
 }

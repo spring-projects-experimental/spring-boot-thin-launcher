@@ -27,6 +27,7 @@ import org.springframework.cloud.deployer.spi.app.AppInstanceStatus;
 import org.springframework.cloud.deployer.spi.app.AppStatus;
 import org.springframework.cloud.deployer.spi.app.DeploymentState;
 import org.springframework.cloud.deployer.spi.core.AppDeploymentRequest;
+import org.springframework.cloud.deployer.spi.core.RuntimeEnvironmentInfo;
 import org.springframework.cloud.deployer.spi.task.LaunchState;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.MethodInvoker;
@@ -62,8 +63,7 @@ public class ThinJarAppDeployer extends AbstractThinJarSupport implements AppDep
 	public String deploy(AppDeploymentRequest request) {
 		String id = super.deploy(request);
 		ThinJarAppWrapper wrapper = super.getWrapper(id);
-		wrapper.status(
-				AppStatus.of(id).with(new InMemoryAppInstanceStatus(wrapper)).build());
+		wrapper.status(AppStatus.of(id).with(new InMemoryAppInstanceStatus(wrapper)).build());
 		return id;
 	}
 
@@ -72,8 +72,7 @@ public class ThinJarAppDeployer extends AbstractThinJarSupport implements AppDep
 		Map<String, String> properties = super.getProperties(request);
 		boolean useDynamicPort = !properties.containsKey(SERVER_PORT_KEY);
 		int port = useDynamicPort ? SocketUtils.findAvailableTcpPort(DEFAULT_SERVER_PORT)
-				: Integer.parseInt(
-						request.getDefinition().getProperties().get(SERVER_PORT_KEY));
+				: Integer.parseInt(request.getDefinition().getProperties().get(SERVER_PORT_KEY));
 		if (useDynamicPort) {
 			properties.put(SERVER_PORT_KEY, String.valueOf(port));
 		}
@@ -98,7 +97,6 @@ public class ThinJarAppDeployer extends AbstractThinJarSupport implements AppDep
 	 * that type is from the parent classloader. Methods can be called reflectively on the
 	 * bean as long as their parameters and return types are themselves loaded by the
 	 * parent classloader (e.g. anything from the Java SDK).
-	 * 
 	 * @param id the app id
 	 * @param type the required type of the bean
 	 * @return a bean of the requested type if the app is deployed, otherwise null
@@ -120,7 +118,6 @@ public class ThinJarAppDeployer extends AbstractThinJarSupport implements AppDep
 
 	/**
 	 * Lookup all beans from a deployed application.
-	 * 
 	 * @param id the app id
 	 * @param type the required type of the bean
 	 * @return a map of bean name to bean (could be empty)
@@ -143,8 +140,7 @@ public class ThinJarAppDeployer extends AbstractThinJarSupport implements AppDep
 	}
 
 	private Map<String, Object> getBeansOfType(ThinJarAppWrapper wrapper, Class<?> type)
-			throws IllegalAccessException, ClassNotFoundException, NoSuchMethodException,
-			InvocationTargetException {
+			throws IllegalAccessException, ClassNotFoundException, NoSuchMethodException, InvocationTargetException {
 		Object app = findContext(wrapper);
 		MethodInvoker invoker = new MethodInvoker();
 		invoker.setTargetObject(app);
@@ -157,8 +153,7 @@ public class ThinJarAppDeployer extends AbstractThinJarSupport implements AppDep
 	}
 
 	private Object getBean(ThinJarAppWrapper wrapper, Class<?> type)
-			throws IllegalAccessException, ClassNotFoundException, NoSuchMethodException,
-			InvocationTargetException {
+			throws IllegalAccessException, ClassNotFoundException, NoSuchMethodException, InvocationTargetException {
 		Object app = findContext(wrapper);
 		MethodInvoker invoker = new MethodInvoker();
 		invoker.setTargetObject(app);
@@ -172,8 +167,7 @@ public class ThinJarAppDeployer extends AbstractThinJarSupport implements AppDep
 		if (app.getClass().getClassLoader() == type.getClassLoader()) {
 			return type;
 		}
-		return ClassUtils.resolveClassName(type.getName(),
-				app.getClass().getClassLoader());
+		return ClassUtils.resolveClassName(type.getName(), app.getClass().getClassLoader());
 	}
 
 	private Object findContext(ThinJarAppWrapper wrapper) {
@@ -184,11 +178,20 @@ public class ThinJarAppDeployer extends AbstractThinJarSupport implements AppDep
 		return app;
 	}
 
+	@Override
+	public RuntimeEnvironmentInfo environmentInfo() {
+		return new RuntimeEnvironmentInfo.Builder().spiClass(RuntimeEnvironmentInfo.class).implementationName("thin")
+				.implementationVersion("1.0.26.BUILD-SNAPSHOT").platformApiVersion("N/A").platformApiVersion("N/A")
+				.platformClientVersion("1.0.26.BUILD-SNAPSHOT").platformHostVersion("N/A").platformType("local")
+				.build();
+	}
+
 }
 
 class InMemoryAppInstanceStatus implements AppInstanceStatus {
 
 	private final String id;
+
 	private final ThinJarAppWrapper wrapper;
 
 	public InMemoryAppInstanceStatus(ThinJarAppWrapper wrapper) {
