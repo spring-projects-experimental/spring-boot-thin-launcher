@@ -52,12 +52,12 @@ public class MavenSettingsReader {
 	private final String homeDir;
 
 	public MavenSettingsReader() {
-		this(System.getProperty("user.home"));
+		this(null);
 	}
 
 	public MavenSettingsReader(String homeDir) {
 		if (homeDir == null) {
-			homeDir = System.getProperty("user.home");
+			homeDir = System.getProperty("settings.home", System.getProperty("user.home"));
 		}
 		this.homeDir = homeDir;
 	}

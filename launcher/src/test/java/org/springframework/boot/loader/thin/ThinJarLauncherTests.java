@@ -261,8 +261,8 @@ public class ThinJarLauncherTests {
 	@Test
 	public void settingsReadFromRoot() throws Exception {
 		DependencyResolver.close();
-		String home = System.getProperty("user.home");
-		System.setProperty("user.home", new File("src/test/resources/settings/local").getAbsolutePath());
+		String home = System.getProperty("settings.home");
+		System.setProperty("settings.home", new File("src/test/resources/settings/local").getAbsolutePath());
 		try {
 			deleteRecursively(new File("target/thin/test/repository/org/springframework/spring-core"));
 			String[] args = new String[] { "--thin.dryrun=true",
@@ -270,7 +270,9 @@ public class ThinJarLauncherTests {
 			ThinJarLauncher.main(args);
 		}
 		finally {
-			System.setProperty("user.home", home);
+			if (home != null) {
+				System.setProperty("settings.home", home);
+			}
 		}
 		assertThat(new File("target/thin/test/repository").exists()).isTrue();
 		assertThat(new File("target/thin/test/repository/org/springframework/spring-core").exists()).isTrue();
@@ -279,8 +281,8 @@ public class ThinJarLauncherTests {
 	@Test
 	public void settingsReadFromRootWithThinRoot() throws Exception {
 		DependencyResolver.close();
-		String home = System.getProperty("user.home");
-		System.setProperty("user.home", new File("src/test/resources/settings/local").getAbsolutePath());
+		String home = System.getProperty("settings.home");
+		System.setProperty("settings.home", new File("src/test/resources/settings/local").getAbsolutePath());
 		try {
 			deleteRecursively(new File("target/thin/other/repository/org/springframework/spring-core"));
 			deleteRecursively(new File("target/thin/test/repository/org/springframework/spring-core"));
@@ -289,7 +291,9 @@ public class ThinJarLauncherTests {
 			ThinJarLauncher.main(args);
 		}
 		finally {
-			System.setProperty("user.home", home);
+			if (home != null) {
+				System.setProperty("settings.home", home);
+			}
 		}
 		assertThat(new File("target/thin/other/repository").exists()).isTrue();
 		assertThat(new File("target/thin/test/repository/org/springframework/spring-core").exists()).isFalse();
@@ -327,13 +331,15 @@ public class ThinJarLauncherTests {
 		ThinJarLauncher.main(args);
 		DependencyResolver.close();
 		// Then go offline with the same args
-		String home = System.getProperty("user.home");
-		System.setProperty("user.home", new File("src/test/resources/settings/offline").getAbsolutePath());
+		String home = System.getProperty("settings.home");
+		System.setProperty("settings.home", new File("src/test/resources/settings/offline").getAbsolutePath());
 		try {
 			ThinJarLauncher.main(args);
 		}
 		finally {
-			System.setProperty("user.home", home);
+			if (home != null) {
+				System.setProperty("settings.home", home);
+			}
 		}
 		assertThat(new File("target/thin/test/repository").exists()).isTrue();
 		assertThat(new File("target/thin/test/repository/org/springframework/spring-core").exists()).isTrue();
@@ -372,7 +378,9 @@ public class ThinJarLauncherTests {
 			ThinJarLauncher.main(args);
 		}
 		finally {
-			System.setProperty("user.home", home);
+			if (home != null) {
+				System.setProperty("user.home", home);
+			}
 		}
 		assertThat(new File("target/thin/test/repository").exists()).isTrue();
 		assertThat(new File("target/thin/test/repository/com/example/maven/maven-simple").exists()).isTrue();

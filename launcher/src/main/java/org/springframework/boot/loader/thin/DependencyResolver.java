@@ -69,6 +69,7 @@ import org.codehaus.plexus.DefaultPlexusContainer;
 import org.codehaus.plexus.PlexusConstants;
 import org.codehaus.plexus.PlexusContainer;
 import org.codehaus.plexus.classworlds.ClassWorld;
+import org.eclipse.aether.DefaultRepositoryCache;
 import org.eclipse.aether.DefaultRepositorySystemSession;
 import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.RepositorySystemSession;
@@ -167,7 +168,8 @@ public class DependencyResolver {
 					try {
 						container = new DefaultPlexusContainer(config, new AetherModule(),
 								new DependencyResolutionModule());
-						localRepositoryManagerFactory = container.lookup(LocalRepositoryManagerFactory.class);
+						localRepositoryManagerFactory = container.lookup(LocalRepositoryManagerFactory.class,
+								"enhanced");
 						// container.addComponent(
 						// new ClassRealmManager((MutablePlexusContainer) container, new
 						// DefaultBeanLocator()),
@@ -472,6 +474,7 @@ public class DependencyResolver {
 		if (properties.containsKey(THIN_OFFLINE) && !"false".equals(properties.getProperty(THIN_OFFLINE))) {
 			session.setOffline(true);
 		}
+		session.setCache(new DefaultRepositoryCache());
 		return session;
 	}
 
