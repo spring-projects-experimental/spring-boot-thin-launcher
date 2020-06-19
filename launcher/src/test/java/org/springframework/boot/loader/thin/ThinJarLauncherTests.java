@@ -55,36 +55,31 @@ public class ThinJarLauncherTests {
 
 	@Test
 	public void coords() throws Exception {
-		String coords = ThinJarLauncher
-				.coordinates(new DefaultArtifact("com.example:foo:1.0"));
+		String coords = ThinJarLauncher.coordinates(new DefaultArtifact("com.example:foo:1.0"));
 		assertThat(coords).isEqualTo("com.example:foo:1.0");
 	}
 
 	@Test
 	public void classifier() throws Exception {
-		String coords = ThinJarLauncher
-				.coordinates(new DefaultArtifact("com.example:foo:jar:duplicate:1.0"));
+		String coords = ThinJarLauncher.coordinates(new DefaultArtifact("com.example:foo:jar:duplicate:1.0"));
 		assertThat(coords).isEqualTo("com.example:foo:jar:duplicate:1.0");
 	}
 
 	@Test
 	public void extension() throws Exception {
-		String coords = ThinJarLauncher
-				.coordinates(new DefaultArtifact("com.example:foo:zip:1.0"));
+		String coords = ThinJarLauncher.coordinates(new DefaultArtifact("com.example:foo:zip:1.0"));
 		assertThat(coords).isEqualTo("com.example:foo:zip:1.0");
 	}
 
 	@Test
 	public void extensionAndClassifier() throws Exception {
-		String coords = ThinJarLauncher
-				.coordinates(new DefaultArtifact("com.example:foo:zip:duplicate:1.0"));
+		String coords = ThinJarLauncher.coordinates(new DefaultArtifact("com.example:foo:zip:duplicate:1.0"));
 		assertThat(coords).isEqualTo("com.example:foo:zip:duplicate:1.0");
 	}
 
 	@Test
 	public void emptyProperties() throws Exception {
-		String[] args = new String[] { "--thin.classpath",
-				"--thin.archive=src/test/resources/apps/basic" };
+		String[] args = new String[] { "--thin.classpath", "--thin.archive=src/test/resources/apps/basic" };
 		ThinJarLauncher launcher = new ThinJarLauncher(args);
 		DependencyResolver resolver = mock(DependencyResolver.class);
 		ReflectionTestUtils.setField(DependencyResolver.class, "instance", resolver);
@@ -99,8 +94,8 @@ public class ThinJarLauncherTests {
 
 	@Test
 	public void profileProperties() throws Exception {
-		String[] args = new String[] { "--thin.classpath",
-				"--thin.archive=src/test/resources/apps/basic", "--thin.profile=foo" };
+		String[] args = new String[] { "--thin.classpath", "--thin.archive=src/test/resources/apps/basic",
+				"--thin.profile=foo" };
 		ThinJarLauncher launcher = new ThinJarLauncher(args);
 		DependencyResolver.close();
 		DependencyResolver resolver = mock(DependencyResolver.class);
@@ -116,46 +111,39 @@ public class ThinJarLauncherTests {
 
 	@Test
 	public void dryrun() throws Exception {
-		String[] args = new String[] { "--thin.dryrun=true",
-				"--thin.archive=src/test/resources/apps/basic", "--debug" };
+		String[] args = new String[] { "--thin.dryrun=true", "--thin.archive=src/test/resources/apps/basic",
+				"--debug" };
 		ThinJarLauncher.main(args);
 	}
 
 	@Test
 	public void classpath() throws Exception {
-		String[] args = new String[] { "--thin.classpath",
-				"--thin.archive=src/test/resources/apps/basic" };
+		String[] args = new String[] { "--thin.classpath", "--thin.archive=src/test/resources/apps/basic" };
 		ThinJarLauncher.main(args);
-		assertThat(output.toString())
-				.contains("spring-web-4.3.3.RELEASE.jar" + File.pathSeparator);
+		assertThat(output.toString()).contains("spring-web-4.3.3.RELEASE.jar" + File.pathSeparator);
 	}
 
 	@Test
 	public void launcher() throws Exception {
-		String[] args = new String[] { "--thin.classpath",
-				"--thin.archive=src/test/resources/apps/launcher" };
+		String[] args = new String[] { "--thin.classpath", "--thin.archive=src/test/resources/apps/launcher" };
 		ThinJarLauncher.main(args);
-		assertThat(output.toString())
-				.contains("spring-cloud-deployer-thin-1.0.22.RELEASE.jar" + File.pathSeparator);
+		assertThat(output.toString()).contains("spring-cloud-deployer-thin-1.0.22.RELEASE.jar" + File.pathSeparator);
 	}
 
 	@Test
 	public void fatClasspath() throws Exception {
-		String[] args = new String[] { "--thin.classpath",
-				"--thin.archive=src/test/resources/apps/boot" };
+		String[] args = new String[] { "--thin.classpath", "--thin.archive=src/test/resources/apps/boot" };
 		ThinJarLauncher.main(args);
-		assertThat(output.toString())
-				.contains("spring-web-5.0.9.RELEASE.jar" + File.pathSeparator);
+		assertThat(output.toString()).contains("spring-web-5.0.9.RELEASE.jar" + File.pathSeparator);
 		assertThat(output.toString()).contains("BOOT-INF" + File.separator + "classes");
 	}
 
 	@Test
 	public void compute() throws Exception {
-		String[] args = new String[] { "--thin.classpath=properties",
-				"--thin.archive=src/test/resources/apps/basic" };
+		String[] args = new String[] { "--thin.classpath=properties", "--thin.archive=src/test/resources/apps/basic" };
 		ThinJarLauncher.main(args);
-		assertThat(output.toString()).contains(
-				"dependencies.spring-web=org.springframework:spring-web:4.3.3.RELEASE\n");
+		assertThat(output.toString())
+				.contains("dependencies.spring-web=org.springframework:spring-web:4.3.3.RELEASE\n");
 	}
 
 	@Test
@@ -163,8 +151,8 @@ public class ThinJarLauncherTests {
 		String[] args = new String[] { "--thin.classpath=properties",
 				"--thin.archive=src/test/resources/apps/classifier" };
 		ThinJarLauncher.main(args);
-		assertThat(output.toString()).contains(
-				"dependencies.spring-boot-test=org.springframework.boot:spring-boot-test:2.1.0.RELEASE\n");
+		assertThat(output.toString())
+				.contains("dependencies.spring-boot-test=org.springframework.boot:spring-boot-test:2.1.0.RELEASE\n");
 		assertThat(output.toString()).contains(
 				"dependencies.spring-boot-test.tests=org.springframework.boot:spring-boot-test:jar:tests:2.1.0.RELEASE\n");
 	}
@@ -174,56 +162,42 @@ public class ThinJarLauncherTests {
 		String[] args = new String[] { "--thin.classpath=properties",
 				"--thin.archive=src/test/resources/apps/same-artifact-names" };
 		ThinJarLauncher.main(args);
-		assertThat(output.toString()).contains(
-				"dependencies.jersey-client=org.glassfish.jersey.core:jersey-client:2.27\n");
-		assertThat(output.toString()).contains(
-				"dependencies.jersey-client.1=com.sun.jersey:jersey-client:1.19.1\n");
+		assertThat(output.toString())
+				.contains("dependencies.jersey-client=org.glassfish.jersey.core:jersey-client:2.27\n");
+		assertThat(output.toString()).contains("dependencies.jersey-client.1=com.sun.jersey:jersey-client:1.19.1\n");
 	}
 
 	@Test
 	public void thinRoot() throws Exception {
-		deleteRecursively(
-				new File("target/thin/test/repository/org/springframework/spring-core"));
+		deleteRecursively(new File("target/thin/test/repository/org/springframework/spring-core"));
 		deleteRecursively(new File("target/thin/test/repository/junit"));
-		String[] args = new String[] { "--thin.dryrun=true",
-				"--thin.root=target/thin/test",
+		String[] args = new String[] { "--thin.dryrun=true", "--thin.root=target/thin/test",
 				"--thin.location=file:src/test/resources/apps/db/META-INF",
 				"--thin.archive=src/test/resources/apps/basic", "--debug" };
 		ThinJarLauncher.main(args);
-		assertThat(
-				new File("target/thin/test/repository/org/springframework/spring-core"))
-						.exists();
+		assertThat(new File("target/thin/test/repository/org/springframework/spring-core")).exists();
 		assertThat(new File("target/thin/test/repository/junit/junit")).doesNotExist();
 	}
 
 	@Test
 	public void thinRootWithPom() throws Exception {
-		deleteRecursively(
-				new File("target/thin/test/repository/org/springframework/spring-core"));
+		deleteRecursively(new File("target/thin/test/repository/org/springframework/spring-core"));
 		deleteRecursively(new File("target/thin/test/repository/junit"));
-		String[] args = new String[] { "--thin.dryrun=true",
-				"--thin.root=target/thin/test",
+		String[] args = new String[] { "--thin.dryrun=true", "--thin.root=target/thin/test",
 				"--thin.archive=src/test/resources/apps/petclinic", "--debug" };
 		ThinJarLauncher.main(args);
-		assertThat(
-				new File("target/thin/test/repository/org/springframework/spring-core"))
-						.exists();
+		assertThat(new File("target/thin/test/repository/org/springframework/spring-core")).exists();
 		assertThat(new File("target/thin/test/repository/junit/junit")).doesNotExist();
 	}
 
 	@Test
 	public void thinRootWithProperties() throws Exception {
-		deleteRecursively(
-				new File("target/thin/test/repository/org/springframework/spring-core"));
+		deleteRecursively(new File("target/thin/test/repository/org/springframework/spring-core"));
 		deleteRecursively(new File("target/thin/test/repository/junit"));
-		String[] args = new String[] { "--thin.dryrun=true", "--thin.force=false",
-				"--thin.root=target/thin/test",
-				"--thin.archive=src/test/resources/apps/petclinic-preresolved",
-				"--thin.debug" };
+		String[] args = new String[] { "--thin.dryrun=true", "--thin.force=false", "--thin.root=target/thin/test",
+				"--thin.archive=src/test/resources/apps/petclinic-preresolved", "--thin.debug" };
 		ThinJarLauncher.main(args);
-		assertThat(
-				new File("target/thin/test/repository/org/springframework/spring-core"))
-						.exists();
+		assertThat(new File("target/thin/test/repository/org/springframework/spring-core")).exists();
 		assertThat(new File("target/thin/test/repository/junit/junit")).doesNotExist();
 		// assertThat(output.toString())
 		// .contains("Dependencies are pre-computed in properties");
@@ -231,176 +205,150 @@ public class ThinJarLauncherTests {
 
 	@Test
 	public void thinRootWithForce() throws Exception {
-		deleteRecursively(
-				new File("target/thin/test/repository/org/springframework/spring-core"));
+		deleteRecursively(new File("target/thin/test/repository/org/springframework/spring-core"));
 		deleteRecursively(new File("target/thin/test/repository/junit"));
-		String[] args = new String[] { "--thin.dryrun=true", "--thin.force=true",
-				"--thin.root=target/thin/test",
-				"--thin.archive=src/test/resources/apps/petclinic-preresolved",
-				"--debug" };
+		String[] args = new String[] { "--thin.dryrun=true", "--thin.force=true", "--thin.root=target/thin/test",
+				"--thin.archive=src/test/resources/apps/petclinic-preresolved", "--debug" };
 		ThinJarLauncher.main(args);
-		assertThat(
-				new File("target/thin/test/repository/org/springframework/spring-core"))
-						.exists();
+		assertThat(new File("target/thin/test/repository/org/springframework/spring-core")).exists();
 		assertThat(new File("target/thin/test/repository/junit/junit")).doesNotExist();
 	}
 
 	@Test
 	public void overrideLocalRepository() throws Exception {
-		deleteRecursively(
-				new File("target/thin/test/repository/org/springframework/spring-core"));
-		String[] args = new String[] { "--thin.root=target/thin/test",
-				"--thin.dryrun=true", "--thin.archive=src/test/resources/apps/basic",
-				"--debug" };
+		deleteRecursively(new File("target/thin/test/repository/org/springframework/spring-core"));
+		String[] args = new String[] { "--thin.root=target/thin/test", "--thin.dryrun=true",
+				"--thin.archive=src/test/resources/apps/basic", "--debug" };
 		ThinJarLauncher.main(args);
 		assertThat(new File("target/thin/test/repository").exists()).isTrue();
-		assertThat(new File("target/thin/test/repository/org/springframework/spring-core")
-				.exists()).isTrue();
+		assertThat(new File("target/thin/test/repository/org/springframework/spring-core").exists()).isTrue();
 	}
 
 	@Test
 	public void missingThinRootWithPom() throws Exception {
-		deleteRecursively(
-				new File("target/thin/test/repository/org/springframework/spring-core"));
+		deleteRecursively(new File("target/thin/test/repository/org/springframework/spring-core"));
 		expected.expect(RuntimeException.class);
 		expected.expectMessage("spring-web:jar:X.X.X");
-		String[] args = new String[] { "--thin.root=target/thin/test",
-				"--thin.dryrun=true", "--thin.archive=src/test/resources/apps/missing",
-				"--debug" };
+		String[] args = new String[] { "--thin.root=target/thin/test", "--thin.dryrun=true",
+				"--thin.archive=src/test/resources/apps/missing", "--debug" };
 		ThinJarLauncher.main(args);
 		assertThat(new File("target/thin/test/repository").exists()).isTrue();
-		assertThat(new File("target/thin/test/repository/org/springframework/spring-core")
-				.exists()).isTrue();
+		assertThat(new File("target/thin/test/repository/org/springframework/spring-core").exists()).isTrue();
 	}
 
 	@Test
 	public void missingThinRootWithoutPom() throws Exception {
-		deleteRecursively(
-				new File("target/thin/test/repository/org/springframework/spring-core"));
+		deleteRecursively(new File("target/thin/test/repository/org/springframework/spring-core"));
 		expected.expect(RuntimeException.class);
 		expected.expectMessage("nonexistent:jar:0.0.1");
-		String[] args = new String[] { "--thin.root=target/thin/test",
-				"--thin.dryrun=true",
+		String[] args = new String[] { "--thin.root=target/thin/test", "--thin.dryrun=true",
 				"--thin.archive=src/test/resources/apps/missingthin", "--debug" };
 		ThinJarLauncher.main(args);
 		assertThat(new File("target/thin/test/repository").exists()).isTrue();
-		assertThat(new File("target/thin/test/repository/org/springframework/spring-core")
-				.exists()).isTrue();
+		assertThat(new File("target/thin/test/repository/org/springframework/spring-core").exists()).isTrue();
 	}
 
 	@Test
 	public void overrideExistingRepository() throws Exception {
-		deleteRecursively(
-				new File("target/thin/test/repository/org/springframework/spring-core"));
-		String[] args = new String[] { "--thin.root=target/thin/test",
-				"--thin.dryrun=true",
+		deleteRecursively(new File("target/thin/test/repository/org/springframework/spring-core"));
+		String[] args = new String[] { "--thin.root=target/thin/test", "--thin.dryrun=true",
 				"--thin.archive=src/test/resources/apps/repositories", "--debug" };
 		ThinJarLauncher.main(args);
 		assertThat(new File("target/thin/test/repository").exists()).isTrue();
-		assertThat(new File("target/thin/test/repository/org/springframework/spring-core")
-				.exists()).isTrue();
+		assertThat(new File("target/thin/test/repository/org/springframework/spring-core").exists()).isTrue();
 	}
 
 	@Test
 	public void settingsReadFromRoot() throws Exception {
 		DependencyResolver.close();
 		String home = System.getProperty("user.home");
-		System.setProperty("user.home",
-				new File("src/test/resources/settings/local").getAbsolutePath());
+		System.setProperty("user.home", new File("src/test/resources/settings/local").getAbsolutePath());
 		try {
-			deleteRecursively(new File(
-					"target/thin/test/repository/org/springframework/spring-core"));
+			deleteRecursively(new File("target/thin/test/repository/org/springframework/spring-core"));
 			String[] args = new String[] { "--thin.dryrun=true",
-					"--thin.archive=src/test/resources/apps/snapshots-with-repos",
-					"--debug" };
+					"--thin.archive=src/test/resources/apps/snapshots-with-repos", "--debug" };
 			ThinJarLauncher.main(args);
 		}
 		finally {
 			System.setProperty("user.home", home);
 		}
 		assertThat(new File("target/thin/test/repository").exists()).isTrue();
-		assertThat(new File("target/thin/test/repository/org/springframework/spring-core")
-				.exists()).isTrue();
+		assertThat(new File("target/thin/test/repository/org/springframework/spring-core").exists()).isTrue();
 	}
 
 	@Test
 	public void settingsReadFromRootWithThinRoot() throws Exception {
 		DependencyResolver.close();
 		String home = System.getProperty("user.home");
-		System.setProperty("user.home",
-				new File("src/test/resources/settings/local").getAbsolutePath());
+		System.setProperty("user.home", new File("src/test/resources/settings/local").getAbsolutePath());
 		try {
-			deleteRecursively(new File(
-					"target/thin/other/repository/org/springframework/spring-core"));
-			deleteRecursively(new File(
-					"target/thin/test/repository/org/springframework/spring-core"));
-			String[] args = new String[] { "--thin.dryrun=true",
-					"--thin.root=target/thin/other",
-					"--thin.archive=src/test/resources/apps/snapshots-with-repos",
-					"--debug" };
+			deleteRecursively(new File("target/thin/other/repository/org/springframework/spring-core"));
+			deleteRecursively(new File("target/thin/test/repository/org/springframework/spring-core"));
+			String[] args = new String[] { "--thin.dryrun=true", "--thin.root=target/thin/other",
+					"--thin.archive=src/test/resources/apps/snapshots-with-repos", "--debug" };
 			ThinJarLauncher.main(args);
 		}
 		finally {
 			System.setProperty("user.home", home);
 		}
 		assertThat(new File("target/thin/other/repository").exists()).isTrue();
-		assertThat(new File("target/thin/test/repository/org/springframework/spring-core")
-				.exists()).isFalse();
-		assertThat(
-				new File("target/thin/other/repository/org/springframework/spring-core")
-						.exists()).isTrue();
+		assertThat(new File("target/thin/test/repository/org/springframework/spring-core").exists()).isFalse();
+		assertThat(new File("target/thin/other/repository/org/springframework/spring-core").exists()).isTrue();
 	}
 
 	@Test
 	public void commandLineOffline() throws Exception {
 		settingsReadFromRoot();
 		DependencyResolver.close();
-		String[] args = new String[] { "--thin.root=target/thin/test",
-				"--thin.dryrun=true", "--thin.offline=true",
-				"--thin.archive=src/test/resources/apps/snapshots-with-repos",
-				"--debug" };
-		assertThat(deleteRecursively(
-				new File("target/thin/test/repository/org/springframework/spring-core")))
-						.isTrue();
+		String[] args = new String[] { "--thin.root=target/thin/test", "--thin.dryrun=true", "--thin.offline=true",
+				"--thin.archive=src/test/resources/apps/snapshots-with-repos", "--debug" };
+		assertThat(deleteRecursively(new File("target/thin/test/repository/org/springframework/spring-core"))).isTrue();
 		expected.expect(RuntimeException.class);
 		expected.expectMessage("spring-core");
 		ThinJarLauncher.main(args);
 	}
 
 	@Test
-	public void settingsOffline() throws Exception {
-		settingsReadFromRoot();
-		DependencyResolver.close();
+	public void defaultSettingsWithReposInPom() throws Exception {
 		String home = System.getProperty("user.home");
-		System.setProperty("user.home",
-				new File("src/test/resources/settings/offline").getAbsolutePath());
+		deleteRecursively(new File("target/thin/test/repository/org/springframework/spring-core"));
+		String[] args = new String[] { "--thin.dryrun=true",
+				"--thin.archive=src/test/resources/apps/snapshots-with-repos", "--debug" };
+		ThinJarLauncher.main(args);
+		assertThat(new File(home, ".m2/repository").exists()).isTrue();
+		assertThat(new File(home, ".m2/repository/org/springframework/spring-core").exists()).isTrue();
+	}
+
+	@Test
+	public void settingsOffline() throws Exception {
+		// Once online to prime the cache
+		String[] args = new String[] { "--thin.root=target/thin/test", "--thin.dryrun=true",
+				"--thin.archive=src/test/resources/apps/snapshots-with-repos", "--debug" };
+		ThinJarLauncher.main(args);
+		DependencyResolver.close();
+		// Then go offline with the same args
+		String home = System.getProperty("user.home");
+		System.setProperty("user.home", new File("src/test/resources/settings/offline").getAbsolutePath());
 		try {
-			String[] args = new String[] { "--thin.root=target/thin/test",
-					"--thin.dryrun=true",
-					"--thin.archive=src/test/resources/apps/snapshots-with-repos",
-					"--debug" };
 			ThinJarLauncher.main(args);
 		}
 		finally {
 			System.setProperty("user.home", home);
 		}
 		assertThat(new File("target/thin/test/repository").exists()).isTrue();
-		assertThat(new File("target/thin/test/repository/org/springframework/spring-core")
-				.exists()).isTrue();
+		assertThat(new File("target/thin/test/repository/org/springframework/spring-core").exists()).isTrue();
 	}
 
 	@Test
 	public void repositorySettingsMissing() throws Exception {
 		DependencyResolver.close();
 		deleteRecursively(new File("target/thin/test/repository/com/example"));
-		String[] args = new String[] { "--thin.root=target/thin/test",
-				"--thin.dryrun=true", "--thin.archive=src/test/resources/apps/jitpack",
-				"--debug" };
+		String[] args = new String[] { "--thin.root=target/thin/test", "--thin.dryrun=true",
+				"--thin.archive=src/test/resources/apps/jitpack", "--debug" };
 		expected.expect(RuntimeException.class);
 		expected.expectMessage("maven-simple:jar:1.0");
 		ThinJarLauncher.main(args);
-		assertThat(new File("target/thin/test/repository/com/example/maven/maven-simple")
-				.exists()).isFalse();
+		assertThat(new File("target/thin/test/repository/com/example/maven/maven-simple").exists()).isFalse();
 	}
 
 	@Test
@@ -411,20 +359,15 @@ public class ThinJarLauncherTests {
 			userhome.mkdirs();
 		}
 		String settings = StreamUtils.copyToString(
-				new FileInputStream(
-						new File("src/test/resources/settings/repo/.m2/settings.xml")),
+				new FileInputStream(new File("src/test/resources/settings/repo/.m2/settings.xml")),
 				Charset.defaultCharset());
-		settings = settings.replace("${repo.url}",
-				"file://" + new File("target/test-classes/repo").getAbsolutePath());
-		StreamUtils.copy(settings, Charset.defaultCharset(),
-				new FileOutputStream(new File(userhome, "settings.xml")));
+		settings = settings.replace("${repo.url}", "file://" + new File("target/test-classes/repo").getAbsolutePath());
+		StreamUtils.copy(settings, Charset.defaultCharset(), new FileOutputStream(new File(userhome, "settings.xml")));
 		String home = System.getProperty("user.home");
-		System.setProperty("user.home",
-				new File("target/settings/repo").getAbsolutePath());
+		System.setProperty("user.home", new File("target/settings/repo").getAbsolutePath());
 		try {
 			deleteRecursively(new File("target/thin/test/repository/com/example"));
-			String[] args = new String[] { "--thin.root=target/thin/test",
-					"--thin.dryrun=true",
+			String[] args = new String[] { "--thin.root=target/thin/test", "--thin.dryrun=true",
 					"--thin.archive=src/test/resources/apps/jitpack", "--debug" };
 			ThinJarLauncher.main(args);
 		}
@@ -432,8 +375,7 @@ public class ThinJarLauncherTests {
 			System.setProperty("user.home", home);
 		}
 		assertThat(new File("target/thin/test/repository").exists()).isTrue();
-		assertThat(new File("target/thin/test/repository/com/example/maven/maven-simple")
-				.exists()).isTrue();
+		assertThat(new File("target/thin/test/repository/com/example/maven/maven-simple").exists()).isTrue();
 	}
 
 	/**
@@ -443,17 +385,13 @@ public class ThinJarLauncherTests {
 	@Test
 	public void repositorySettingsMissingForSnapshotDependency() throws Exception {
 		DependencyResolver.close();
-		deleteRecursively(
-				new File("target/thin/test/repository/javax/validation/validation-api"));
-		String[] args = new String[] { "--thin.root=target/thin/test",
-				"--thin.dryrun=true",
-				"--thin.archive=src/test/resources/apps/beanvalidation-snapshot",
-				"--debug" };
+		deleteRecursively(new File("target/thin/test/repository/javax/validation/validation-api"));
+		String[] args = new String[] { "--thin.root=target/thin/test", "--thin.dryrun=true",
+				"--thin.archive=src/test/resources/apps/beanvalidation-snapshot", "--debug" };
 		expected.expect(RuntimeException.class);
 		expected.expectMessage("validation-api:jar:2.0.2-SNAPSHOT");
 		ThinJarLauncher.main(args);
-		assertThat(new File("target/thin/test/repository/javax/validation/validation-api")
-				.exists()).isFalse();
+		assertThat(new File("target/thin/test/repository/javax/validation/validation-api").exists()).isFalse();
 	}
 
 	public static boolean deleteRecursively(File root) {

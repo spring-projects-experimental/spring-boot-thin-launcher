@@ -66,7 +66,6 @@ import org.apache.maven.settings.Repository;
 import org.codehaus.plexus.ContainerConfiguration;
 import org.codehaus.plexus.DefaultContainerConfiguration;
 import org.codehaus.plexus.DefaultPlexusContainer;
-import org.codehaus.plexus.MutablePlexusContainer;
 import org.codehaus.plexus.PlexusConstants;
 import org.codehaus.plexus.PlexusContainer;
 import org.codehaus.plexus.classworlds.ClassWorld;
@@ -100,8 +99,6 @@ import org.eclipse.aether.transport.file.FileTransporterFactory;
 import org.eclipse.aether.transport.http.HttpTransporterFactory;
 import org.eclipse.aether.util.repository.AuthenticationBuilder;
 import org.eclipse.aether.util.repository.JreProxySelector;
-import org.eclipse.sisu.inject.DefaultBeanLocator;
-import org.eclipse.sisu.plexus.ClassRealmManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -171,9 +168,10 @@ public class DependencyResolver {
 						container = new DefaultPlexusContainer(config, new AetherModule(),
 								new DependencyResolutionModule());
 						localRepositoryManagerFactory = container.lookup(LocalRepositoryManagerFactory.class);
-						container.addComponent(
-								new ClassRealmManager((MutablePlexusContainer) container, new DefaultBeanLocator()),
-								ClassRealmManager.class.getName());
+						// container.addComponent(
+						// new ClassRealmManager((MutablePlexusContainer) container, new
+						// DefaultBeanLocator()),
+						// ClassRealmManager.class.getName());
 						projectBuilder = container.lookup(ProjectBuilder.class);
 						repositorySystem = container.lookup(RepositorySystem.class);
 					}
