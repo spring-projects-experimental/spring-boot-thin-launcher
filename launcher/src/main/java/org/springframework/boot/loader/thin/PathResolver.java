@@ -89,10 +89,8 @@ public class PathResolver {
 		return resolve(null, archive, name, profiles);
 	}
 
-	public List<Archive> resolve(Archive parent, Archive archive, String name,
-			String... profiles) {
-		log.info("Extracting dependencies from: {}, with profiles {}", archive,
-				Arrays.asList(profiles));
+	public List<Archive> resolve(Archive parent, Archive archive, String name, String... profiles) {
+		log.info("Extracting dependencies from: {}, with profiles {}", archive, Arrays.asList(profiles));
 		List<Archive> archives = new ArrayList<>();
 		if (parent != null) {
 			archives.addAll(archives(extract(parent, archive, name, profiles)));
@@ -115,15 +113,12 @@ public class PathResolver {
 				// over multiple directories.
 				String path = "target/classes/";
 				if (base.endsWith(path)) {
-					pom = new UrlResource(
-							base.substring(0, base.length() - path.length()) + "pom.xml");
+					pom = new UrlResource(base.substring(0, base.length() - path.length()) + "pom.xml");
 				}
 				if (!pom.exists()) {
 					path = "target/test-classes/";
 					if (base.endsWith(path)) {
-						pom = new UrlResource(
-								base.substring(0, base.length() - path.length())
-										+ "pom.xml");
+						pom = new UrlResource(base.substring(0, base.length() - path.length()) + "pom.xml");
 					}
 				}
 			}
@@ -140,18 +135,14 @@ public class PathResolver {
 				throw new IllegalStateException("Cannot locate archive", e);
 			}
 			String pattern = "META-INF/maven/**"
-					+ (artifactId == null || artifactId.length() == 0 ? ""
-							: "/" + artifactId)
-					+ "/pom.xml";
+					+ (artifactId == null || artifactId.length() == 0 ? "" : "/" + artifactId) + "/pom.xml";
 			Resource resource = findResource(archive, pattern);
 			if (resource != null) {
 				return resource;
 			}
 			// Spring Boot fat jar
 			pattern = "BOOT-INF/classes/META-INF/maven/**"
-					+ (artifactId == null || artifactId.length() == 0 ? ""
-							: "/" + artifactId)
-					+ "/pom.xml";
+					+ (artifactId == null || artifactId.length() == 0 ? "" : "/" + artifactId) + "/pom.xml";
 			resource = findResource(archive, pattern);
 			if (resource != null) {
 				return resource;
@@ -184,15 +175,13 @@ public class PathResolver {
 		}
 	}
 
-	private List<Dependency> extract(Archive parent, Archive archive, String name,
-			String[] profiles) {
+	private List<Dependency> extract(Archive parent, Archive archive, String name, String[] profiles) {
 		Resource parentPom = getPom(parent);
 		// Assume the profiles only apply to child
 		List<Dependency> parentDependencies = engine.dependencies(parentPom,
 				getProperties(archive, name, new String[0]));
 		Resource childPom = getPom(archive);
-		List<Dependency> childDependencies = engine.dependencies(childPom,
-				getProperties(archive, name, profiles));
+		List<Dependency> childDependencies = engine.dependencies(childPom, getProperties(archive, name, profiles));
 		Map<String, Dependency> lookup = new HashMap<>();
 		for (Dependency dependency : parentDependencies) {
 			lookup.put(coordinates(dependency), dependency);
@@ -208,15 +197,13 @@ public class PathResolver {
 	}
 
 	private String coordinates(Dependency dependency) {
-		return dependency.getArtifact().getGroupId() + ":"
-				+ dependency.getArtifact().getArtifactId();
+		return dependency.getArtifact().getGroupId() + ":" + dependency.getArtifact().getArtifactId();
 	}
 
 	public List<Dependency> extract(Archive archive, String name, String[] profiles) {
 		Properties properties = getProperties(archive, name, profiles);
 		Resource pom = getPom(archive);
-		log.info("Extracting dependencies from: {}, with profiles {}", pom,
-				Arrays.asList(profiles));
+		log.info("Extracting dependencies from: {}, with profiles {}", pom, Arrays.asList(profiles));
 		return engine.dependencies(pom, properties);
 	}
 
@@ -247,25 +234,21 @@ public class PathResolver {
 		properties.putAll(overrides);
 	}
 
-	private Properties loadThinProperties(Properties props, Archive archive, String name,
-			String[] list) {
+	private Properties loadThinProperties(Properties props, Archive archive, String name, String[] list) {
 		List<String> profiles = new ArrayList<>(Arrays.asList(list));
 		if (!profiles.contains("")) {
 			profiles.add(0, "");
 		}
 		for (String profile : profiles) {
-			String path = name + ("".equals(profile) ? "" : "-") + profile
-					+ ".properties";
+			String path = name + ("".equals(profile) ? "" : "-") + profile + ".properties";
 			loadProperties(props, archive, path);
 		}
 		return props;
 	}
 
-	private void loadThinProperties(Properties props, String[] locations, String name,
-			String[] profiles) {
+	private void loadThinProperties(Properties props, String[] locations, String name, String[] profiles) {
 		for (String profile : profiles) {
-			String path = name + ("".equals(profile) ? "" : "-") + profile
-					+ ".properties";
+			String path = name + ("".equals(profile) ? "" : "-") + profile + ".properties";
 			for (String location : locations) {
 				try {
 					if (!location.endsWith("/")) {
@@ -293,8 +276,7 @@ public class PathResolver {
 		log.info("Searching for properties in: " + url);
 		Properties added = new Properties();
 		try {
-			Resource resource = resources.getResource(url)
-					.createRelative("META-INF/" + path);
+			Resource resource = resources.getResource(url).createRelative("META-INF/" + path);
 			if (resource.exists()) {
 				log.info("Loading properties from: " + resource);
 				PropertiesLoaderUtils.fillProperties(added, resource);
@@ -384,8 +366,7 @@ public class PathResolver {
 
 	private Resource findResource(Archive archive, String pattern) {
 		try {
-			for (Resource resource : ResourcePatternUtils
-					.getResourcePatternResolver(new DefaultResourceLoader())
+			for (Resource resource : ResourcePatternUtils.getResourcePatternResolver(new DefaultResourceLoader())
 					.getResources(archive.getUrl() + pattern)) {
 				if (resource.exists()) {
 					return resource;
@@ -406,6 +387,10 @@ public class PathResolver {
 		path = path.replace(".jar", "");
 		path = path.split("-[0-9]")[0];
 		return path;
+	}
+
+	public File getLocalRepository() {
+		return DependencyResolver.instance().getLocalRepository();
 	}
 
 }

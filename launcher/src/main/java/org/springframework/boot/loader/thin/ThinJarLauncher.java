@@ -17,6 +17,9 @@
 package org.springframework.boot.loader.thin;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.net.URI;
 import java.net.URL;
 import java.security.AccessControlException;
 import java.util.ArrayList;
@@ -38,10 +41,10 @@ import org.springframework.boot.loader.archive.ExplodedArchive;
 import org.springframework.core.env.MutablePropertySources;
 import org.springframework.core.env.SimpleCommandLinePropertySource;
 import org.springframework.core.env.StandardEnvironment;
+import org.springframework.util.StreamUtils;
 import org.springframework.util.StringUtils;
 
 /**
- *
  * @author Dave Syer
  */
 public class ThinJarLauncher extends ExecutableArchiveLauncher {
@@ -133,6 +136,7 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 	public static final String THIN_PARENT_BOOT = "thin.parent.boot";
 
 	private StandardEnvironment environment = new StandardEnvironment();
+
 	private boolean debug;
 
 	public static void main(String[] args) throws Exception {
@@ -149,20 +153,16 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 		addCommandLineProperties(args);
 		args = removeThinArgs(args);
 		String root = environment.resolvePlaceholders("${" + THIN_ROOT + ":}");
-		String classpathValue = environment
-				.resolvePlaceholders("${" + THIN_CLASSPATH + ":false}");
-		boolean classpath = "".equals(classpathValue) || "true".equals(classpathValue)
-				|| "path".equals(classpathValue);
+		String classpathValue = environment.resolvePlaceholders("${" + THIN_CLASSPATH + ":false}");
+		boolean classpath = "".equals(classpathValue) || "true".equals(classpathValue) || "path".equals(classpathValue);
 		boolean compute = "properties".equals(classpathValue);
-		boolean trace = !"false"
-				.equals(environment.resolvePlaceholders("${thin.trace:${trace:false}}"));
+		boolean trace = !"false".equals(environment.resolvePlaceholders("${thin.trace:${trace:false}}"));
 		if (classpath || compute) {
 			this.debug = false;
 			LogUtils.setLogLevel(Level.OFF);
 		}
 		else {
-			this.debug = trace || !"false".equals(
-					environment.resolvePlaceholders("${thin.debug:${debug:false}}"));
+			this.debug = trace || !"false".equals(environment.resolvePlaceholders("${thin.debug:${debug:false}}"));
 		}
 		if (debug || trace) {
 			if (trace) {
@@ -183,11 +183,9 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 			return;
 		}
 		log.info("Version: " + getVersion());
-		if (!"false".equals(
-				environment.resolvePlaceholders("${" + THIN_DRYRUN + ":false}"))) {
-			getClassPathArchives();
-			log.info("Downloaded dependencies"
-					+ (!StringUtils.hasText(root) ? "" : " to " + root));
+		if (!"false".equals(environment.resolvePlaceholders("${" + THIN_DRYRUN + ":false}"))) {
+			getClassPathArchives(environment.resolvePlaceholders("${" + THIN_ROOT + ":}"));
+			log.info("Downloaded dependencies" + (!StringUtils.hasText(root) ? "" : " to " + root));
 			return;
 		}
 		super.launch(args);
@@ -218,13 +216,11 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 		Map<String, String> props = new HashMap<>();
 		props.put("computed", "true");
 		for (Dependency dependency : dependencies) {
-			props.put(key(dependency.getArtifact(), props),
-					coordinates(dependency.getArtifact()));
+			props.put(key(dependency.getArtifact(), props), coordinates(dependency.getArtifact()));
 		}
 		StringBuilder builder = new StringBuilder();
 		for (String key : props.keySet()) {
-			builder.append("dependencies.").append(key).append('=').append(props.get(key))
-					.append("\n");
+			builder.append("dependencies.").append(key).append('=').append(props.get(key)).append("\n");
 		}
 		return builder.toString();
 	}
@@ -247,12 +243,9 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 		String classifier = artifact.getClassifier();
 		String extension = artifact.getExtension();
 		return artifact.getGroupId() + ":" + artifact.getArtifactId()
-				+ (StringUtils.hasText(extension)
-						&& (!"jar".equals(extension) || StringUtils.hasText(classifier))
-								? ":" + extension
-								: "")
-				+ (StringUtils.hasText(classifier) ? ":" + classifier : "") + ":"
-				+ artifact.getVersion();
+				+ (StringUtils.hasText(extension) && (!"jar".equals(extension) || StringUtils.hasText(classifier))
+						? ":" + extension : "")
+				+ (StringUtils.hasText(classifier) ? ":" + classifier : "") + ":" + artifact.getVersion();
 	}
 
 	private String classpath(List<Archive> archives) throws Exception {
@@ -296,8 +289,7 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 			return;
 		}
 		MutablePropertySources properties = environment.getPropertySources();
-		SimpleCommandLinePropertySource source = new SimpleCommandLinePropertySource(
-				"commandArgs", args);
+		SimpleCommandLinePropertySource source = new SimpleCommandLinePropertySource("commandArgs", args);
 		if (!properties.contains("commandArgs")) {
 			properties.addFirst(source);
 		}
@@ -311,15 +303,12 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 		// Use the system classloader (the one that the JVM started with), not the one
 		// from this class:
 		ClassLoader parent = ClassLoader.getSystemClassLoader();
-		if ("true".equals(
-				environment.resolvePlaceholders("${" + THIN_PARENT_BOOT + ":true}"))) {
+		if ("true".equals(environment.resolvePlaceholders("${" + THIN_PARENT_BOOT + ":true}"))) {
 			parent = parent.getParent();
 		}
 		ThinJarClassLoader loader = new ThinJarClassLoader(
-				ArchiveUtils.addNestedClasses(getArchive(), urls, "BOOT-INF/classes/"),
-				parent);
-		if ("true".equals(
-				environment.resolvePlaceholders("${" + THIN_PARENT_FIRST + ":true}"))) {
+				ArchiveUtils.addNestedClasses(getArchive(), urls, "BOOT-INF/classes/"), parent);
+		if ("true".equals(environment.resolvePlaceholders("${" + THIN_PARENT_FIRST + ":true}"))) {
 			// Use a (traditional) parent first class loader
 			loader.setParentFirst(true);
 		}
@@ -342,50 +331,90 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 
 	@Override
 	protected List<Archive> getClassPathArchives() throws Exception {
-		String parent = environment
-				.resolvePlaceholders("${" + ThinJarLauncher.THIN_PARENT + ":}");
-		String name = environment
-				.resolvePlaceholders("${" + ThinJarLauncher.THIN_NAME + ":thin}");
-		String[] profiles = environment
-				.resolvePlaceholders("${" + ThinJarLauncher.THIN_PROFILE + ":}")
-				.split(",");
+		return getClassPathArchives(null);
+	}
+
+	private List<Archive> getClassPathArchives(String root) throws Exception {
+		String parent = environment.resolvePlaceholders("${" + ThinJarLauncher.THIN_PARENT + ":}");
+		String name = environment.resolvePlaceholders("${" + ThinJarLauncher.THIN_NAME + ":thin}");
+		String[] profiles = environment.resolvePlaceholders("${" + ThinJarLauncher.THIN_PROFILE + ":}").split(",");
 		PathResolver resolver = getResolver();
 		Archive parentArchive = null;
 		if (StringUtils.hasText(parent)) {
 			parentArchive = ArchiveUtils.getArchive(parent);
 		}
 		long t0 = System.currentTimeMillis();
-		List<Archive> archives = resolver.resolve(parentArchive, getArchive(), name,
-				profiles);
+		List<Archive> archives = resolver.resolve(parentArchive, getArchive(), name, profiles);
 		long t1 = System.currentTimeMillis();
 		if (log.isInfoEnabled()) {
-			log.info("Dependencies resolved in: " + (t1-t0) + "ms");
+			log.info("Dependencies resolved in: " + (t1 - t0) + "ms");
+		}
+		if (StringUtils.hasText(root)) {
+			maybeCopyToRoot(root, resolver.getLocalRepository(), archives);
 		}
 		return archives;
 	}
 
+	private void maybeCopyToRoot(String root, File repo, List<Archive> classPathArchives) {
+		File dir = new File(root, "repository");
+		if (!dir.exists() && !dir.mkdirs() || !dir.isDirectory()) {
+			throw new IllegalStateException("Cannot create root directory: " + root);
+		}
+		try {
+			String parent = repo.getCanonicalPath();
+			for (Archive archive : classPathArchives) {
+				File file;
+				try {
+					URI uri = archive.getUrl().toURI();
+					if (!uri.toString().startsWith("file:")) {
+						continue;
+					}
+					file = new File(uri);
+				}
+				catch (RuntimeException e) {
+					throw new IllegalStateException("Cannot locate file for: " + archive);
+				}
+				String path = file.getCanonicalPath();
+				if (!path.endsWith(".jar")) {
+					continue;
+				}
+				if (!path.startsWith(parent)) {
+					throw new IllegalStateException("Not in Maven home repository: " + path);
+				}
+				String jar = path.substring(parent.length());
+				File out = new File(dir, jar);
+				out.getParentFile().mkdirs();
+				StreamUtils.copy(new FileInputStream(file), new FileOutputStream(out));
+				String pom = jar.substring(0, jar.length() - 4) + ".pom";
+				file = new File(parent, pom);
+				if (file.exists()) {
+					StreamUtils.copy(new FileInputStream(file), new FileOutputStream(new File(dir, pom)));
+				}
+			}
+		}
+		catch (Exception e) {
+			throw new IllegalStateException("Cannot copy jar files", e);
+		}
+	}
+
 	protected List<Dependency> getDependencies() throws Exception {
-		String name = environment
-				.resolvePlaceholders("${" + ThinJarLauncher.THIN_NAME + ":thin}");
-		String[] profiles = environment
-				.resolvePlaceholders("${" + ThinJarLauncher.THIN_PROFILE + ":}")
-				.split(",");
+		String name = environment.resolvePlaceholders("${" + ThinJarLauncher.THIN_NAME + ":thin}");
+		String[] profiles = environment.resolvePlaceholders("${" + ThinJarLauncher.THIN_PROFILE + ":}").split(",");
 		PathResolver resolver = getResolver();
 		return resolver.extract(getArchive(), name, profiles);
 	}
 
 	private PathResolver getResolver() {
-		String locations = environment
-				.resolvePlaceholders("${" + ThinJarLauncher.THIN_LOCATION + ":}");
+		String locations = environment.resolvePlaceholders("${" + ThinJarLauncher.THIN_LOCATION + ":}");
 		String root = environment.resolvePlaceholders("${" + THIN_ROOT + ":}");
 		String offline = environment.resolvePlaceholders("${" + THIN_OFFLINE + ":false}");
-		String force = environment.resolvePlaceholders(
-				"${" + THIN_FORCE + ":${" + THIN_DRYRUN + ":false}}");
+		String dryrun = environment.resolvePlaceholders("${" + THIN_DRYRUN + ":false}");
+		String force = environment.resolvePlaceholders("${" + THIN_FORCE + ":${" + THIN_DRYRUN + ":false}}");
 		PathResolver resolver = new PathResolver(DependencyResolver.instance());
 		if (StringUtils.hasText(locations)) {
 			resolver.setLocations(locations.split(","));
 		}
-		if (StringUtils.hasText(root)) {
+		if (StringUtils.hasText(root) && "false".equals(dryrun)) {
 			resolver.setRoot(root);
 		}
 		if (!"false".equals(offline)) {
@@ -470,8 +499,7 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 		}
 
 		@Override
-		protected Class<?> loadClass(String name, boolean resolve)
-				throws ClassNotFoundException {
+		protected Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
 			synchronized (getClassLoadingLock(name)) {
 				// First, check if the class has already been loaded
 				Class<?> c = findLoadedClass(name);

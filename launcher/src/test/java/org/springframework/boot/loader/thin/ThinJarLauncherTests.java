@@ -24,6 +24,7 @@ import java.util.Properties;
 
 import org.eclipse.aether.artifact.DefaultArtifact;
 import org.eclipse.aether.graph.Dependency;
+import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -52,6 +53,11 @@ public class ThinJarLauncherTests {
 
 	@Rule
 	public OutputCapture output = new OutputCapture();
+
+	@After
+	public void init() {
+		DependencyResolver.close();
+	}
 
 	@Test
 	public void coords() throws Exception {
@@ -273,6 +279,9 @@ public class ThinJarLauncherTests {
 			if (home != null) {
 				System.setProperty("settings.home", home);
 			}
+			else {
+				System.clearProperty("settings.home");
+			}
 		}
 		assertThat(new File("target/thin/test/repository").exists()).isTrue();
 		assertThat(new File("target/thin/test/repository/org/springframework/spring-core").exists()).isTrue();
@@ -294,22 +303,29 @@ public class ThinJarLauncherTests {
 			if (home != null) {
 				System.setProperty("settings.home", home);
 			}
+			else {
+				System.clearProperty("settings.home");
+			}
 		}
 		assertThat(new File("target/thin/other/repository").exists()).isTrue();
-		assertThat(new File("target/thin/test/repository/org/springframework/spring-core").exists()).isFalse();
+		assertThat(new File("target/thin/test/repository/org/springframework/spring-core").exists()).isTrue();
 		assertThat(new File("target/thin/other/repository/org/springframework/spring-core").exists()).isTrue();
 	}
 
 	@Test
 	public void commandLineOffline() throws Exception {
-		settingsReadFromRoot();
+		// Once online to prime the cache
+		String[] args = new String[] { "--thin.root=target/thin/test", "--thin.dryrun=true",
+				"--thin.archive=src/test/resources/apps/snapshots-with-repos", "--debug" };
+		ThinJarLauncher.main(args);
 		DependencyResolver.close();
-		String[] args = new String[] { "--thin.root=target/thin/test", "--thin.dryrun=true", "--thin.offline=true",
+		// Then go offline with the same args
+		DependencyResolver.close();
+		args = new String[] { "--thin.root=target/thin/test", "--thin.dryrun=true", "--thin.offline=true",
 				"--thin.archive=src/test/resources/apps/snapshots-with-repos", "--debug" };
 		assertThat(deleteRecursively(new File("target/thin/test/repository/org/springframework/spring-core"))).isTrue();
-		expected.expect(RuntimeException.class);
-		expected.expectMessage("spring-core");
 		ThinJarLauncher.main(args);
+		assertThat(new File("target/thin/test/repository/org/springframework/spring-core").exists()).isTrue();
 	}
 
 	@Test
@@ -339,6 +355,9 @@ public class ThinJarLauncherTests {
 		finally {
 			if (home != null) {
 				System.setProperty("settings.home", home);
+			}
+			else {
+				System.clearProperty("settings.home");
 			}
 		}
 		assertThat(new File("target/thin/test/repository").exists()).isTrue();
@@ -380,6 +399,9 @@ public class ThinJarLauncherTests {
 		finally {
 			if (home != null) {
 				System.setProperty("user.home", home);
+			}
+			else {
+				System.clearProperty("user.home");
 			}
 		}
 		assertThat(new File("target/thin/test/repository").exists()).isTrue();

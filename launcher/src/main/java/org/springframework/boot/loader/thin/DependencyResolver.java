@@ -275,6 +275,13 @@ public class DependencyResolver {
 				+ (StringUtils.hasText(classifier) ? ":" + classifier : "") + ":" + artifact.getVersion();
 	}
 
+	public File getLocalRepository() {
+		// TODO: redesign this to make the local repository path shared between components
+		// that need it
+		initialize(new Properties());
+		return localRepositoryPath(new Properties(), settings);
+	}
+
 	public File resolve(Dependency dependency) {
 		Properties properties = new Properties();
 		initialize(properties);
@@ -323,6 +330,9 @@ public class DependencyResolver {
 	private List<ArtifactRepository> mavenRepositories(MavenSettings settings, RepositorySystemSession session,
 			Properties properties) {
 		List<ArtifactRepository> list = new ArrayList<>();
+		if (session.isOffline()) {
+			return list;
+		}
 		if (properties.containsKey(ThinJarLauncher.THIN_ROOT)) {
 			addRepositoryIfMissing(settings, session, list, "local",
 					"file://" + localRepositoryPath(new Properties(), settings), true, true);
