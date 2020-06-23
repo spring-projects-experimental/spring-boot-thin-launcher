@@ -79,6 +79,16 @@ public class AppMavenIT {
 	}
 
 	@Test
+	public void runJarOffline() throws Exception {
+		ProcessBuilder builder = new ProcessBuilder(Utils.javaCommand(), "-jar", "../app/target/app-0.0.1-SNAPSHOT.jar",
+				"--thin.offline", "--server.port=0");
+		builder.redirectErrorStream(true);
+		started = builder.start();
+		String output = output(started.getInputStream(), "Started");
+		assertThat(output).contains("Started LauncherApplication");
+	}
+
+	@Test
 	public void runJarCustomProperties() throws Exception {
 		ProcessBuilder builder = new ProcessBuilder(Utils.javaCommand(), "-Xmx128m", "-noverify",
 				"-XX:TieredStopAtLevel=1", "-Djava.security.egd=file:/dev/./urandom", "-jar",
