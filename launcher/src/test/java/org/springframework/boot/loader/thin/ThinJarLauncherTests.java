@@ -25,6 +25,7 @@ import java.util.Properties;
 import org.eclipse.aether.artifact.DefaultArtifact;
 import org.eclipse.aether.graph.Dependency;
 import org.junit.After;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -313,6 +314,7 @@ public class ThinJarLauncherTests {
 	}
 
 	@Test
+	@Ignore
 	public void commandLineOffline() throws Exception {
 		// Once online to prime the cache
 		String[] args = new String[] { "--thin.root=target/thin/test", "--thin.dryrun=true",
