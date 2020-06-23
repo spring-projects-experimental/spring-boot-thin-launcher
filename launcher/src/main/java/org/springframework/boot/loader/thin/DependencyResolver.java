@@ -331,6 +331,10 @@ public class DependencyResolver {
 			Properties properties) {
 		List<ArtifactRepository> list = new ArrayList<>();
 		if (session.isOffline()) {
+			if (properties.containsKey(ThinJarLauncher.THIN_ROOT)) {
+				addRepositoryIfMissing(settings, session, list, "local", "file://" + properties.getProperty(THIN_ROOT),
+						true, true);
+			}
 			return list;
 		}
 		if (properties.containsKey(ThinJarLauncher.THIN_ROOT)) {

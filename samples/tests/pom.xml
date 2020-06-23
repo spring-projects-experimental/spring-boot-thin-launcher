@@ -217,6 +217,20 @@
 							<streamLogs>true</streamLogs>
 						</configuration>
 					</execution>
+					<execution>
+						<id>prepare-samples</id>
+						<phase>process-test-resources</phase>
+						<goals>
+							<goal>run</goal>
+						</goals>
+						<configuration>
+							<pom>${basedir}/../app/pom.xml</pom>
+							<cloneProjectsTo>${project.build.directory}/it/app</cloneProjectsTo>
+							<settingsFile>src/it/settings.xml</settingsFile>
+							<addTestClassPath>true</addTestClassPath>
+							<streamLogs>true</streamLogs>
+						</configuration>
+					</execution>
 				</executions>
 			</plugin>
 		</plugins>
