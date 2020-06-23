@@ -51,18 +51,19 @@ import org.codehaus.plexus.util.FileUtils;
  * @author Dave Syer
  *
  */
-@Mojo(name = "resolve", defaultPhase = LifecyclePhase.PACKAGE, requiresProject = true, threadSafe = true, requiresDependencyResolution = ResolutionScope.NONE, requiresDependencyCollection = ResolutionScope.NONE)
+@Mojo(name = "resolve", defaultPhase = LifecyclePhase.PACKAGE, requiresProject = true, threadSafe = true,
+		requiresDependencyResolution = ResolutionScope.NONE, requiresDependencyCollection = ResolutionScope.NONE)
 public class ResolveMojo extends ThinJarMojo {
 
 	/**
 	 * Directory containing the downloaded archives.
 	 */
-	@Parameter(defaultValue = "${project.build.directory}/thin/root", required = true, property = "thin.outputDirectory")
+	@Parameter(defaultValue = "${project.build.directory}/thin/root", required = true,
+			property = "thin.outputDirectory")
 	private File outputDirectory;
 
 	/**
-	 * A list of the deployable thin libraries that must be downloaded and
-	 * assembled.
+	 * A list of the deployable thin libraries that must be downloaded and assembled.
 	 */
 	@Parameter
 	private List<Dependency> deployables;
@@ -129,22 +130,18 @@ public class ResolveMojo extends ThinJarMojo {
 					"No deployables found. If your only deployable is the current project jar, you need to run 'mvn package' at the same time.");
 		}
 
-		File thinJar = downloadThinJar();
+		File thinJar = downloadThinJar(outputDirectory);
 
 		for (File deployable : deployables) {
 			getLog().info("Deploying: " + deployable);
 			try {
-				getLog().info(
-						"Copying: " + deployable.getName() + " to " + outputDirectory);
+				getLog().info("Copying: " + deployable.getName() + " to " + outputDirectory);
 
-				FileUtils.copyFile(deployable,
-						new File(outputDirectory, deployable.getName()));
-				runWithForkedJvm(thinJar, outputDirectory,
-						"--thin.archive=" + deployable.getAbsolutePath());
+				FileUtils.copyFile(deployable, new File(outputDirectory, deployable.getName()));
+				runWithForkedJvm(thinJar, outputDirectory, "--thin.archive=" + deployable.getAbsolutePath());
 			}
 			catch (Exception e) {
-				throw new MojoExecutionException("Cannot locate deployable " + deployable,
-						e);
+				throw new MojoExecutionException("Cannot locate deployable " + deployable, e);
 			}
 		}
 

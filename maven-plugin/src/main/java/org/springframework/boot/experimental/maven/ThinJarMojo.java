@@ -17,6 +17,7 @@
 package org.springframework.boot.experimental.maven;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -34,6 +35,7 @@ import org.apache.maven.project.MavenProject;
 import org.apache.maven.repository.RepositorySystem;
 import org.apache.maven.settings.Mirror;
 import org.apache.maven.settings.Settings;
+import org.codehaus.plexus.util.FileUtils;
 import org.codehaus.plexus.util.StringUtils;
 
 import org.springframework.boot.loader.tools.JavaExecutable;
@@ -165,9 +167,22 @@ public abstract class ThinJarMojo extends AbstractMojo {
 		return request;
 	}
 
-	protected File downloadThinJar() throws MojoFailureException {
+	protected File downloadThinJar(File outputDirectory) throws MojoFailureException {
 		Dependency deployable = decode(thinLauncherArtifact);
-		return resolveFile(deployable);
+		File result = resolveFile(deployable);
+		try {
+			if (!result.getCanonicalPath().startsWith(outputDirectory.getCanonicalPath())) {
+				String root = new File(this.settings.getLocalRepository()).getCanonicalPath();
+				String path = result.getCanonicalPath().substring(root.length());
+				File target = new File(new File(outputDirectory, "repository"), path);
+				FileUtils.copyFile(result, target);
+				result = target;
+			}
+		}
+		catch (IOException e) {
+			throw new IllegalStateException("Could not copy thin jar launcher", e);
+		}
+		return result;
 	}
 
 	private Dependency decode(String artifact) throws MojoFailureException {

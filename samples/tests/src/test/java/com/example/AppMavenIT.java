@@ -56,10 +56,18 @@ public class AppMavenIT {
 	}
 
 	@Test
+	public void launcherDownloaded() {
+		File downloaded = new File("../app/target/thin/root/repository/org/springframework/boot/experimental");
+		assertThat(downloaded).exists();
+		downloaded = new File(downloaded,
+				"spring-boot-thin-launcher/1.0.26.BUILD-SNAPSHOT/spring-boot-thin-launcher-1.0.26.BUILD-SNAPSHOT-exec.jar");
+		assertThat(downloaded).exists();
+	}
+
+	@Test
 	public void runJar() throws Exception {
-		ProcessBuilder builder = new ProcessBuilder(Utils.javaCommand(), "-Xmx128m",
-				"-noverify", "-XX:TieredStopAtLevel=1",
-				"-Djava.security.egd=file:/dev/./urandom", "-jar",
+		ProcessBuilder builder = new ProcessBuilder(Utils.javaCommand(), "-Xmx128m", "-noverify",
+				"-XX:TieredStopAtLevel=1", "-Djava.security.egd=file:/dev/./urandom", "-jar",
 				"../app/target/app-0.0.1-SNAPSHOT.jar", "--server.port=0");
 		builder.redirectErrorStream(true);
 		started = builder.start();
@@ -72,9 +80,8 @@ public class AppMavenIT {
 
 	@Test
 	public void runJarCustomProperties() throws Exception {
-		ProcessBuilder builder = new ProcessBuilder(Utils.javaCommand(), "-Xmx128m",
-				"-noverify", "-XX:TieredStopAtLevel=1",
-				"-Djava.security.egd=file:/dev/./urandom", "-jar",
+		ProcessBuilder builder = new ProcessBuilder(Utils.javaCommand(), "-Xmx128m", "-noverify",
+				"-XX:TieredStopAtLevel=1", "-Djava.security.egd=file:/dev/./urandom", "-jar",
 				"../../../../../app/target/app-0.0.1-SNAPSHOT.jar", "--server.port=0");
 		builder.redirectErrorStream(true);
 		builder.directory(new File("src/test/resources/app"));
@@ -86,13 +93,11 @@ public class AppMavenIT {
 
 	@Test
 	public void runJarNamedProperties() throws Exception {
-		ProcessBuilder builder = new ProcessBuilder(Utils.javaCommand(), "-Xmx128m",
-				"-noverify", "-XX:TieredStopAtLevel=1",
-				"-Djava.security.egd=file:/dev/./urandom", "-Dthin.debug",
+		ProcessBuilder builder = new ProcessBuilder(Utils.javaCommand(), "-Xmx128m", "-noverify",
+				"-XX:TieredStopAtLevel=1", "-Djava.security.egd=file:/dev/./urandom", "-Dthin.debug",
 				// Switches to Spring Boot 2.0.1
 				"-Dthin.name=app", //
-				"-jar", "../../../../../app/target/app-0.0.1-SNAPSHOT.jar",
-				"--server.port=0");
+				"-jar", "../../../../../app/target/app-0.0.1-SNAPSHOT.jar", "--server.port=0");
 		builder.redirectErrorStream(true);
 		builder.directory(new File("src/test/resources/app"));
 		started = builder.start();
@@ -103,9 +108,8 @@ public class AppMavenIT {
 
 	@Test
 	public void runJarNamedPropertiesEnvVar() throws Exception {
-		ProcessBuilder builder = new ProcessBuilder(Utils.javaCommand(), "-Xmx128m",
-				"-noverify", "-XX:TieredStopAtLevel=1",
-				"-Djava.security.egd=file:/dev/./urandom", "-jar",
+		ProcessBuilder builder = new ProcessBuilder(Utils.javaCommand(), "-Xmx128m", "-noverify",
+				"-XX:TieredStopAtLevel=1", "-Djava.security.egd=file:/dev/./urandom", "-jar",
 				"../../../../../app/target/app-0.0.1-SNAPSHOT.jar", "--server.port=0");
 		// Switches to Spring Boot 2.0.1
 		builder.environment().put("THIN_NAME", "app");
@@ -119,9 +123,8 @@ public class AppMavenIT {
 
 	@Test
 	public void runJarExternalArchive() throws Exception {
-		ProcessBuilder builder = new ProcessBuilder(Utils.javaCommand(), "-Xmx128m",
-				"-noverify", "-XX:TieredStopAtLevel=1",
-				"-Djava.security.egd=file:/dev/./urandom",
+		ProcessBuilder builder = new ProcessBuilder(Utils.javaCommand(), "-Xmx128m", "-noverify",
+				"-XX:TieredStopAtLevel=1", "-Djava.security.egd=file:/dev/./urandom",
 				"-Dthin.archive=maven://com.example:simple:0.0.1-SNAPSHOT", "-jar",
 				"../app/target/app-0.0.1-SNAPSHOT.jar", "--server.port=0");
 		builder.redirectErrorStream(true);
@@ -131,8 +134,7 @@ public class AppMavenIT {
 		assertThat(output).contains("2.2.4.RELEASE");
 	}
 
-	private static String output(InputStream inputStream, String marker)
-			throws IOException {
+	private static String output(InputStream inputStream, String marker) throws IOException {
 		StringBuilder sb = new StringBuilder();
 		BufferedReader br = null;
 		try {
@@ -150,4 +152,5 @@ public class AppMavenIT {
 		}
 		return sb.toString();
 	}
+
 }
