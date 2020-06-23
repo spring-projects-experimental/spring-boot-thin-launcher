@@ -16,6 +16,8 @@
 package org.springframework.boot.loader.thin;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -25,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import org.apache.maven.shared.utils.io.FileUtils;
 import org.eclipse.aether.graph.Dependency;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,6 +40,7 @@ import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.io.UrlResource;
 import org.springframework.core.io.support.PropertiesLoaderUtils;
 import org.springframework.core.io.support.ResourcePatternUtils;
+import org.springframework.util.StreamUtils;
 import org.springframework.util.StringUtils;
 
 /**
@@ -60,6 +64,8 @@ public class PathResolver {
 	private boolean offline;
 
 	private boolean force;
+
+	private boolean preferLocalSnapshots = true;
 
 	public PathResolver(DependencyResolver engine) {
 		this.engine = engine;
@@ -193,7 +199,53 @@ public class PathResolver {
 				parentDependencies.add(dependency);
 			}
 		}
+		maybeCopyToRoot(this.root, getLocalRepository(), parentDependencies);
 		return parentDependencies;
+	}
+
+	private void maybeCopyToRoot(String root, File repo, List<Dependency> classPathArchives) {
+		if (root == null || !this.preferLocalSnapshots) {
+			return;
+		}
+		// Otherwise copy any locally installed snapshots with the same version to the
+		// root
+		File dir = new File(root, "repository");
+		if (!dir.exists() && !dir.mkdirs() || !dir.isDirectory()) {
+			throw new IllegalStateException("Cannot create root directory: " + root);
+		}
+		try {
+			String parent = dir.getCanonicalPath();
+			for (Dependency archive : classPathArchives) {
+				if (!archive.getArtifact().isSnapshot()) {
+					continue;
+				}
+				File file = archive.getArtifact().getFile();
+				String path = file.getCanonicalPath();
+				if (!path.endsWith(".jar")) {
+					continue;
+				}
+				if (!path.startsWith(parent)) {
+					throw new IllegalStateException("Not in thin root repository: " + path);
+				}
+				String jar = path.substring(parent.length());
+				File source = new File(repo, jar);
+				File target = file;
+				if (source.exists() && !FileUtils.contentEquals(source, target)) {
+					log.info("Preferring local snapshot: " + archive);
+					FileUtils.deleteDirectory(target.getParentFile());
+					target.getParentFile().mkdirs();
+					StreamUtils.copy(new FileInputStream(source), new FileOutputStream(target));
+					String pom = jar.substring(0, jar.length() - 4) + ".pom";
+					file = new File(repo, pom);
+					if (file.exists()) {
+						StreamUtils.copy(new FileInputStream(file), new FileOutputStream(new File(dir, pom)));
+					}
+				}
+			}
+		}
+		catch (Exception e) {
+			throw new IllegalStateException("Cannot copy jar files", e);
+		}
 	}
 
 	private String coordinates(Dependency dependency) {
@@ -204,7 +256,9 @@ public class PathResolver {
 		Properties properties = getProperties(archive, name, profiles);
 		Resource pom = getPom(archive);
 		log.info("Extracting dependencies from: {}, with profiles {}", pom, Arrays.asList(profiles));
-		return engine.dependencies(pom, properties);
+		List<Dependency> dependencies = engine.dependencies(pom, properties);
+		maybeCopyToRoot(this.root, getLocalRepository(), dependencies);
+		return dependencies;
 	}
 
 	private Properties getProperties(Archive archive, String name, String[] profiles) {
@@ -391,6 +445,10 @@ public class PathResolver {
 
 	public File getLocalRepository() {
 		return DependencyResolver.instance().getLocalRepository();
+	}
+
+	public void setPreferLocalSnapshots(boolean preferLocalSnapshots) {
+		this.preferLocalSnapshots = preferLocalSnapshots;
 	}
 
 }

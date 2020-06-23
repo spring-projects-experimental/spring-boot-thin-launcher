@@ -17,9 +17,6 @@
 package org.springframework.boot.loader.thin;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.net.URI;
 import java.net.URL;
 import java.security.AccessControlException;
 import java.util.ArrayList;
@@ -41,7 +38,6 @@ import org.springframework.boot.loader.archive.ExplodedArchive;
 import org.springframework.core.env.MutablePropertySources;
 import org.springframework.core.env.SimpleCommandLinePropertySource;
 import org.springframework.core.env.StandardEnvironment;
-import org.springframework.util.StreamUtils;
 import org.springframework.util.StringUtils;
 
 /**
@@ -349,52 +345,7 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 		if (log.isInfoEnabled()) {
 			log.info("Dependencies resolved in: " + (t1 - t0) + "ms");
 		}
-		if (StringUtils.hasText(root)) {
-			maybeCopyToRoot(root, resolver.getLocalRepository(), archives);
-		}
 		return archives;
-	}
-
-	private void maybeCopyToRoot(String root, File repo, List<Archive> classPathArchives) {
-		File dir = new File(root, "repository");
-		if (!dir.exists() && !dir.mkdirs() || !dir.isDirectory()) {
-			throw new IllegalStateException("Cannot create root directory: " + root);
-		}
-		try {
-			String parent = repo.getCanonicalPath();
-			for (Archive archive : classPathArchives) {
-				File file;
-				try {
-					URI uri = archive.getUrl().toURI();
-					if (!uri.toString().startsWith("file:")) {
-						continue;
-					}
-					file = new File(uri);
-				}
-				catch (RuntimeException e) {
-					throw new IllegalStateException("Cannot locate file for: " + archive);
-				}
-				String path = file.getCanonicalPath();
-				if (!path.endsWith(".jar")) {
-					continue;
-				}
-				if (!path.startsWith(parent)) {
-					throw new IllegalStateException("Not in Maven home repository: " + path);
-				}
-				String jar = path.substring(parent.length());
-				File out = new File(dir, jar);
-				out.getParentFile().mkdirs();
-				StreamUtils.copy(new FileInputStream(file), new FileOutputStream(out));
-				String pom = jar.substring(0, jar.length() - 4) + ".pom";
-				file = new File(parent, pom);
-				if (file.exists()) {
-					StreamUtils.copy(new FileInputStream(file), new FileOutputStream(new File(dir, pom)));
-				}
-			}
-		}
-		catch (Exception e) {
-			throw new IllegalStateException("Cannot copy jar files", e);
-		}
 	}
 
 	protected List<Dependency> getDependencies() throws Exception {
@@ -408,14 +359,16 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 		String locations = environment.resolvePlaceholders("${" + ThinJarLauncher.THIN_LOCATION + ":}");
 		String root = environment.resolvePlaceholders("${" + THIN_ROOT + ":}");
 		String offline = environment.resolvePlaceholders("${" + THIN_OFFLINE + ":false}");
-		String dryrun = environment.resolvePlaceholders("${" + THIN_DRYRUN + ":false}");
 		String force = environment.resolvePlaceholders("${" + THIN_FORCE + ":${" + THIN_DRYRUN + ":false}}");
 		PathResolver resolver = new PathResolver(DependencyResolver.instance());
 		if (StringUtils.hasText(locations)) {
 			resolver.setLocations(locations.split(","));
 		}
-		if (StringUtils.hasText(root) && "false".equals(dryrun)) {
+		if (StringUtils.hasText(root)) {
 			resolver.setRoot(root);
+			if ("false".equals(environment.resolvePlaceholders("${thin.local.snapshots:true}"))) {
+				resolver.setPreferLocalSnapshots(false);
+			}
 		}
 		if (!"false".equals(offline)) {
 			resolver.setOffline(true);
