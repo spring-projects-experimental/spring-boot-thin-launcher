@@ -308,7 +308,7 @@ public class ThinJarLauncherTests {
 			}
 		}
 		assertThat(new File("target/thin/other/repository").exists()).isTrue();
-		assertThat(new File("target/thin/test/repository/org/springframework/spring-core").exists()).isTrue();
+		assertThat(new File("target/thin/test/repository/org/springframework/spring-core").exists()).isFalse();
 		assertThat(new File("target/thin/other/repository/org/springframework/spring-core").exists()).isTrue();
 	}
 
