@@ -179,11 +179,8 @@ public class ThinJarWrapperTests {
 				break;
 			}
 		}
-		if (key != null) {
-			assertEquals("Wrong value for key=" + key, value, new ThinJarWrapper().getProperty(key));
-		} else {
-			System.err.println("WARN: no testable env var");
-		}
+		Assume.assumeTrue("WARN: no testable env var", key != null);
+		assertEquals("Wrong value for key=" + key, value, new ThinJarWrapper().getProperty(key));
 	}
 
 }
