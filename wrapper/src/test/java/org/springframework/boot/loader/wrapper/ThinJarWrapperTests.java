@@ -27,6 +27,7 @@ import java.io.PrintStream;
 import java.util.Map.Entry;
 
 import org.junit.After;
+import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -57,12 +58,16 @@ public class ThinJarWrapperTests {
 	}
 
 	@Test
+	public void testProjectVersion() {
+		ThinJarWrapper wrapper = new ThinJarWrapper();
+		Assume.assumeNotNull(System.getProperty("project.version"));
+		assertThat(wrapper.download(), containsString(System.getProperty("project.version")));
+	}
+
+	@Test
 	public void testDefaultLibrary() throws Exception {
 		ThinJarWrapper wrapper = new ThinJarWrapper();
 		assertThat(wrapper.download(), containsString("spring-boot-thin-launcher"));
-		if (System.getProperty("project.version") != null) {
-			assertThat(wrapper.download(), containsString(System.getProperty("project.version")));
-		}
 	}
 
 	@Test
