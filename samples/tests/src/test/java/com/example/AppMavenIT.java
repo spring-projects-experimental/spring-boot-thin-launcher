@@ -36,6 +36,8 @@ public class AppMavenIT {
 
 	private Process started;
 
+	private static boolean online = false;
+
 	@After
 	public void after() {
 		if (started != null && started.isAlive()) {
@@ -68,21 +70,26 @@ public class AppMavenIT {
 
 	@Test
 	public void runJar() throws Exception {
-		ProcessBuilder builder = new ProcessBuilder(Utils.javaCommand(), "-Xmx128m", "-noverify",
-				"-XX:TieredStopAtLevel=1", "-Djava.security.egd=file:/dev/./urandom", "-jar",
-				"../app/target/app-0.0.1-SNAPSHOT.jar", "--server.port=0");
-		builder.redirectErrorStream(true);
-		started = builder.start();
-		String output = output(started.getInputStream(), "Started");
-		assertThat(output).contains("Started LauncherApplication");
-		// There's a thin.properties in the jar that changes Spring Boot version
-		// (bizarrely)
-		assertThat(output).contains("2.0.6.RELEASE");
+		if (!online) {
+			ProcessBuilder builder = new ProcessBuilder(Utils.javaCommand(), "-Xmx128m", "-noverify",
+					"-XX:TieredStopAtLevel=1", "-Djava.security.egd=file:/dev/./urandom", "-jar",
+					"../app/target/app-0.0.1-SNAPSHOT.jar", "--server.port=0");
+			builder.redirectErrorStream(true);
+			started = builder.start();
+			String output = output(started.getInputStream(), "Started");
+			assertThat(output).contains("Started LauncherApplication");
+			// There's a thin.properties in the jar that changes Spring Boot version
+			// (bizarrely)
+			assertThat(output).contains("2.0.6.RELEASE");
+			online = true;
+		}
 	}
 
 	@Test
 	public void runJarOffline() throws Exception {
-		runJar();
+		if (!online) {
+			runJar(); // need this to ensure ordering
+		}
 		ProcessBuilder builder = new ProcessBuilder(Utils.javaCommand(), "-jar", "../app/target/app-0.0.1-SNAPSHOT.jar",
 				"--thin.offline", "--server.port=0");
 		builder.redirectErrorStream(true);
