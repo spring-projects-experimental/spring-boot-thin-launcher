@@ -82,6 +82,7 @@ public class AppMavenIT {
 
 	@Test
 	public void runJarOffline() throws Exception {
+		runJar();
 		ProcessBuilder builder = new ProcessBuilder(Utils.javaCommand(), "-jar", "../app/target/app-0.0.1-SNAPSHOT.jar",
 				"--thin.offline", "--server.port=0");
 		builder.redirectErrorStream(true);
