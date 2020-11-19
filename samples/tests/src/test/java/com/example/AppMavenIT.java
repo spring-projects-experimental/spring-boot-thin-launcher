@@ -64,7 +64,7 @@ public class AppMavenIT {
 		File downloaded = new File("target/it/app/target/thin/root/repository/org/springframework/boot/experimental");
 		assertThat(downloaded).exists();
 		downloaded = new File(downloaded,
-				"spring-boot-thin-launcher/1.0.26.BUILD-SNAPSHOT/spring-boot-thin-launcher-1.0.26.BUILD-SNAPSHOT-exec.jar");
+				"spring-boot-thin-launcher/1.0.26.RELEASE/spring-boot-thin-launcher-1.0.26.RELEASE-exec.jar");
 		assertThat(downloaded).exists();
 	}
 

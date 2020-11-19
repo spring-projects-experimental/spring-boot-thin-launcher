@@ -22,7 +22,7 @@
 		<java.version>1.8</java.version>
 		<maven-jar-plugin.version>3.1.0</maven-jar-plugin.version>
 		<spring-boot.version>1.5.2.RELEASE</spring-boot.version>
-		<wrapper.version>1.0.26.BUILD-SNAPSHOT</wrapper.version>
+		<wrapper.version>1.0.26.RELEASE</wrapper.version>
 		<gradle.exec>./gradlew</gradle.exec>
 	</properties>
 

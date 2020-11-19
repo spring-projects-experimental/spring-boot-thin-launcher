@@ -181,8 +181,8 @@ public class ThinJarAppDeployer extends AbstractThinJarSupport implements AppDep
 	@Override
 	public RuntimeEnvironmentInfo environmentInfo() {
 		return new RuntimeEnvironmentInfo.Builder().spiClass(RuntimeEnvironmentInfo.class).implementationName("thin")
-				.implementationVersion("1.0.26.BUILD-SNAPSHOT").platformApiVersion("N/A").platformApiVersion("N/A")
-				.platformClientVersion("1.0.26.BUILD-SNAPSHOT").platformHostVersion("N/A").platformType("local")
+				.implementationVersion("1.0.26.RELEASE").platformApiVersion("N/A").platformApiVersion("N/A")
+				.platformClientVersion("1.0.26.RELEASE").platformHostVersion("N/A").platformType("local")
 				.build();
 	}
 
