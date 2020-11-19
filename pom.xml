@@ -388,7 +388,7 @@ limitations under the License.
 		<repository>
 			<id>spring-libs-snapshots</id>
 			<name>Spring Snapshots</name>
-			<url>https://repo.spring.io/libs-snapshot</url>
+			<url>https://repo.spring.io/snapshot</url>
 			<snapshots>
 				<enabled>true</enabled>
 			</snapshots>
@@ -399,7 +399,7 @@ limitations under the License.
 		<repository>
 			<id>spring-libs-milestones</id>
 			<name>Spring Milestones</name>
-			<url>https://repo.spring.io/libs-milestone</url>
+			<url>https://repo.spring.io/milestone</url>
 			<snapshots>
 				<enabled>false</enabled>
 			</snapshots>
@@ -407,7 +407,7 @@ limitations under the License.
 		<repository>
 			<id>spring-libs-releases</id>
 			<name>Spring Releases</name>
-			<url>https://repo.spring.io/libs-release</url>
+			<url>https://repo.spring.io/release</url>
 			<snapshots>
 				<enabled>false</enabled>
 			</snapshots>
@@ -417,7 +417,7 @@ limitations under the License.
 		<pluginRepository>
 			<id>spring-libs-snapshots</id>
 			<name>Spring Snapshots</name>
-			<url>https://repo.spring.io/libs-snapshot</url>
+			<url>https://repo.spring.io/snapshot</url>
 			<snapshots>
 				<enabled>true</enabled>
 			</snapshots>
@@ -428,7 +428,7 @@ limitations under the License.
 		<pluginRepository>
 			<id>spring-libs-milestones</id>
 			<name>Spring Milestones</name>
-			<url>https://repo.spring.io/libs-milestone</url>
+			<url>https://repo.spring.io/milestone</url>
 			<snapshots>
 				<enabled>false</enabled>
 			</snapshots>
@@ -436,7 +436,7 @@ limitations under the License.
 		<pluginRepository>
 			<id>spring-libs-releases</id>
 			<name>Spring Releases</name>
-			<url>https://repo.spring.io/libs-release</url>
+			<url>https://repo.spring.io/release</url>
 			<snapshots>
 				<enabled>false</enabled>
 			</snapshots>

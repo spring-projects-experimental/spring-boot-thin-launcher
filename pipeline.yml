@@ -48,7 +48,6 @@ jobs:
         - path: source/.gradle
       run:
         dir: source
-        path: ./mvnw
         path: sh
         args:
         - -c

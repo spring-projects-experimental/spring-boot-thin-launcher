@@ -1,0 +1,34 @@
+name: deploy
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    if: "!contains(github.event.head_commit.message, 'ci skip')"
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up JDK 1.8
+        uses: actions/setup-java@v1
+        with:
+          java-version: 1.8
+      - name: Cache Maven packages
+        uses: actions/cache@v2
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-m2
+      - name: Build with Maven
+        env:
+          spring_username: ${{ secrets.BUILD_USER }}
+          spring_password: ${{ secrets.BUILD_PASSWORD }}
+        run: ./mvnw -B install -s .mvn/settings.xml
+      - name: Deploy
+        env:
+          spring_username: ${{ secrets.BUILD_USER }}
+          spring_password: ${{ secrets.BUILD_PASSWORD }}
+        run: ./mvnw -B deploy -s .mvn/settings.xml -DskipTests
