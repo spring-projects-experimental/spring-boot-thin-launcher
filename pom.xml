@@ -412,6 +412,14 @@ limitations under the License.
 				<enabled>false</enabled>
 			</snapshots>
 		</repository>
+		<repository>
+			<id>spring-libs-plugins</id>
+			<name>Spring Releases</name>
+			<url>https://repo.spring.io/plugins-release</url>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+		</repository>
 	</repositories>
 	<pluginRepositories>
 		<pluginRepository>
