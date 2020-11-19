@@ -20,5 +20,20 @@
 	  <username>${env.spring_username}</username>
 	  <password>${env.spring_password}</password>
 	</server>
+	<server>
+	  <id>spring-libs-milestones</id>
+	  <username>${env.spring_username}</username>
+	  <password>${env.spring_password}</password>
+	</server>
+	<server>
+	  <id>spring-libs-snapshots</id>
+	  <username>${env.spring_username}</username>
+	  <password>${env.spring_password}</password>
+	</server>
+	<server>
+	  <id>spring-libs-releases</id>
+	  <username>${env.spring_username}</username>
+	  <password>${env.spring_password}</password>
+	</server>
   </servers>
 </settings>

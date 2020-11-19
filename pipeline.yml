@@ -11,7 +11,7 @@ resources:
 - name: source
   type: git
   source:
-    uri: https://github.com/dsyer/spring-boot-thin-launcher.git
+    uri: https://github.com/spring-projects-experimental/spring-boot-thin-launcher.git
 - name: slack
   type: slack-notification
   source:
