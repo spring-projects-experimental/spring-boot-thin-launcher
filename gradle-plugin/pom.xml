@@ -34,7 +34,7 @@
 			<groupId>org.codehaus.groovy</groupId>
 			<artifactId>groovy</artifactId>
 			<scope>provided</scope>
-			<version>2.4.3</version>
+			<version>2.4.21</version>
 		</dependency>
 		<dependency>
 			<groupId>org.gradle</groupId>
