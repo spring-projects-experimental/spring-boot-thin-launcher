@@ -8,9 +8,7 @@ import org.assertj.core.api.Condition;
 import org.eclipse.aether.graph.Dependency;
 import org.junit.After;
 import org.junit.Ignore;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.FileSystemResource;
@@ -20,11 +18,9 @@ import org.springframework.core.io.support.PropertiesLoaderUtils;
 import org.springframework.util.FileSystemUtils;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertThrows;
 
 public class DependencyResolverTests {
-
-	@Rule
-	public ExpectedException expected = ExpectedException.none();
 
 	private DependencyResolver resolver = DependencyResolver.instance();
 
@@ -71,15 +67,14 @@ public class DependencyResolverTests {
 	@Test
 	public void launcher() throws Exception {
 		Resource resource = new ClassPathResource("apps/launcher/pom.xml");
-		// Resource resource = new UrlResource("jar:file:/home/dsyer/.m2/repository/org/springframework/cloud/launcher/spring-cloud-launcher-deployer/2.2.1.RELEASE/spring-cloud-launcher-deployer-2.2.1.RELEASE.jar!/META-INF/maven/org.springframework.cloud.launcher/spring-cloud-launcher-deployer/pom.xml");
+		// Resource resource = new
+		// UrlResource("jar:file:/home/dsyer/.m2/repository/org/springframework/cloud/launcher/spring-cloud-launcher-deployer/2.2.1.RELEASE/spring-cloud-launcher-deployer-2.2.1.RELEASE.jar!/META-INF/maven/org.springframework.cloud.launcher/spring-cloud-launcher-deployer/pom.xml");
 		Properties properties = new Properties();
 		properties.setProperty(ThinJarLauncher.THIN_PROFILE, "thin");
 		List<Dependency> dependencies = resolver.dependencies(resource, properties);
 		// System.err.println(dependencies);
 		assertThat(dependencies.size()).isGreaterThan(1);
 	}
-
-
 
 	@Test
 	public void mavenProfiles() throws Exception {
@@ -206,8 +201,9 @@ public class DependencyResolverTests {
 				PropertiesLoaderUtils.loadProperties(
 						new ClassPathResource("apps/test/META-INF/thin.properties")));
 		assertThat(dependencies.size()).isGreaterThan(15);
-		assertThat(dependencies).filteredOn("artifact.artifactId", "spring-boot-starter-web")
-				.first().is(version("1.5.3.RELEASE"));
+		assertThat(dependencies)
+				.filteredOn("artifact.artifactId", "spring-boot-starter-web").first()
+				.is(version("1.5.3.RELEASE"));
 	}
 
 	@Test
@@ -326,10 +322,10 @@ public class DependencyResolverTests {
 	public void missing() throws Exception {
 		// LogUtils.setLogLevel(Level.DEBUG);
 		Resource resource = new ClassPathResource("apps/missing/pom.xml");
-		expected.expect(RuntimeException.class);
-		expected.expectMessage("spring-web:jar:X.X.X");
-		List<Dependency> dependencies = resolver.dependencies(resource);
-		assertThat(dependencies.size()).isGreaterThan(20);
+		assertThrows("spring-web:jar:X.X.X", RuntimeException.class, () -> {
+			List<Dependency> dependencies = resolver.dependencies(resource);
+			assertThat(dependencies.size()).isGreaterThan(20);
+		});
 	}
 
 	@Test

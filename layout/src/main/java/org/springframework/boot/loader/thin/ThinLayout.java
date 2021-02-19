@@ -36,6 +36,10 @@ public class ThinLayout implements Layout, CustomLoaderLayout {
 	}
 
 	@Override
+	public String getLibraryLocation(String libraryName, LibraryScope scope) {
+		return null;
+	}
+
 	public String getLibraryDestination(String libraryName, LibraryScope scope) {
 		return null;
 	}

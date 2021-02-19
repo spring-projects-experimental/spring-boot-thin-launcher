@@ -13,8 +13,3 @@ pluginManagement {
     }
   }
 }
-
-rootProject.name = 'multi'
-
-include 'library'
-include 'application'

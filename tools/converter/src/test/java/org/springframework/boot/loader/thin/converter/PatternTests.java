@@ -19,7 +19,7 @@ package org.springframework.boot.loader.thin.converter;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -31,8 +31,7 @@ public class PatternTests {
 
 	@Test
 	public void test() {
-		Path path = Paths.get(
-				"spring-cloud-function-context/1.0.0.BUILD-SNAPSHOT/",
+		Path path = Paths.get("spring-cloud-function-context/1.0.0.BUILD-SNAPSHOT/",
 				"spring-cloud-function-context-1.0.0.BUILD-20180521.090752-196.jar");
 		assertThat(isDuplicate(path)).isTrue();
 	}

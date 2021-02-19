@@ -1,13 +1,6 @@
-buildscript {
-    repositories {
-        mavenLocal()
-        mavenCentral()
-    }
-}
+plugins { id "io.spring.dependency-management" version "1.0.11.RELEASE" }
 
-plugins { id "io.spring.dependency-management" version "1.0.4.RELEASE" }
-
-ext { springBootVersion = '1.5.10.RELEASE' }
+ext { springBootVersion = '2.3.9.RELEASE' }
 
 apply plugin: 'java'
 apply plugin: 'eclipse'

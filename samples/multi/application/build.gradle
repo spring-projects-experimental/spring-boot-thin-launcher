@@ -1,24 +1,19 @@
-buildscript {
-    ext {
-        springBootVersion = '1.5.10.RELEASE'
-        wrapperVersion = '1.0.27.BUILD-SNAPSHOT'
-    }
-    repositories {
-        mavenLocal()
-        mavenCentral()
-    }
-    dependencies {
-        classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
-        classpath("org.springframework.boot.experimental:spring-boot-thin-gradle-plugin:${wrapperVersion}")
-    }
+plugins {
+	id 'org.springframework.boot' version '2.3.9.RELEASE'
+	id 'io.spring.dependency-management' version '1.0.11.RELEASE'
+	id 'java'
+	id 'maven'
+	id 'org.springframework.boot.experimental.thin-launcher' version '1.0.27.BUILD-SNAPSHOT'
 }
 
-apply plugin: 'java'
-apply plugin: 'eclipse'
-apply plugin: 'maven'
-apply plugin: 'org.springframework.boot'
-apply plugin: 'io.spring.dependency-management'
-apply plugin: 'org.springframework.boot.experimental.thin-launcher'
+// Shouldn't need this...
+jar {
+	manifest {
+		attributes(
+			'Start-Class': 'hello.app.DemoApplication'
+		)
+	}
+}
 
 jar {
     baseName = 'application'
