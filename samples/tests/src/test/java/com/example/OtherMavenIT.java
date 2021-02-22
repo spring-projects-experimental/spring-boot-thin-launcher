@@ -26,10 +26,9 @@ import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 
 import org.assertj.core.api.Condition;
-import org.junit.After;
-import org.junit.Assume;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import org.springframework.util.FileSystemUtils;
 import org.springframework.util.StreamUtils;
@@ -46,7 +45,7 @@ public class OtherMavenIT {
 
 	private String launcherJar;
 
-	@Before
+	@BeforeEach
 	public void init() {
 		File dir = new File("../../launcher/target/");
 		if (!dir.exists()) {
@@ -60,7 +59,7 @@ public class OtherMavenIT {
 		}
 	}
 
-	@After
+	@AfterEach
 	public void after() {
 		if (started != null && started.isAlive()) {
 			started.destroy();
@@ -121,7 +120,7 @@ public class OtherMavenIT {
 
 	@Test
 	public void runOtherJar() throws Exception {
-		Assume.assumeTrue("Launcher jar not found", launcherJar != null);
+		assertThat(launcherJar).isNotNull();
 		ProcessBuilder builder = new ProcessBuilder(Utils.javaCommand(), "-Xmx128m",
 				"-noverify", "-XX:TieredStopAtLevel=1",
 				"-Djava.security.egd=file:/dev/./urandom", "-jar",

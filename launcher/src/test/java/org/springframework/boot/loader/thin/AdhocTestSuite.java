@@ -16,19 +16,18 @@
 
 package org.springframework.boot.loader.thin;
 
-import org.junit.Ignore;
-import org.junit.platform.runner.JUnitPlatform;
+import org.junit.jupiter.api.Disabled;
 import org.junit.platform.suite.api.SelectClasses;
-import org.junit.runner.RunWith;
+import org.junit.platform.suite.api.Suite;
 
 /**
  * A test suite for probing weird ordering problems in the tests.
  *
  * @author Dave Syer
  */
-@RunWith(JUnitPlatform.class)
+@Suite
 @SelectClasses({ DependencyResolverSettingsTests.class, ThinJarLauncherTests.class })
-@Ignore
+@Disabled
 public class AdhocTestSuite {
 
 }

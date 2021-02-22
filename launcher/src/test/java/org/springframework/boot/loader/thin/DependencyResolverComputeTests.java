@@ -16,38 +16,31 @@
 
 package org.springframework.boot.loader.thin;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.aether.artifact.Artifact;
 import org.eclipse.aether.graph.Dependency;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameters;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.RepeatedTest;
+import org.junit.jupiter.api.Test;
+
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * @author Dave Syer
  *
  */
-@RunWith(Parameterized.class)
 public class DependencyResolverComputeTests {
-
-	private static int TOTAL = 1;
 
 	private static List<Dependency> dependencies;
 
-	@Parameters
-	public static Iterable<Object[]> data() {
-		List<Object[]> args = new ArrayList<>();
-		for (int i = 0; i < TOTAL; i++) {
-			args.add(new Object[0]);
-		}
+	@BeforeAll
+	public static void data() {
 		DependencyResolver resolver = DependencyResolver.instance();
 		Resource resource = new ClassPathResource("apps/petclinic/pom.xml");
 		DependencyResolverComputeTests.dependencies = resolver.dependencies(resource);
@@ -56,10 +49,10 @@ public class DependencyResolverComputeTests {
 		// + "=" + coordinates(dependency.getArtifact()));
 		// }
 		DependencyResolver.close();
-		return args;
 	}
 
 	@Test
+	@RepeatedTest(1)
 	public void resolveAll() throws Exception {
 		DependencyResolver resolver = DependencyResolver.instance();
 		Resource resource = new ClassPathResource("apps/petclinic/pom.xml");
@@ -69,6 +62,7 @@ public class DependencyResolverComputeTests {
 	}
 
 	@Test
+	@RepeatedTest(1)
 	public void resolvePreComputed() throws Exception {
 		DependencyResolver resolver = DependencyResolver.instance();
 		List<File> files = new ArrayList<>();
@@ -81,7 +75,8 @@ public class DependencyResolverComputeTests {
 
 	static String coordinates(Artifact artifact) {
 		// group:artifact:extension:classifier:version
-		return artifact.getGroupId() + ":" + artifact.getArtifactId() + ":" + artifact.getVersion();
+		return artifact.getGroupId() + ":" + artifact.getArtifactId() + ":"
+				+ artifact.getVersion();
 	}
 
 }

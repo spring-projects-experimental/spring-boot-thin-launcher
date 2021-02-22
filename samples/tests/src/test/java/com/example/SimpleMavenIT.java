@@ -24,8 +24,8 @@ import java.io.InputStreamReader;
 import java.util.concurrent.TimeUnit;
 
 import org.assertj.core.api.Condition;
-import org.junit.After;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
 
 import org.springframework.util.FileCopyUtils;
 import org.springframework.util.FileSystemUtils;
@@ -40,7 +40,7 @@ public class SimpleMavenIT {
 
 	private Process started;
 
-	@After
+	@AfterEach
 	public void after() {
 		if (started != null && started.isAlive()) {
 			started.destroy();

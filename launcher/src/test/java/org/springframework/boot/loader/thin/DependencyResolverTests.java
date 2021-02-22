@@ -6,9 +6,9 @@ import java.util.Properties;
 
 import org.assertj.core.api.Condition;
 import org.eclipse.aether.graph.Dependency;
-import org.junit.After;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.FileSystemResource;
@@ -18,19 +18,19 @@ import org.springframework.core.io.support.PropertiesLoaderUtils;
 import org.springframework.util.FileSystemUtils;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertThrows;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
 public class DependencyResolverTests {
 
 	private DependencyResolver resolver = DependencyResolver.instance();
 
-	@After
+	@AfterEach
 	public void clear() {
 		System.clearProperty("maven.home");
 	}
 
 	@Test
-	@Ignore("Some issues with reactor build here when top level version changes")
+	@Disabled("Some issues with reactor build here when top level version changes")
 	public void localPom() throws Exception {
 		Resource resource = new FileSystemResource(new File("pom.xml"));
 		List<Dependency> dependencies = resolver.dependencies(resource);
@@ -322,14 +322,14 @@ public class DependencyResolverTests {
 	public void missing() throws Exception {
 		// LogUtils.setLogLevel(Level.DEBUG);
 		Resource resource = new ClassPathResource("apps/missing/pom.xml");
-		assertThrows("spring-web:jar:X.X.X", RuntimeException.class, () -> {
+		assertThatExceptionOfType(RuntimeException.class).isThrownBy(() -> {
 			List<Dependency> dependencies = resolver.dependencies(resource);
 			assertThat(dependencies.size()).isGreaterThan(20);
 		});
 	}
 
 	@Test
-	@Ignore("Set up a secure server and declare it in your settings.xml to run this test. Point it at your .m2/repository so it can resolve the app sample from this project.")
+	@Disabled("Set up a secure server and declare it in your settings.xml to run this test. Point it at your .m2/repository so it can resolve the app sample from this project.")
 	public void authentication() throws Exception {
 		FileSystemUtils.deleteRecursively(new File("target/root"));
 		System.setProperty("maven.home", "target/root");

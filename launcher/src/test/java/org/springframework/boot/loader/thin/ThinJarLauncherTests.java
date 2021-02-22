@@ -37,7 +37,7 @@ import org.springframework.util.FileSystemUtils;
 import org.springframework.util.StreamUtils;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertThrows;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -264,7 +264,8 @@ public class ThinJarLauncherTests {
 	public void missingThinRootWithPom() throws Exception {
 		deleteRecursively(
 				new File("target/thin/test/repository/org/springframework/spring-core"));
-		assertThrows("spring-web:jar:X.X.X", RuntimeException.class, () -> {
+		// "spring-web:jar:X.X.X"
+		assertThatExceptionOfType(RuntimeException.class).isThrownBy(() -> {
 			String[] args = new String[] { "--thin.root=target/thin/test",
 					"--thin.dryrun=true",
 					"--thin.archive=src/test/resources/apps/missing", "--debug" };
@@ -280,7 +281,8 @@ public class ThinJarLauncherTests {
 	public void missingThinRootWithoutPom() throws Exception {
 		deleteRecursively(
 				new File("target/thin/test/repository/org/springframework/spring-core"));
-		assertThrows("nonexistent:jar:0.0.1", RuntimeException.class, () -> {
+		// assertThrows("nonexistent:jar:0.0.1", RuntimeException.class,
+		assertThatExceptionOfType(RuntimeException.class).isThrownBy(() -> {
 			String[] args = new String[] { "--thin.root=target/thin/test",
 					"--thin.dryrun=true",
 					"--thin.archive=src/test/resources/apps/missingthin", "--debug" };
@@ -459,7 +461,8 @@ public class ThinJarLauncherTests {
 		String[] args = new String[] { "--thin.root=target/thin/test",
 				"--thin.dryrun=true", "--thin.archive=src/test/resources/apps/jitpack",
 				"--debug" };
-		assertThrows("maven-simple:jar:1.0", RuntimeException.class, () -> {
+		// assertThrows("maven-simple:jar:1.0", RuntimeException.class,
+		assertThatExceptionOfType(RuntimeException.class).isThrownBy(() -> {
 			ThinJarLauncher.main(args);
 			assertThat(
 					new File("target/thin/test/repository/com/example/maven/maven-simple")
@@ -518,7 +521,8 @@ public class ThinJarLauncherTests {
 				"--thin.dryrun=true",
 				"--thin.archive=src/test/resources/apps/beanvalidation-snapshot",
 				"--debug" };
-		assertThrows("validation-api:jar:2.0.2-SNAPSHOT", RuntimeException.class, () -> {
+		// assertThrows("validation-api:jar:2.0.2-SNAPSHOT", RuntimeException.class,
+		assertThatExceptionOfType(RuntimeException.class).isThrownBy(() -> {
 			ThinJarLauncher.main(args);
 			assertThat(new File(
 					"target/thin/test/repository/javax/validation/validation-api")

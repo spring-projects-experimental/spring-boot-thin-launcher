@@ -18,11 +18,9 @@ package org.springframework.cloud.deployer.thin;
 
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.List;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.api.RepeatedTest;
+import org.junit.jupiter.api.Test;
 
 import org.springframework.cloud.deployer.spi.app.DeploymentState;
 import org.springframework.cloud.deployer.spi.core.AppDefinition;
@@ -36,18 +34,15 @@ import static org.assertj.core.api.Assertions.assertThat;
  * @author Dave Syer
  *
  */
-@RunWith(Parameterized.class)
 public class ThinJarAppDeployerTests {
 
 	private static ThinJarAppDeployer deployer = new ThinJarAppDeployer();
 
-	@Parameterized.Parameters
-	public static List<Object[]> data() {
-		// Repeat a couple of times to ensure it's consistent
-		return Arrays.asList(new Object[2][0]);
-	}
+	// Counter for performance testing
+	private final static int COUNT = 2;
 
 	@Test
+	@RepeatedTest(COUNT)
 	public void appFromJarFile() throws Exception {
 		String deployed = deploy("empty");
 		// Deployment is blocking so it either failed or succeeded.
@@ -57,6 +52,7 @@ public class ThinJarAppDeployerTests {
 	}
 
 	@Test
+	@RepeatedTest(COUNT)
 	public void appFromTargetClasses() throws Exception {
 		String deployed = deploy(
 				new FileSystemResource("../samples/simple/target/classes"), "other");
@@ -67,6 +63,7 @@ public class ThinJarAppDeployerTests {
 	}
 
 	@Test
+	@RepeatedTest(COUNT)
 	public void appFromPom() throws Exception {
 		String deployed = deploy(new FileSystemResource("src/test/resources/apps/app"),
 				"app");
@@ -77,6 +74,7 @@ public class ThinJarAppDeployerTests {
 	}
 
 	@Test
+	@RepeatedTest(COUNT)
 	public void appFromDirectoryWithProperties() throws Exception {
 		String deployed = deploy(new FileSystemResource("src/test/resources/apps/props"),
 				"props");
@@ -87,6 +85,7 @@ public class ThinJarAppDeployerTests {
 	}
 
 	@Test
+	@RepeatedTest(COUNT)
 	public void twoApps() throws Exception {
 		String first = deploy("empty");
 		String second = deploy("cloud");
@@ -99,6 +98,7 @@ public class ThinJarAppDeployerTests {
 	}
 
 	@Test
+	@RepeatedTest(COUNT)
 	public void appFromJarFileFails() throws Exception {
 		String deployed = deploy("cloud", "--fail");
 		assertThat(deployer.status(deployed).getState())

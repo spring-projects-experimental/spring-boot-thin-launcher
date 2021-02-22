@@ -26,8 +26,8 @@ import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 
 import org.assertj.core.api.Condition;
-import org.junit.After;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
 
 import org.springframework.util.StreamUtils;
 
@@ -41,7 +41,7 @@ public class AppGradleIT {
 
 	private Process started;
 
-	@After
+	@AfterEach
 	public void after() {
 		if (started != null && started.isAlive()) {
 			started.destroy();

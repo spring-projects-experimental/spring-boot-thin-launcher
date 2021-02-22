@@ -23,8 +23,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 
 import org.assertj.core.api.Condition;
-import org.junit.After;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -38,7 +38,7 @@ public class AppMavenIT {
 
 	private static boolean online = false;
 
-	@After
+	@AfterEach
 	public void after() {
 		if (started != null && started.isAlive()) {
 			started.destroy();
@@ -61,7 +61,8 @@ public class AppMavenIT {
 	public void launcherDownloaded() {
 		// This one fails unless you run the invoke plugin from the command line (per the
 		// pom)
-		File downloaded = new File("target/it/app/target/thin/root/repository/org/springframework/boot/experimental");
+		File downloaded = new File(
+				"target/it/app/target/thin/root/repository/org/springframework/boot/experimental");
 		assertThat(downloaded).exists();
 		downloaded = new File(downloaded,
 				"spring-boot-thin-launcher/1.0.27.BUILD-SNAPSHOT/spring-boot-thin-launcher-1.0.27.BUILD-SNAPSHOT-exec.jar");
@@ -71,8 +72,9 @@ public class AppMavenIT {
 	@Test
 	public void runJar() throws Exception {
 		if (!online) {
-			ProcessBuilder builder = new ProcessBuilder(Utils.javaCommand(), "-Xmx128m", "-noverify",
-					"-XX:TieredStopAtLevel=1", "-Djava.security.egd=file:/dev/./urandom", "-jar",
+			ProcessBuilder builder = new ProcessBuilder(Utils.javaCommand(), "-Xmx128m",
+					"-noverify", "-XX:TieredStopAtLevel=1",
+					"-Djava.security.egd=file:/dev/./urandom", "-jar",
 					"../app/target/app-0.0.1-SNAPSHOT.jar", "--server.port=0");
 			builder.redirectErrorStream(true);
 			started = builder.start();
@@ -90,8 +92,9 @@ public class AppMavenIT {
 		if (!online) {
 			runJar(); // need this to ensure ordering
 		}
-		ProcessBuilder builder = new ProcessBuilder(Utils.javaCommand(), "-jar", "../app/target/app-0.0.1-SNAPSHOT.jar",
-				"--thin.offline", "--server.port=0");
+		ProcessBuilder builder = new ProcessBuilder(Utils.javaCommand(), "-jar",
+				"../app/target/app-0.0.1-SNAPSHOT.jar", "--thin.offline",
+				"--server.port=0");
 		builder.redirectErrorStream(true);
 		started = builder.start();
 		String output = output(started.getInputStream(), "Started");
@@ -100,8 +103,9 @@ public class AppMavenIT {
 
 	@Test
 	public void runJarCustomProperties() throws Exception {
-		ProcessBuilder builder = new ProcessBuilder(Utils.javaCommand(), "-Xmx128m", "-noverify",
-				"-XX:TieredStopAtLevel=1", "-Djava.security.egd=file:/dev/./urandom", "-jar",
+		ProcessBuilder builder = new ProcessBuilder(Utils.javaCommand(), "-Xmx128m",
+				"-noverify", "-XX:TieredStopAtLevel=1",
+				"-Djava.security.egd=file:/dev/./urandom", "-jar",
 				"../../../../../app/target/app-0.0.1-SNAPSHOT.jar", "--server.port=0");
 		builder.redirectErrorStream(true);
 		builder.directory(new File("src/test/resources/app"));
@@ -113,11 +117,13 @@ public class AppMavenIT {
 
 	@Test
 	public void runJarNamedProperties() throws Exception {
-		ProcessBuilder builder = new ProcessBuilder(Utils.javaCommand(), "-Xmx128m", "-noverify",
-				"-XX:TieredStopAtLevel=1", "-Djava.security.egd=file:/dev/./urandom", "-Dthin.debug",
+		ProcessBuilder builder = new ProcessBuilder(Utils.javaCommand(), "-Xmx128m",
+				"-noverify", "-XX:TieredStopAtLevel=1",
+				"-Djava.security.egd=file:/dev/./urandom", "-Dthin.debug",
 				// Switches to Spring Boot 2.0.1
 				"-Dthin.name=app", //
-				"-jar", "../../../../../app/target/app-0.0.1-SNAPSHOT.jar", "--server.port=0");
+				"-jar", "../../../../../app/target/app-0.0.1-SNAPSHOT.jar",
+				"--server.port=0");
 		builder.redirectErrorStream(true);
 		builder.directory(new File("src/test/resources/app"));
 		started = builder.start();
@@ -128,8 +134,9 @@ public class AppMavenIT {
 
 	@Test
 	public void runJarNamedPropertiesEnvVar() throws Exception {
-		ProcessBuilder builder = new ProcessBuilder(Utils.javaCommand(), "-Xmx128m", "-noverify",
-				"-XX:TieredStopAtLevel=1", "-Djava.security.egd=file:/dev/./urandom", "-jar",
+		ProcessBuilder builder = new ProcessBuilder(Utils.javaCommand(), "-Xmx128m",
+				"-noverify", "-XX:TieredStopAtLevel=1",
+				"-Djava.security.egd=file:/dev/./urandom", "-jar",
 				"../../../../../app/target/app-0.0.1-SNAPSHOT.jar", "--server.port=0");
 		// Switches to Spring Boot 2.0.1
 		builder.environment().put("THIN_NAME", "app");
@@ -143,8 +150,9 @@ public class AppMavenIT {
 
 	@Test
 	public void runJarExternalArchive() throws Exception {
-		ProcessBuilder builder = new ProcessBuilder(Utils.javaCommand(), "-Xmx128m", "-noverify",
-				"-XX:TieredStopAtLevel=1", "-Djava.security.egd=file:/dev/./urandom",
+		ProcessBuilder builder = new ProcessBuilder(Utils.javaCommand(), "-Xmx128m",
+				"-noverify", "-XX:TieredStopAtLevel=1",
+				"-Djava.security.egd=file:/dev/./urandom",
 				"-Dthin.archive=maven://com.example:simple:0.0.1-SNAPSHOT", "-jar",
 				"../app/target/app-0.0.1-SNAPSHOT.jar", "--server.port=0");
 		builder.redirectErrorStream(true);
@@ -154,7 +162,8 @@ public class AppMavenIT {
 		assertThat(output).contains("2.2.4.RELEASE");
 	}
 
-	private static String output(InputStream inputStream, String marker) throws IOException {
+	private static String output(InputStream inputStream, String marker)
+			throws IOException {
 		StringBuilder sb = new StringBuilder();
 		BufferedReader br = null;
 		try {

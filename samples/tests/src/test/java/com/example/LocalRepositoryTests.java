@@ -16,13 +16,9 @@
 package com.example;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameters;
+import org.junit.jupiter.api.RepeatedTest;
+import org.junit.jupiter.api.Test;
 
 import org.springframework.boot.loader.thin.ThinJarLauncher;
 import org.springframework.util.FileSystemUtils;
@@ -33,22 +29,13 @@ import static org.assertj.core.api.Assertions.assertThat;
  * @author Dave Syer
  *
  */
-@RunWith(Parameterized.class)
 public class LocalRepositoryTests {
 
 	// Counter for performance testing
-	private static int COUNT = 1;
-
-	@Parameters
-	public static List<Object[]> params() {
-		List<Object[]> list = new ArrayList<>();
-		for (int i = 0; i < COUNT; i++) {
-			list.add(new Object[] {});
-		}
-		return list;
-	}
+	private final static int COUNT = 1;
 
 	@Test
+	@RepeatedTest(COUNT)
 	public void dryrunSpringCore() throws Exception {
 		FileSystemUtils.deleteRecursively(new File("target/thin/test/repository"));
 		String[] args = new String[] { "--thin.root=target/thin/test",
@@ -61,6 +48,7 @@ public class LocalRepositoryTests {
 	}
 
 	@Test
+	@RepeatedTest(COUNT)
 	public void dryrunLocalApp() throws Exception {
 		FileSystemUtils.deleteRecursively(new File("target/thin/test/repository"));
 		String[] args = new String[] { "--thin.root=target/thin/test",

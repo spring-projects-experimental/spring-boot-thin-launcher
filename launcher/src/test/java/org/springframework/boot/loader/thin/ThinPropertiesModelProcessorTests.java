@@ -17,7 +17,7 @@ package org.springframework.boot.loader.thin;
 
 import org.apache.maven.model.Dependency;
 import org.eclipse.aether.artifact.DefaultArtifact;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
