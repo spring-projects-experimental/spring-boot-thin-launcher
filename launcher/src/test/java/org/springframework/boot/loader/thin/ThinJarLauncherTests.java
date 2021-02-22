@@ -464,9 +464,6 @@ public class ThinJarLauncherTests {
 		// assertThrows("maven-simple:jar:1.0", RuntimeException.class,
 		assertThatExceptionOfType(RuntimeException.class).isThrownBy(() -> {
 			ThinJarLauncher.main(args);
-			assertThat(
-					new File("target/thin/test/repository/com/example/maven/maven-simple")
-							.exists()).isFalse();
 		});
 	}
 
@@ -524,9 +521,6 @@ public class ThinJarLauncherTests {
 		// assertThrows("validation-api:jar:2.0.2-SNAPSHOT", RuntimeException.class,
 		assertThatExceptionOfType(RuntimeException.class).isThrownBy(() -> {
 			ThinJarLauncher.main(args);
-			assertThat(new File(
-					"target/thin/test/repository/javax/validation/validation-api")
-							.exists()).isFalse();
 		});
 	}
 

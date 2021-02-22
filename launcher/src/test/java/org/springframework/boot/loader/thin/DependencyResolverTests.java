@@ -324,7 +324,7 @@ public class DependencyResolverTests {
 		Resource resource = new ClassPathResource("apps/missing/pom.xml");
 		assertThatExceptionOfType(RuntimeException.class).isThrownBy(() -> {
 			List<Dependency> dependencies = resolver.dependencies(resource);
-			assertThat(dependencies.size()).isGreaterThan(20);
+			assertThat(dependencies.size()).isGreaterThan(0);
 		});
 	}
 
