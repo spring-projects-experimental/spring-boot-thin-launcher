@@ -11,15 +11,6 @@ version = '0.0.1-SNAPSHOT'
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
-// Shouldn't need this...
-jar {
-	manifest {
-		attributes(
-			'Start-Class': 'com.example.LauncherApplication'
-		)
-	}
-}
-
 thinResolvePrepare {
 	into new File("${buildDir}/thin/deploy")
 }
