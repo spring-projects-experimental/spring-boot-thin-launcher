@@ -6,15 +6,6 @@ plugins {
 	id 'org.springframework.boot.experimental.thin-launcher' version '1.0.27.BUILD-SNAPSHOT'
 }
 
-// Shouldn't need this...
-jar {
-	manifest {
-		attributes(
-			'Start-Class': 'hello.app.DemoApplication'
-		)
-	}
-}
-
 jar {
     baseName = 'application'
     version = '0.0.1-SNAPSHOT'

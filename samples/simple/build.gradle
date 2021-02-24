@@ -10,15 +10,6 @@ group = 'com.example'
 version = '0.0.1-SNAPSHOT'
 sourceCompatibility = '1.8'
 
-// Shouldn't need this...
-jar {
-	manifest {
-		attributes(
-			'Start-Class': 'com.example.LauncherApplication'
-		)
-	}
-}
-
 repositories {
 	mavenLocal()
 	mavenCentral()
