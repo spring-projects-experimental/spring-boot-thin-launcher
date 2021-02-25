@@ -30,6 +30,8 @@ import org.gradle.api.tasks.Exec;
 import org.gradle.api.tasks.SourceSetContainer;
 import org.gradle.api.tasks.bundling.Jar;
 import org.gradle.internal.jvm.Jvm;
+import org.springframework.boot.loader.jar.JarFile;
+import org.springframework.boot.loader.tools.MainClassFinder;
 import org.springframework.util.StringUtils;
 
 import java.io.File;
@@ -62,17 +64,17 @@ public class ThinLauncherPlugin implements Plugin<Project> {
 
 	@Override
 	public void apply(final Project project) {
-		final Task thinJar = createCopyTask(project);
-		final Task pomTask = createPomTask(project);
-		createPropertiesTask(project);
+		final boolean hasBootRepackage = (project.getTasks().findByName("bootRepackage") != null);
+		if (!hasBootRepackage) createThinJarTask(project);
 
-		pomTask.dependsOn(thinJar);
+		createPropertiesTask(project);
 
 		project.getTasks().withType(Jar.class, new Action<Jar>() {
 
 			@Override
 			public void execute(Jar jar) {
 				String name = jar.getName();
+
 				if (!name.equals("thinJar")) {
 					String suffix = "jar".equals(name) || "bootJar".equals(name) ? "" : StringUtils.capitalize(name);
 
@@ -80,7 +82,13 @@ public class ThinLauncherPlugin implements Plugin<Project> {
 						Task thinResolvePrepare = createResolvePrepareTask(project, suffix);
 						Task thinResolveTask = createResolveTask(project, suffix);
 
-						thinResolvePrepare.dependsOn(thinJar);
+						if (hasBootRepackage) {
+							Task bootRepackage = project.getTasks().getByName("bootRepackage");
+							thinResolvePrepare.dependsOn(bootRepackage);
+						} else {
+							Task thinJar = project.getTasks().getByName("thinJar");
+							thinResolvePrepare.dependsOn(thinJar);
+						}
 						thinResolveTask.dependsOn(thinResolvePrepare);
 					}
 				}
@@ -88,25 +96,28 @@ public class ThinLauncherPlugin implements Plugin<Project> {
 
 		});
 
+		createPomTask(project);
+
 		project.afterEvaluate(new Action<Project>() {
 
 			@Override
 			public void execute(final Project project) {
-				Jar bootJar;
+				Task jarTask;
 				if (project.getTasks().findByName("bootJar") != null)
-					bootJar = (Jar) project.getTasks().getByName("bootJar");
+					jarTask = project.getTasks().getByName("bootJar");
 				else
-					bootJar = (Jar) project.getTasks().getByName("jar");
+					jarTask = project.getTasks().getByName("jar");
 
-				thinJar.dependsOn(bootJar);
-
-				project.getTasks().getByName(BasePlugin.ASSEMBLE_TASK_NAME)
-						.dependsOn(thinJar);
+				if (!hasBootRepackage) {
+					Task thinJar = project.getTasks().getByName("thinJar");
+					thinJar.dependsOn(jarTask);
+					project.getTasks().getByName(BasePlugin.ASSEMBLE_TASK_NAME).dependsOn(thinJar);
+				}
 			}
 		});
 	}
 
-	private Task createCopyTask(final Project project) {
+	private Task createThinJarTask(final Project project) {
 		return project.getTasks().create("thinJar", Jar.class).doFirst(new Action<Task>() {
 			@Override
 			public void execute(Task task) {
@@ -151,13 +162,33 @@ public class ThinLauncherPlugin implements Plugin<Project> {
 				if (result != null) {
 					return result;
 				}
-				return bootJar.getManifest().getAttributes().get("Main-Class");
+				result = bootJar.getManifest().getAttributes().get("Main-Class");
+				if (result != null) {
+					return result;
+				}
+
+				File root = bootJar.getArchivePath();
+				try {
+					return MainClassFinder.findSingleMainClass(new JarFile(root), "");
+				} catch (Exception e) {
+					throw new IllegalStateException("Cannot locate main class in " + root, e);
+				}
 			}
 		});
 	}
 
 	private Task createPomTask(final Project project) {
-		return project.getTasks().create("thinPom", PomTask.class).doFirst(new Action<Task>() {
+		return project.getTasks().create("thinPom", PomTask.class, new Action<PomTask>() {
+			@Override
+			public void execute(final PomTask thin) {
+				project.getTasks().withType(Jar.class, new Action<Jar>() {
+					@Override
+					public void execute(Jar jar) {
+						jar.dependsOn(thin);
+					}
+				});
+			}
+		}).doFirst(new Action<Task>() {
 			@Override
 			public void execute(Task task) {
 				PomTask thin = (PomTask) task;
@@ -199,11 +230,17 @@ public class ThinLauncherPlugin implements Plugin<Project> {
 		return configuration;
 	}
 
-	private Task createResolvePrepareTask(final Project project, String suffix) {
+	private Task createResolvePrepareTask(final Project project, final String suffix) {
 		return project.getTasks().create("thinResolvePrepare" + suffix, Copy.class, new Action<Copy>() {
 			@Override
 			public void execute(Copy copy) {
-				Jar thinJar = (Jar) project.getTasks().getByName("thinJar");
+				final Jar thinJar;
+				if (project.getTasks().findByName("thinJar") != null) {
+					thinJar = (Jar) project.getTasks().getByName("thinJar");
+				}
+				else {
+					thinJar = (Jar) project.getTasks().getByName("jar");
+				}
 				copy.from(thinJar.getOutputs().getFiles());
 				copy.into(new File(project.getBuildDir(), "thin/root"));
 			}
@@ -236,8 +273,8 @@ public class ThinLauncherPlugin implements Plugin<Project> {
 				Exec exec = (Exec) task;
 
 				final Jar thinJar;
-				if (project.getTasks().findByName("thinJar" + suffix) != null) {
-					thinJar = (Jar) project.getTasks().getByName("thinJar" + suffix);
+				if (project.getTasks().findByName("thinJar") != null) {
+					thinJar = (Jar) project.getTasks().getByName("thinJar");
 				}
 				else {
 					thinJar = (Jar) project.getTasks().getByName("jar");
