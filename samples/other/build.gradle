@@ -2,7 +2,7 @@ plugins {
 	id 'org.springframework.boot' version '2.3.7.RELEASE'
 	id 'io.spring.dependency-management' version '1.0.11.RELEASE'
 	id 'java'
-	id 'maven'
+	id 'maven-publish'
 	id 'org.springframework.boot.experimental.thin-launcher' version '1.0.27.BUILD-SNAPSHOT'
 }
 
@@ -25,4 +25,12 @@ repositories {
 dependencies {
 	compile('org.springframework.boot:spring-boot-starter')
 	testCompile('org.springframework.boot:spring-boot-starter-test')
+}
+
+publishing {
+	publications {
+		maven(MavenPublication) {
+			from components.java
+		}
+	}
 }

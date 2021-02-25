@@ -1,6 +1,6 @@
 # Spring Boot Thin Launcher [![ci.spring.io](https://ci.spring.io/api/v1/teams/spring-team/pipelines/spring-boot-thin-launcher/badge)](https://ci.spring.io/teams/spring-team/pipelines/spring-boot-thin-launcher)
 
-A "thin" jar launcher for java apps. Version 1.0.25.RELEASE is in Maven Central, snapshots are in https://repo.spring.io/libs-snapshot. See https://github.com/spring-projects/spring-boot/issues/1813 for more discussion and ideas.
+A "thin" jar launcher for java apps. Version 1.0.27.RELEASE is in Maven Central, snapshots are in https://repo.spring.io/libs-snapshot. See https://github.com/spring-projects/spring-boot/issues/1813 for more discussion and ideas.
 
 ## Getting Started
 
@@ -26,19 +26,19 @@ means adding it to the Spring Boot plugin declaration:
 		<dependency>
 			<groupId>org.springframework.boot.experimental</groupId>
 			<artifactId>spring-boot-thin-layout</artifactId>
-			<version>1.0.25.RELEASE</version>
+			<version>1.0.27.RELEASE</version>
 		</dependency>
 	</dependencies>
 </plugin>
 ```
 
-and in Gradle for Spring Boot up to 1.5.x (you can use older versions of Spring Boot for the app, but the plugin has to be 1.5.x or later):
+and in Gradle, you can use the older `apply` style declaration:
 
 ```groovy
 buildscript {
 	ext {
-		springBootVersion = '1.5.6.RELEASE'
-		wrapperVersion = '1.0.25.RELEASE'
+		springBootVersion = '2.2.4.RELEASE'
+		wrapperVersion = '1.0.27.RELEASE'
 	}
 	repositories {
 		mavenLocal()
@@ -49,19 +49,27 @@ buildscript {
 		classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
 	}
 }
-apply plugin: 'maven'
+apply plugin: 'maven-publish'
 apply plugin: 'org.springframework.boot.experimental.thin-launcher'
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            from components.java
+        }
+    }
+}
 ```
 
-For Spring Boot 2.x you can use the newer `id` style declaration:
+Or you can use the newer `id` style declaration:
 
 ```groovy
 plugins {
 	id 'org.springframework.boot' version '2.2.4.RELEASE'
 	id 'io.spring.dependency-management' version '1.0.9.RELEASE'
 	id 'java'
-	id 'maven'
-	id 'org.springframework.boot.experimental.thin-launcher' version '1.0.25.RELEASE'
+	id 'maven-publish'
+	id 'org.springframework.boot.experimental.thin-launcher' version '1.0.27.RELEASE'
 }
 
 group = 'com.example'
@@ -73,6 +81,14 @@ repositories {
 	mavenCentral()
 	maven { url "https://repo.spring.io/snapshot" }
 	maven { url "https://repo.spring.io/milestone" }
+}
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            from components.java
+        }
+    }
 }
 ```
 
@@ -150,7 +166,7 @@ with that class loader. The `pom.xml` can be in the root of the jar or
 in the standard `META-INF/maven` location.
 
 The app jar in the demo is built using the Spring Boot plugin and a
-custom `Layout` (so it only builds with Spring Boot 1.5.x and above).
+custom `Layout` (so it only builds with Spring Boot 2.x and above).
 
 ## Caching JARs
 
@@ -405,7 +421,7 @@ versions, you can change the version of the bom using
 `thin.properties`. E.g.
 
 ```
-boms.spring-boot-dependencies=org.springframework.boot:spring-boot-dependencies:1.5.6.RELEASE
+boms.spring-boot-dependencies=org.springframework.boot:spring-boot-dependencies:2.2.4.RELEASE
 ...
 ```
 
@@ -414,8 +430,8 @@ Spring Boot starter parent), you can change the value of the property
 using `thin.properties`. E.g.
 
 ```
-spring-boot.version=1.5.6.RELEASE
-spring-cloud.version=Dalston.SR3
+spring-boot.version=2.2.4.RELEASE
+spring-cloud.version=Hoxton.SR1
 ```
 
 where the pom has

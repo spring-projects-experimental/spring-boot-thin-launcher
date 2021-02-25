@@ -16,7 +16,7 @@ buildscript {
 }
 
 apply plugin: 'java'
-apply plugin: 'maven'
+apply plugin: 'maven-publish'
 apply plugin: 'eclipse'
 apply plugin: 'org.springframework.boot'
 
@@ -46,3 +46,11 @@ dependencies {
 }
 
 jar.dependsOn = [createPom]
+
+publishing {
+	publications {
+		maven(MavenPublication) {
+			from components.java
+		}
+	}
+}
