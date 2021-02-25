@@ -1,6 +1,6 @@
 plugins {
 	id 'java'
-	id 'maven'
+	id 'maven-publish'
 }
 
 plugins { id "io.spring.dependency-management" version "1.0.4.RELEASE" }
@@ -9,7 +9,7 @@ ext { springBootVersion = '1.5.10.RELEASE' }
 
 apply plugin: 'java'
 apply plugin: 'eclipse'
-apply plugin: 'maven'
+apply plugin: 'maven-publish'
 
 group = 'com.example'
 version = '0.0.1-SNAPSHOT'
@@ -28,4 +28,12 @@ dependencies {
 
 dependencyManagement {
     imports { mavenBom("org.springframework.boot:spring-boot-dependencies:${springBootVersion}") }
+}
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            from components.java
+        }
+    }
 }

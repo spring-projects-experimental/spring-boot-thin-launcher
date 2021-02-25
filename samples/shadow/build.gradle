@@ -19,7 +19,7 @@ buildscript {
 }
 
 apply plugin: 'java'
-apply plugin: 'maven'
+apply plugin: 'maven-publish'
 apply plugin: 'eclipse'
 apply plugin: 'io.spring.dependency-management'
 apply plugin: 'com.github.johnrengelman.shadow'
@@ -71,4 +71,12 @@ configurations {
 dependencies {
 	compile('org.springframework.boot:spring-boot-starter')
 	testCompile('org.springframework.boot:spring-boot-starter-test')
+}
+
+publishing {
+	publications {
+		maven(MavenPublication) {
+			from components.java
+		}
+	}
 }

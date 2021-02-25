@@ -2,7 +2,7 @@ plugins {
 	id 'org.springframework.boot' version '2.2.4.RELEASE'
 	id 'io.spring.dependency-management' version '1.0.9.RELEASE'
 	id 'java'
-	id 'maven'
+	id 'maven-publish'
 }
 
 group = 'com.example'
@@ -25,4 +25,12 @@ dependencies {
 
 test {
 	useJUnitPlatform()
+}
+
+publishing {
+	publications {
+		maven(MavenPublication) {
+			from components.java
+		}
+	}
 }

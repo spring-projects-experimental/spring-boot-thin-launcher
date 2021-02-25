@@ -2,7 +2,7 @@ plugins {
 	id 'org.springframework.boot' version '2.2.4.RELEASE'
 	id 'io.spring.dependency-management' version '1.0.9.RELEASE'
 	id 'java'
-	id 'maven'
+	id 'maven-publish'
 	id 'org.springframework.boot.experimental.thin-launcher' version '1.0.27.BUILD-SNAPSHOT'
 }
 
@@ -40,4 +40,12 @@ dependencyManagement {
 
 test {
 	useJUnitPlatform()
+}
+
+publishing {
+	publications {
+		maven(MavenPublication) {
+			from components.java
+		}
+	}
 }
