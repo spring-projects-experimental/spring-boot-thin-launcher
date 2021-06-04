@@ -104,6 +104,9 @@ public class OtherMavenIT {
 		File dir = new File("../other/target/Test Me");
 		if (!dir.exists()) {
 			dir.mkdirs();
+		} else {
+			FileSystemUtils.deleteRecursively(dir);
+			dir.mkdirs();
 		}
 		FileSystemUtils.copyRecursively(
 				new File("../other/target/other-0.0.1-SNAPSHOT.jar"),
