@@ -1,6 +1,6 @@
 # Spring Boot Thin Launcher [![ci.spring.io](https://ci.spring.io/api/v1/teams/spring-team/pipelines/spring-boot-thin-launcher/badge)](https://ci.spring.io/teams/spring-team/pipelines/spring-boot-thin-launcher)
 
-A "thin" jar launcher for java apps. Version 1.0.27.RELEASE is in Maven Central, snapshots are in https://repo.spring.io/libs-snapshot. See https://github.com/spring-projects/spring-boot/issues/1813 for more discussion and ideas.
+A "thin" jar launcher for java apps. Version 1.0.28.BUILD-SNAPSHOT is in Maven Central, snapshots are in https://repo.spring.io/libs-snapshot. See https://github.com/spring-projects/spring-boot/issues/1813 for more discussion and ideas.
 
 ## Getting Started
 
@@ -26,7 +26,7 @@ means adding it to the Spring Boot plugin declaration:
 		<dependency>
 			<groupId>org.springframework.boot.experimental</groupId>
 			<artifactId>spring-boot-thin-layout</artifactId>
-			<version>1.0.27.RELEASE</version>
+			<version>1.0.28.BUILD-SNAPSHOT</version>
 		</dependency>
 	</dependencies>
 </plugin>
@@ -38,7 +38,7 @@ and in Gradle, you can use the older `apply` style declaration:
 buildscript {
 	ext {
 		springBootVersion = '2.2.4.RELEASE'
-		wrapperVersion = '1.0.27.RELEASE'
+		wrapperVersion = '1.0.28.BUILD-SNAPSHOT'
 	}
 	repositories {
 		mavenLocal()
@@ -69,7 +69,7 @@ plugins {
 	id 'io.spring.dependency-management' version '1.0.9.RELEASE'
 	id 'java'
 	id 'maven-publish'
-	id 'org.springframework.boot.experimental.thin-launcher' version '1.0.27.RELEASE'
+	id 'org.springframework.boot.experimental.thin-launcher' version '1.0.28.BUILD-SNAPSHOT'
 }
 
 group = 'com.example'
