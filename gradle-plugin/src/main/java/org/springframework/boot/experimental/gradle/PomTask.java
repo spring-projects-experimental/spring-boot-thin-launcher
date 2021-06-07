@@ -48,7 +48,7 @@ import org.gradle.api.tasks.TaskExecutionException;
 public class PomTask extends DefaultTask {
 
 	@OutputFile
-	private File output;
+	File output;
 
 	@TaskAction
 	public void generate() {
