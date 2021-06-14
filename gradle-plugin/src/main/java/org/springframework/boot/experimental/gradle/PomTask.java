@@ -31,12 +31,14 @@ import org.gradle.api.XmlProvider;
 import org.gradle.api.artifacts.maven.MavenPom;
 import org.gradle.api.artifacts.repositories.ArtifactRepository;
 import org.gradle.api.artifacts.repositories.MavenArtifactRepository;
+import org.gradle.api.plugins.Convention;
 import org.gradle.api.plugins.MavenPluginConvention;
 import org.gradle.api.publish.maven.tasks.GenerateMavenPom;
-import org.gradle.api.tasks.OutputFile;
+import org.gradle.api.tasks.OutputDirectory;
 import org.gradle.api.tasks.TaskAction;
 import org.gradle.api.tasks.TaskCollection;
 import org.gradle.api.tasks.TaskExecutionException;
+import org.springframework.util.ClassUtils;
 
 /**
  * Task to generate a pom file including all runtime dependencies.
@@ -47,8 +49,8 @@ import org.gradle.api.tasks.TaskExecutionException;
  */
 public class PomTask extends DefaultTask {
 
-	@OutputFile
-	private File output;
+	@OutputDirectory
+	private File output = new File("./build/resources/main");
 
 	@TaskAction
 	public void generate() {
@@ -57,20 +59,21 @@ public class PomTask extends DefaultTask {
 			DependencyManagementExtension dependencies = getProject().getExtensions()
 					.findByType(DependencyManagementExtension.class);
 			if (dependencies != null) {
-				PomDependencyManagementConfigurer pomConfigurer = dependencies
-						.getPomConfigurer();
-				MavenPluginConvention maven = getProject().getConvention()
-						.findPlugin(MavenPluginConvention.class);
+				PomDependencyManagementConfigurer pomConfigurer = dependencies.getPomConfigurer();
+				Convention maven = null;
+				if (ClassUtils.isPresent("org.gradle.api.plugins.MavenPluginConvention", null)) {
+					// This class is not present in Gradle 7 unless the user explicitly asks for the "maven" plugin
+					maven = (Convention) getProject().getConvention().findPlugin(
+							ClassUtils.resolveClassName("org.gradle.api.plugins.MavenPluginConvention", null));
+				}
 				if (maven != null) {
 					getLogger().info("Generating pom.xml with maven plugin");
 					output.mkdirs();
-					MavenPom pom = maven.pom();
+					MavenPom pom = (MavenPom) maven.getByName("pom");
 					pom.withXml(new RepositoryAdder(getProject()));
 					pom.withXml(pomConfigurer).writeTo(new File(output, "pom.xml"));
-				}
-				else {
-					TaskCollection<GenerateMavenPom> tasks = getProject().getTasks()
-							.withType(GenerateMavenPom.class);
+				} else {
+					TaskCollection<GenerateMavenPom> tasks = getProject().getTasks().withType(GenerateMavenPom.class);
 					if (!tasks.isEmpty()) {
 						getLogger().info("Generating pom.xml with maven-publish plugin");
 						output.mkdirs();
@@ -78,19 +81,16 @@ public class PomTask extends DefaultTask {
 						plugin.setDestination(new File(output, "pom.xml"));
 						plugin.getPom().withXml(new RepositoryAdder(getProject()));
 						plugin.doGenerate();
-					}
-					else {
+					} else {
 						getLogger().warn(
 								"Skipping pom generation (maybe you forgot to apply plugin: 'maven' or 'maven-publish'?)");
 					}
 				}
-			}
-			else {
+			} else {
 				getLogger().warn(
 						"Skipping pom generation (maybe you forgot to apply plugin: 'io.spring.dependency-management'?)");
 			}
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			throw new TaskExecutionException(this, e);
 		}
 	}
@@ -104,6 +104,10 @@ public class PomTask extends DefaultTask {
 	 */
 	public void setOutput(File output) {
 		this.output = output;
+	}
+
+	public File getOutput() {
+		return output;
 	}
 
 	private final class RepositoryAdder implements Action<XmlProvider> {
@@ -125,8 +129,7 @@ public class PomTask extends DefaultTask {
 					MavenArtifactRepository maven = (MavenArtifactRepository) repo;
 					String proto = "" + maven.getUrl().getScheme();
 					String host = maven.getUrl().getHost();
-					if (proto.startsWith("http")
-							&& !host.contains("repo.maven.apache.org")) {
+					if (proto.startsWith("http") && !host.contains("repo.maven.apache.org")) {
 						repos.add(maven);
 					}
 				}
@@ -145,8 +148,7 @@ public class PomTask extends DefaultTask {
 			configureRepositories(repositoriesNode, repos);
 		}
 
-		private void configureRepositories(Node repositoriesNode,
-				List<MavenArtifactRepository> repos) {
+		private void configureRepositories(Node repositoriesNode, List<MavenArtifactRepository> repos) {
 			for (MavenArtifactRepository repo : repos) {
 				Node node = repositoriesNode.appendNode(NODE_NAME_REPOSITORY);
 				node.appendNode(NODE_NAME_ID, repo.getName());
@@ -156,8 +158,7 @@ public class PomTask extends DefaultTask {
 
 		private Node findChild(Node node, String name) {
 			for (Object childObject : node.children()) {
-				if ((childObject instanceof Node)
-						&& ((Node) childObject).name().equals(name)) {
+				if ((childObject instanceof Node) && ((Node) childObject).name().equals(name)) {
 					return (Node) childObject;
 				}
 
