@@ -1,0 +1,13 @@
+plugins {
+    id 'com.gradle.plugin-publish' version '0.15.0'
+}
+tasks.register('publishExisting', com.gradle.publish.PublishExistingTask) {
+    fileRepositoryRoot = new File(System.getenv("HOME") + "/.m2/repository")
+    pluginId = 'org.springframework.boot.experimental.thin-launcher'
+    pluginVersion = System.getenv("GRADLE_PUBLISH_VERSION")
+    pluginCoordinates = "org.springframework.boot.experimental:spring-boot-thin-gradle-plugin:" + System.getenv("GRADLE_PUBLISH_VERSION") //used to find what to publish in the repo
+    displayName = "Spring Boot Thin Plugin"
+    pluginDescription = "Gradle plugin for creating thin executable jars from Spring Boot and other applications"
+    website = "https://github.com/spring-projects-experimental/spring-boot-thin-launcher"
+    vcsUrl = "https://github.com/spring-projects-experimental/spring-boot-thin-launcher.git" 
+}
