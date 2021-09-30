@@ -114,7 +114,7 @@ If you don't need snapshots you can leave it all out and rely on the defaults. I
 
 In Gradle you also need to generate a `pom.xml` or a `thin.properties` (unless you want to maintain it by hand). A `pom.xml` will be generated automatically by the "thinPom" task in the Thin Gradle plugin. It does this by calling out to the maven plugin and the dependency management plugin; the maven plugin is always present, and the dependency management plugin is present if you are using the Spring Boot plugin. To generate a `pom.xml` remember to apply the maven and Thin Gradle plugins.
 
-NOTE: Gradle has a new `maven-publish` plugin that works with the new "standard" configurations (e.g. `runtimeOnly` replaces `runtime`). It doesn't work with the thin launcher plugin yet.
+NOTE: Gradle now has a `maven-publish` plugin that works with the newer "standard" configurations (e.g. `runtimeOnly` replaces `runtime`). It also works with the thin launcher plugin.
 
 The generated pom goes in the normal maven place by default under `META-INF/maven`. You can configure the output directory by setting the "output" property of the "thinPom" task.
 
@@ -336,7 +336,7 @@ You can set a variety of options on the command line or with system properties (
 | `thin.location`     | `file:.,classpath:/`                                                             | The path to directory containing thin properties files (as per `thin.name`), as a comma-separated list of resource locations (directories). These locations plus the same paths relative /META-INF will be searched.                                                 |
 | `thin.name`         | "thin"                                                                           | The name of the properties file to search for dependency specifications and overrides.                                                                                                                                                                               |
 | `thin.profile`      | <empty>                                                                          | Comma-separated list of profiles to use to locate thin properties. E.g. if `thin.profile=foo` the launcher searches for files called `thin.properties` and `thin-foo.properties`.                                                                                    |
-| `thin.library`      | `org.springframework.boot.experimental:spring-boot-thin-launcher:1.0.21.RELEASE` | A locator for the launcher library. Can be Maven coordinates (with optional `maven://` prefix), or a file (with optional `file://` prefix).                                                                                                                          |
+| `thin.library`      | `org.springframework.boot.experimental:spring-boot-thin-launcher:1.0.27.RELEASE` | A locator for the launcher library. Can be Maven coordinates (with optional `maven://` prefix), or a file (with optional `file://` prefix).                                                                                                                          |
 | `thin.repo`         | `https://repo.spring.io/libs-snapshot` (also contains GA releases)               | Base URL for the `thin.library` if it is in Maven form (the default).                                                                                                                                                                                                |
 | `thin.launcher`     | `org.springframework.boot.thin.ThinJarLauncher`                                  | The main class in the `thin.library`. If not specified it is discovered from the manifest `Main-Class` attribute.                                                                                                                                                    |
 | `thin.parent.first` | true                                                                             | Flag to say that the class loader is "parent first" (i.e. the system class loader will be used as the default). This is the "standard" JDK class loader strategy. Setting it to false is similar to what is normally used in web containers and application servers. |
@@ -474,7 +474,7 @@ There is a converter tool that you can use as a library in place of the launcher
 
 ```
 $ java -jar myapp.jar --thin.dryrun --thin.root=target/thin/root
-$ java -jar myapp.jar --thin.library=org.springframework.boot.experimental:spring-boot-thin-tools-converter:1.0.21.RELEASE
+$ java -jar myapp.jar --thin.library=org.springframework.boot.experimental:spring-boot-thin-tools-converter:1.0.27.RELEASE
 $ java -jar myapp-exec.jar
 ```
 
@@ -560,13 +560,13 @@ $ java -jar myapp.jar
 
 In this example the second startup will be slightly faster, depending
 on the size of the classpath, but up to a few hundred milliseconds on
-afast server, and more in a constrained environment.
+even a fast server, and more in a constrained environment.
 
 It also works fine with profiles, so, for example, if `myapp.jar`
 contains a `META-INF/thin-rapid.properties` you could do this:
 
 ```
-$ java -jar myapp.jar --thin.profile=rapid --thin.compute > thin-super.properties
+$ java -jar myapp.jar --thin.profile=rapid --thin.classpath=properties > thin-super.properties
 $ java -jar myapp.jar --thin.profile=super
 ```
 

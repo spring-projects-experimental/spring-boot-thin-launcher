@@ -146,8 +146,7 @@ public class DependencyResolver {
 			if (this.container != null) {
 				this.container.dispose();
 			}
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			// swallow
 		}
 	}
@@ -176,8 +175,7 @@ public class DependencyResolver {
 						// ClassRealmManager.class.getName());
 						projectBuilder = container.lookup(ProjectBuilder.class);
 						repositorySystem = container.lookup(RepositorySystem.class);
-					}
-					catch (Exception e) {
+					} catch (Exception e) {
 						throw new IllegalStateException("Cannot create container", e);
 					}
 					this.container = container;
@@ -221,6 +219,16 @@ public class DependencyResolver {
 					}
 					throw new RuntimeException(builder.toString());
 				}
+				if (!dependencies.getCollectionErrors().isEmpty()) {
+					StringBuilder builder = new StringBuilder();
+					for (Exception exception : dependencies.getCollectionErrors()) {
+						if (builder.length() > 0) {
+							builder.append("\n");
+						}
+						builder.append(exception.getMessage());
+					}
+					throw new RuntimeException(builder.toString());
+				}
 				List<Dependency> output = runtime(dependencies.getDependencies());
 				if (log.isInfoEnabled()) {
 					for (Dependency dependency : output) {
@@ -229,8 +237,7 @@ public class DependencyResolver {
 				}
 				return output;
 			}
-		}
-		catch (ProjectBuildingException | NoLocalRepositoryManagerException e) {
+		} catch (ProjectBuildingException | NoLocalRepositoryManagerException e) {
 			throw new IllegalStateException("Cannot build model", e);
 		}
 	}
@@ -276,7 +283,8 @@ public class DependencyResolver {
 	}
 
 	public File getLocalRepository() {
-		// TODO: redesign this to make the local repository path shared between components
+		// TODO: redesign this to make the local repository path shared between
+		// components
 		// that need it
 		initialize(new Properties());
 		return localRepositoryPath(new Properties(), settings);
@@ -505,8 +513,7 @@ public class DependencyResolver {
 		try {
 			return repo(settings, session, "cache",
 					localRepositoryPath(properties, settings).toURI().toURL().toString(), true, true);
-		}
-		catch (MalformedURLException e) {
+		} catch (MalformedURLException e) {
 			throw new IllegalStateException("Cannot locate local repo", e);
 		}
 	}
@@ -534,8 +541,7 @@ public class DependencyResolver {
 			ProjectBuildingResult result = projectBuilder.build(new PropertiesModelSource(properties, resource),
 					request);
 			return result.getProject().getModel();
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			throw new IllegalStateException("Failed to build model from effective pom", e);
 		}
 	}
@@ -562,8 +568,7 @@ public class DependencyResolver {
 			List<ArtifactRequest> artifactRequests = getArtifactRequests(dependencies, session, properties);
 			List<ArtifactResult> result = this.repositorySystem.resolveArtifacts(session, artifactRequests);
 			return result;
-		}
-		catch (Exception ex) {
+		} catch (Exception ex) {
 			throw new IllegalStateException(ex);
 		}
 	}
