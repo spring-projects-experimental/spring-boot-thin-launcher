@@ -3,9 +3,9 @@
 ---
 resource_types:
 - name: slack-notification
-  type: registry-image
+  type: docker-image
   source:
-    repository: nebhale/slack-notification-resource
+    repository: harbor-repo.vmware.com/dockerhub-proxy-cache/nebhale/slack-notification-resource
 
 resources:
 - name: source
@@ -37,10 +37,9 @@ jobs:
     config:
       platform: linux
       image_resource:
-        type: registry-image
         source: 
-          repository:  adoptopenjdk/openjdk8
-          tag: jdk8u192-b12
+          repository:  harbor-repo.vmware.com/dockerhub-proxy-cache/springio/spring-ci-base
+        type: docker-image
       inputs:
         - name: source
       caches:
