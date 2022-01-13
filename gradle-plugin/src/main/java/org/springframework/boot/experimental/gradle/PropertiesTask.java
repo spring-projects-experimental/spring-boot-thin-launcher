@@ -124,6 +124,10 @@ public class PropertiesTask extends DefaultTask {
 		this.configuration = configuration;
 	}
 
+	public Configuratiion getConfiguration() {
+		return configuration;
+	}
+
 	/**
 	 * Sets the location to which the properties file will be written. Defaults to
 	 * META-INF in the compiled classes output (build/resources/main/META-INF).
@@ -134,12 +138,20 @@ public class PropertiesTask extends DefaultTask {
 		this.output = output;
 	}
 
+	public Output getOutput() {
+		return output;
+	}
+
 	/**
 	 * The name of the thin properties file (defaults to "thin").
 	 */
 	@Override
 	public void setName(String name) {
 		this.name = name;
+	}
+
+	public String getName() {
+		return name;
 	}
 
 	/**
@@ -149,5 +161,9 @@ public class PropertiesTask extends DefaultTask {
 	 */
 	public void setProfile(String profile) {
 		this.profile = profile;
+	}
+
+	public String getProfile() {
+		return profile;
 	}
 }
