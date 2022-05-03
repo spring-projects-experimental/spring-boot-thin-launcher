@@ -420,6 +420,14 @@ limitations under the License.
 				<enabled>false</enabled>
 			</snapshots>
 		</repository>
+		<repository>
+			<id>gradle-libs-plugins</id>
+			<name>Gradle Plugins</name>
+			<url>https://gradle.jfrog.io/gradle/libs</url>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+		</repository>
 	</repositories>
 	<pluginRepositories>
 		<pluginRepository>
