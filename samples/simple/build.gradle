@@ -1,6 +1,6 @@
 plugins {
-	id 'org.springframework.boot' version '2.2.4.RELEASE'
-	id 'io.spring.dependency-management' version '1.0.9.RELEASE'
+	id 'org.springframework.boot' version '2.6.6'
+	id 'io.spring.dependency-management' version '1.0.11.RELEASE'
 	id 'java'
 	id 'maven-publish'
 	id 'org.springframework.boot.experimental.thin-launcher' version '1.0.29.BUILD-SNAPSHOT'
@@ -18,7 +18,7 @@ repositories {
 }
 
 ext {
-	set('springCloudVersion', "Hoxton.SR1")
+	set('springCloudVersion', "2021.0.2")
 }
 
 configurations { implementation.exclude module: 'spring-boot-starter-tomcat' }
