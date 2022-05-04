@@ -16,20 +16,17 @@
 
 package org.springframework.boot.loader.wrapper;
 
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.CoreMatchers.startsWith;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.PrintStream;
 import java.util.Map.Entry;
 
-import org.junit.After;
-import org.junit.Assume;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assumptions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.util.FileSystemUtils;
 
@@ -41,13 +38,13 @@ public class ThinJarWrapperTests {
 
 	private PrintStream out;
 
-	@Before
+	@BeforeEach
 	public void open() {
 		out = System.out;
 		FileSystemUtils.deleteRecursively(new File("target/repository"));
 	}
 
-	@After
+	@AfterEach
 	public void init() {
 		System.setOut(out);
 		System.clearProperty("maven.repo.local");
@@ -60,21 +57,21 @@ public class ThinJarWrapperTests {
 	@Test
 	public void testProjectVersion() {
 		ThinJarWrapper wrapper = new ThinJarWrapper();
-		Assume.assumeNotNull(System.getProperty("project.version"));
-		assertThat(wrapper.download(), containsString(System.getProperty("project.version")));
+		Assumptions.assumeTrue(System.getProperty("project.version")!=null);
+		assertThat(wrapper.download()).contains(System.getProperty("project.version"));
 	}
 
 	@Test
 	public void testDefaultLibrary() throws Exception {
 		ThinJarWrapper wrapper = new ThinJarWrapper();
-		assertThat(wrapper.download(), containsString("spring-boot-thin-launcher"));
+		assertThat(wrapper.download()).contains("spring-boot-thin-launcher");
 	}
 
 	@Test
 	public void testCustomLibrary() throws Exception {
 		System.setProperty("thin.library", "com.example:main:0.0.1-SNAPSHOT");
 		ThinJarWrapper wrapper = new ThinJarWrapper();
-		assertThat(wrapper.download(), containsString("com/example/main"));
+		assertThat(wrapper.download()).contains("com/example/main");
 	}
 
 	@Test
@@ -82,22 +79,22 @@ public class ThinJarWrapperTests {
 		ThinJarWrapper wrapper = new ThinJarWrapper();
 		System.setProperty("thin.library",
 				"file:" + wrapper.thinRootRepository() + "/com/example/main/0.0.1-SNAPSHOT/main-0.0.1-SNAPSHOT.jar");
-		assertThat(wrapper.download(), containsString("com/example/main"));
+		assertThat(wrapper.download()).contains("com/example/main");
 	}
 
 	@Test
 	public void testCustomLibraryFile() throws Exception {
 		ThinJarWrapper wrapper = new ThinJarWrapper();
 		System.setProperty("thin.library", "target/rubbish/com/example/main/0.0.1-SNAPSHOT/main-0.0.1-SNAPSHOT.jar");
-		assertThat(wrapper.download(), containsString("com/example/main"));
+		assertThat(wrapper.download()).contains("com/example/main");
 	}
 
 	@Test
 	public void testMavenLocalRepo() throws Exception {
 		ThinJarWrapper wrapper = new ThinJarWrapper();
 		System.setProperty("maven.repo.local", "target/local");
-		assertThat(wrapper.mavenLocal(), containsString("target/local"));
-		assertThat(wrapper.thinRootRepository(), containsString("target/local"));
+		assertThat(wrapper.mavenLocal()).contains("target/local");
+		assertThat(wrapper.thinRootRepository()).contains("target/local");
 	}
 
 	@Test
@@ -105,8 +102,8 @@ public class ThinJarWrapperTests {
 		ThinJarWrapper wrapper = new ThinJarWrapper();
 		System.setProperty("thin.root", "target");
 		System.setProperty("maven.repo.local", "target/local");
-		assertThat(wrapper.mavenLocal(), containsString("target/local"));
-		assertThat(wrapper.thinRootRepository(), containsString("target/repository"));
+		assertThat(wrapper.mavenLocal()).contains("target/local");
+		assertThat(wrapper.thinRootRepository()).contains("target/repository");
 	}
 
 	@Test
@@ -115,8 +112,8 @@ public class ThinJarWrapperTests {
 		// This works on Windows as well
 		String path = new File("target/thin").getAbsolutePath();
 		String uri = ReflectionTestUtils.invokeMethod(wrapper, "getUrl", path);
-		assertThat(uri, startsWith("file:/"));
-		assertThat(uri, containsString("target/thin"));
+		assertThat(uri).startsWith("file:/");
+		assertThat(uri).contains("target/thin");
 	}
 
 	@Test
@@ -132,20 +129,20 @@ public class ThinJarWrapperTests {
 		FileSystemUtils.deleteRecursively(new File("target/repository"));
 		System.setProperty("maven.repo.local", "target/local");
 		// Now it will download *from* the local repo to the thin.root
-		assertThat(wrapper.download(), containsString("target/repository"));
+		assertThat(wrapper.download()).contains("target/repository");
 	}
 
 	@Test
 	public void testThinRootOverride() throws Exception {
 		System.setProperty("thin.root", "target");
 		ThinJarWrapper wrapper = new ThinJarWrapper();
-		assertEquals("target/repository", wrapper.thinRootRepository());
+		assertThat(wrapper.thinRootRepository()).isEqualTo("target/repository");
 	}
 
 	@Test
 	public void testThinRootOverrideOnCommandLine() throws Exception {
 		ThinJarWrapper wrapper = new ThinJarWrapper("--thin.root=target");
-		assertEquals("target/repository", wrapper.thinRootRepository());
+		assertThat(wrapper.thinRootRepository()).isEqualTo("target/repository");
 	}
 
 	@Test
@@ -159,7 +156,7 @@ public class ThinJarWrapperTests {
 		System.setOut(new PrintStream(stream));
 		ThinJarWrapper.main(new String[0]);
 		String output = stream.toString();
-		assertThat(output, containsString("Main Running"));
+		assertThat(output).contains("Main Running");
 	}
 
 	@Test
@@ -179,8 +176,8 @@ public class ThinJarWrapperTests {
 				break;
 			}
 		}
-		Assume.assumeTrue("WARN: no testable env var", key != null);
-		assertEquals("Wrong value for key=" + key, value, new ThinJarWrapper().getProperty(key));
+		Assumptions.assumeTrue(key != null, "WARN: no testable env var");
+		assertThat(new ThinJarWrapper().getProperty(key)).isEqualTo(value);
 	}
 
 }
