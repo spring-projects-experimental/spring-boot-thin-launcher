@@ -124,7 +124,7 @@ public class PropertiesTask extends DefaultTask {
 		this.configuration = configuration;
 	}
 
-	public Configuratiion getConfiguration() {
+	public Configuration getConfiguration() {
 		return configuration;
 	}
 
@@ -138,7 +138,7 @@ public class PropertiesTask extends DefaultTask {
 		this.output = output;
 	}
 
-	public Output getOutput() {
+	public File getOutput() {
 		return output;
 	}
 
