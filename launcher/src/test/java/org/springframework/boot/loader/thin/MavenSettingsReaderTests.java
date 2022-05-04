@@ -18,6 +18,7 @@ package org.springframework.boot.loader.thin;
 import org.apache.maven.repository.internal.MavenRepositorySystemUtils;
 import org.apache.maven.settings.Repository;
 import org.eclipse.aether.DefaultRepositorySystemSession;
+import org.eclipse.aether.repository.Authentication;
 import org.eclipse.aether.repository.AuthenticationContext;
 import org.eclipse.aether.repository.Proxy;
 import org.eclipse.aether.repository.RemoteRepository;
@@ -114,6 +115,39 @@ public class MavenSettingsReaderTests {
 		Repository repo = settings.getActiveProfiles().get(0).getRepositories().get(0);
 		assertThat(repo).isNotNull();
 		assertThat(repo.getSnapshots().isEnabled()).isTrue();
+	}
+
+	@Test
+	public void credentialsConfiguration() {
+		MavenSettingsReader reader = new MavenSettingsReader(
+				"src/test/resources/settings/creds");
+		DefaultRepositorySystemSession session = MavenRepositorySystemUtils.newSession();
+		MavenSettings settings = reader.readSettings();
+		assertThat(settings.getActiveProfiles().get(0).getRepositories().get(0))
+				.isNotNull();
+		MavenSettingsReader.applySettings(settings, session);
+		Repository repo = settings.getActiveProfiles().get(0).getRepositories().get(0);
+		RemoteRepository remote = new RemoteRepository.Builder(repo.getId(), null, repo.getUrl()).build();
+		Authentication authentication = settings.getAuthenticationSelector().getAuthentication(remote);
+		assertThat(authentication).isNotNull();
+		remote = new RemoteRepository.Builder(repo.getId(), null, repo.getUrl()).setAuthentication(authentication).build();
+		AuthenticationContext context = AuthenticationContext.forRepository(session,
+				remote);
+		assertThat(context).isNotNull();
+	}
+
+	@Test
+	public void mirrorConfiguration() {
+		MavenSettingsReader reader = new MavenSettingsReader(
+				"src/test/resources/settings/mirror");
+		DefaultRepositorySystemSession session = MavenRepositorySystemUtils.newSession();
+		MavenSettings settings = reader.readSettings();
+		assertThat(settings.getActiveProfiles().get(0).getRepositories().get(0))
+				.isNotNull();
+		MavenSettingsReader.applySettings(settings, session);
+		RemoteRepository remote = new RemoteRepository.Builder("remote", null, "https://remote").setContentType("default").build();
+		RemoteRepository mirror = settings.getMirrorSelector().getMirror(remote);
+		assertThat(mirror).isNotNull();
 	}
 
 }

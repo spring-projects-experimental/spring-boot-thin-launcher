@@ -85,6 +85,7 @@ import org.eclipse.aether.impl.guice.AetherModule;
 import org.eclipse.aether.repository.Authentication;
 import org.eclipse.aether.repository.AuthenticationContext;
 import org.eclipse.aether.repository.LocalRepository;
+import org.eclipse.aether.repository.MirrorSelector;
 import org.eclipse.aether.repository.NoLocalRepositoryManagerException;
 import org.eclipse.aether.repository.Proxy;
 import org.eclipse.aether.repository.ProxySelector;
@@ -456,7 +457,15 @@ public class DependencyResolver {
 		disabled.setEnabled(false);
 		repository.setReleaseUpdatePolicy(releases ? enabled : disabled);
 		repository.setSnapshotUpdatePolicy(snapshots ? enabled : disabled);
-		RemoteRepository remote = new RemoteRepository.Builder(id, null, url).build();
+		RemoteRepository remote = new RemoteRepository.Builder(id, null, url)
+			.setContentType(repository.getLayout().getId()).build();
+		MirrorSelector mirror = settings.getMirrorSelector();
+		if (mirror != null) {
+			RemoteRepository value = mirror.getMirror(remote);
+			if (value != null) {
+				remote = value;
+			}
+		}
 		Authentication authentication = settings.getAuthenticationSelector()
 				.getAuthentication(remote);
 		if (authentication != null) {
