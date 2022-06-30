@@ -17,7 +17,7 @@
 
 	<properties>
 		<maven.version>3.1.1</maven.version>
-		<plexus-archiver.version>3.4</plexus-archiver.version>
+		<plexus-archiver.version>3.6.0</plexus-archiver.version>
 	</properties>
 
 	<dependencies>
