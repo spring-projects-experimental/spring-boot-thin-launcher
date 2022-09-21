@@ -224,7 +224,7 @@ public class PathResolver {
 				if (!path.endsWith(".jar")) {
 					continue;
 				}
-				if (!path.startsWith(parent)) {
+				if (!file.getCanonicalFile().toPath().startsWith(parent)) {
 					throw new IllegalStateException("Not in thin root repository: " + path);
 				}
 				String jar = path.substring(parent.length());

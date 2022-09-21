@@ -171,7 +171,7 @@ public abstract class ThinJarMojo extends AbstractMojo {
 		Dependency deployable = decode(thinLauncherArtifact);
 		File result = resolveFile(deployable);
 		try {
-			if (!result.getCanonicalPath().startsWith(outputDirectory.getCanonicalPath())) {
+			if (!result.getCanonicalFile().toPath().startsWith(outputDirectory.getCanonicalFile().toPath())) {
 				String root = new File(this.settings.getLocalRepository()).getCanonicalPath();
 				String path = result.getCanonicalPath().substring(root.length());
 				File target = new File(new File(outputDirectory, "repository"), path);
