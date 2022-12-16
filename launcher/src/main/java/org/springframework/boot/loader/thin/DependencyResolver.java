@@ -383,7 +383,7 @@ public class DependencyResolver {
 			}
 		}
 		addRepositoryIfMissing(settings, session, list, "spring-snapshots",
-				"https://repo.spring.io/libs-snapshot", true, true);
+				"https://repo.spring.io/snapshot", true, true);
 		addRepositoryIfMissing(settings, session, list, "central",
 				"https://repo1.maven.org/maven2", true, false);
 		return list;

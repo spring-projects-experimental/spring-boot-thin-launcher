@@ -6,6 +6,7 @@ bin/
 .gradle/
 target/
 .m2/
+!.m2/settings.xml
 !.mvn/wrapper/maven-wrapper.jar
 
 dependency-reduced-pom.xml
