@@ -97,7 +97,7 @@
 						<phase>process-test-resources</phase>
 						<configuration>
 							<workingDirectory>${basedir}/../app</workingDirectory>
-							<executable>${basedir}/../app/${gradle.exec}</executable>
+							<executable>${project.basedir}/../app/${gradle.exec}</executable>
 							<arguments>
 								<argument>clean</argument>
 								<argument>build</argument>
@@ -112,7 +112,7 @@
 						<phase>process-test-resources</phase>
 						<configuration>
 							<workingDirectory>${basedir}/../app</workingDirectory>
-							<executable>${basedir}/../app/${gradle.exec}</executable>
+							<executable>${project.basedir}/../app/${gradle.exec}</executable>
 							<arguments>
 								<argument>thinResolve</argument>
 							</arguments>
@@ -126,7 +126,7 @@
 						<phase>process-test-resources</phase>
 						<configuration>
 							<workingDirectory>${basedir}/../other</workingDirectory>
-							<executable>${basedir}/../other/${gradle.exec}</executable>
+							<executable>${project.basedir}/../other/${gradle.exec}</executable>
 							<arguments>
 								<argument>build</argument>
 								<argument>thinResolve</argument>
@@ -141,7 +141,7 @@
 						<phase>process-test-resources</phase>
 						<configuration>
 							<workingDirectory>${basedir}/../shadow</workingDirectory>
-							<executable>${basedir}/../shadow/${gradle.exec}</executable>
+							<executable>${project.basedir}/../shadow/${gradle.exec}</executable>
 							<arguments>
 								<argument>build</argument>
 							</arguments>
@@ -155,7 +155,7 @@
 						<phase>process-test-resources</phase>
 						<configuration>
 							<workingDirectory>${basedir}/../simple</workingDirectory>
-							<executable>${basedir}/../simple/${gradle.exec}</executable>
+							<executable>${project.basedir}/../simple/${gradle.exec}</executable>
 							<arguments>
 								<argument>build</argument>
 								<argument>thinResolve</argument>
@@ -170,7 +170,7 @@
 						<phase>process-test-resources</phase>
 						<configuration>
 							<workingDirectory>${basedir}/../multi</workingDirectory>
-							<executable>${basedir}/../multi/${gradle.exec}</executable>
+							<executable>${project.basedir}/../multi/${gradle.exec}</executable>
 							<arguments>
 								<argument>build</argument>
 								<argument>:application:thinResolve</argument>
