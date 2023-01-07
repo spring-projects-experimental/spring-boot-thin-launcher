@@ -57,9 +57,9 @@ jobs:
           ./mvnw deploy -s .mvn/settings.xml
     params:
       TERM: -dumb
-      passphrase: {{passphrase}}
-      sonatype_username: {{sonatype-username}}
-      sonatype_password: {{sonatype-password}}
-      spring_username: {{spring-username}}
-      spring_password: {{spring-password}}
+      passphrase: ((spring-retry-passphrase))
+      sonatype_username: ((sonatype-username))
+      sonatype_password: ((sonatype-password))
+      spring_username: ((artifactory-username))
+      spring_password: ((artifactory-password))
     on_failure: *slack-failure
