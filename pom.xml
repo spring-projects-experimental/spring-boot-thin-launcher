@@ -349,6 +349,12 @@ limitations under the License.
 								</goals>
 							</execution>
 						</executions>
+						<configuration>
+							<gpgArguments>
+								<arg>--batch</arg>
+								<arg>--pinentry-mode=loopback</arg>
+							</gpgArguments>
+						</configuration>
 					</plugin>
 				</plugins>
 			</build>

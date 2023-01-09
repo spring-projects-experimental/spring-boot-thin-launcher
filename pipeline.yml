@@ -54,10 +54,12 @@ jobs:
           rm -rf ~/.m2 ~/.gradle
           ln -s $(pwd)/.m2 ~/.m2
           ln -s $(pwd)/.gradle ~/.gradle
+          echo "((signing-key))" > private.asc
+          gpg --import --batch --no-tty private.asc
           ./mvnw deploy -s .mvn/settings.xml
     params:
       TERM: -dumb
-      passphrase: ((spring-retry-passphrase))
+      passphrase: ((signing-passphrase))
       sonatype_username: ((sonatype-username))
       sonatype_password: ((sonatype-password))
       spring_username: ((artifactory-username))
