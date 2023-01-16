@@ -423,6 +423,10 @@ public class PathResolver {
 			for (Resource resource : ResourcePatternUtils.getResourcePatternResolver(new DefaultResourceLoader())
 					.getResources(archive.getUrl() + pattern)) {
 				if (resource.exists()) {
+					if (resource.getFilename() !=null && resource.getFilename().contains("org.springframework.boot.experimental/spring-boot-thin-wrapper")) {
+						// Explicitly ignore the thin wrapper itself
+						continue;
+					}
 					return resource;
 				}
 			}

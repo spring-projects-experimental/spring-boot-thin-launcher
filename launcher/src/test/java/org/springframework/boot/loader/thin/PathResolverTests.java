@@ -143,4 +143,20 @@ public class PathResolverTests {
 				.endsWith("META-INF/maven/com.example/fake/pom.xml");
 	}
 
+	@Test
+	public void pomWithThinWrapperJar() throws Exception {
+		Resource resource = resolver.getPom(
+				new ExplodedArchive(new File("src/test/resources/apps/with-wrapper.jar")));
+		assertThat(resource.getURL().toString())
+				.endsWith("META-INF/maven/com.example/with-wrapper/pom.xml");
+	}
+
+	@Test
+	public void pomWithOnlyThinWrapperJar() throws Exception {
+		Resource resource = resolver.getPom(
+				new ExplodedArchive(new File("src/test/resources/apps/only-wrapper.jar")));
+		assertThat(resource.getURL().toString())
+				.endsWith("META-INF/maven/org.springframework.boot.experimental/spring-boot-thin-wrapper/pom.xml");
+	}
+
 }
