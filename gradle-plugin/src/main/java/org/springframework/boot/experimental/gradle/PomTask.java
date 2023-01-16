@@ -20,10 +20,6 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-import groovy.util.Node;
-
-import io.spring.gradle.dependencymanagement.dsl.DependencyManagementExtension;
-import io.spring.gradle.dependencymanagement.maven.PomDependencyManagementConfigurer;
 import org.gradle.api.Action;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.Project;
@@ -32,13 +28,16 @@ import org.gradle.api.artifacts.maven.MavenPom;
 import org.gradle.api.artifacts.repositories.ArtifactRepository;
 import org.gradle.api.artifacts.repositories.MavenArtifactRepository;
 import org.gradle.api.plugins.Convention;
-import org.gradle.api.plugins.MavenPluginConvention;
 import org.gradle.api.publish.maven.tasks.GenerateMavenPom;
 import org.gradle.api.tasks.OutputDirectory;
 import org.gradle.api.tasks.TaskAction;
 import org.gradle.api.tasks.TaskCollection;
 import org.gradle.api.tasks.TaskExecutionException;
 import org.springframework.util.ClassUtils;
+
+import groovy.util.Node;
+import io.spring.gradle.dependencymanagement.dsl.DependencyManagementExtension;
+import io.spring.gradle.dependencymanagement.maven.PomDependencyManagementConfigurer;
 
 /**
  * Task to generate a pom file including all runtime dependencies.
