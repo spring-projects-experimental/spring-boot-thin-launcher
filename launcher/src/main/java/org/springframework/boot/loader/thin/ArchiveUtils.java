@@ -27,7 +27,6 @@ import java.util.jar.Manifest;
 
 import org.eclipse.aether.artifact.DefaultArtifact;
 import org.eclipse.aether.graph.Dependency;
-
 import org.springframework.boot.loader.archive.Archive;
 import org.springframework.boot.loader.archive.ExplodedArchive;
 import org.springframework.boot.loader.archive.JarFileArchive;
@@ -53,8 +52,7 @@ public class ArchiveUtils {
 		}
 		try {
 			return new JarFileArchive(new JarFile(file));
-		}
-		catch (IOException e) {
+		} catch (IOException e) {
 			throw new IllegalStateException("Cannot create JAR archive: " + file, e);
 		}
 	}
@@ -62,8 +60,7 @@ public class ArchiveUtils {
 	public static File getArchiveRoot(Archive archive) {
 		try {
 			return new File(jarFile(archive.getUrl()).toURI());
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			throw new IllegalStateException("Cannot locate JAR archive: " + archive, e);
 		}
 	}
@@ -82,19 +79,16 @@ public class ArchiveUtils {
 					return mainClass;
 				}
 			}
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 		}
 		try {
 			File root = getArchiveRoot(archive);
 			if (archive instanceof ExplodedArchive) {
 				return MainClassFinder.findSingleMainClass(root);
-			}
-			else {
+			} else {
 				return MainClassFinder.findSingleMainClass(new JarFile(root), "");
 			}
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			throw new IllegalStateException("Cannot locate main class in " + archive, e);
 		}
 	}
@@ -104,8 +98,7 @@ public class ArchiveUtils {
 		if (archive != null) {
 			try {
 				return jarFile(archive.toURL()).toURI();
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				throw new IllegalStateException("Cannot create URI for " + archive);
 			}
 		}
@@ -148,8 +141,7 @@ public class ArchiveUtils {
 			}
 			try {
 				url = new URL(path);
-			}
-			catch (MalformedURLException e) {
+			} catch (MalformedURLException e) {
 				throw new IllegalStateException("Bad URL for jar file: " + path, e);
 			}
 		}
@@ -165,8 +157,7 @@ public class ArchiveUtils {
 					extras.add(classes.getURL());
 				}
 			}
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			throw new IllegalStateException("Cannot create urls for resources", e);
 		}
 		return extras;
@@ -187,6 +178,29 @@ public class ArchiveUtils {
 			urls[i] = jarFile(urls[i]);
 		}
 		return urls;
+	}
+
+	public static List<Archive> getArchives(String path) {
+		List<Archive> list = new ArrayList<>();
+		for (String element : path.split(File.pathSeparator)) {
+			if (element.endsWith("*")) {
+				File dir = new File(element.substring(0, element.length() - 1));
+				if (dir.isDirectory()) {
+					for (File file : dir.listFiles()) {
+						if (file.getName().endsWith(".jar")) {
+							try {
+								list.add(getArchive(file.getCanonicalPath()));
+							} catch (IOException e) {
+								// ignore
+							}
+						}
+					}
+				}
+			} else {
+				list.add(getArchive(element));
+			}
+		}
+		return list;
 	}
 
 }

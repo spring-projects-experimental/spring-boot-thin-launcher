@@ -214,7 +214,8 @@ public class DependencyResolver {
 				DependencyResolver.globals = null;
 				DependencyResolutionResult dependencies = result
 						.getDependencyResolutionResult();
-				if (!dependencies.getUnresolvedDependencies().isEmpty()) {
+				if (!dependencies.getUnresolvedDependencies().isEmpty() && 
+						properties.getProperty(ThinJarLauncher.THIN_LIBS, "").length()==0) {
 					StringBuilder builder = new StringBuilder();
 					for (Dependency dependency : dependencies
 							.getUnresolvedDependencies()) {

@@ -20,6 +20,7 @@ import java.io.File;
 import java.net.URL;
 import java.security.AccessControlException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -55,86 +56,112 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 	public static final String THIN_MAIN = "thin.main";
 
 	/**
-	 * System property to signal a "dry run" where dependencies are resolved but the main
+	 * System property to signal a "dry run" where dependencies are resolved but the
+	 * main
 	 * method is not executed.
 	 */
 	public static final String THIN_DRYRUN = "thin.dryrun";
 
 	/**
-	 * System property to signal that dependency resolution should be attempted even if
+	 * System property to signal that dependency resolution should be attempted even
+	 * if
 	 * there is a "computed" flag in thin.properties.
 	 */
 	public static final String THIN_FORCE = "thin.force";
 
 	/**
 	 * System property to signal offline execution (all dependencies can be resolved
-	 * locally). Defaults to "false" and any value other than "false" is equivalent to
+	 * locally). Defaults to "false" and any value other than "false" is equivalent
+	 * to
 	 * "true".
 	 */
 	public static final String THIN_OFFLINE = "thin.offline";
 
 	/**
-	 * System property to signal a "classpath run" where dependencies are resolved but the
-	 * main method is not executed and the output is in the form of a classpath. Supported
+	 * System property to signal a "classpath run" where dependencies are resolved
+	 * but the
+	 * main method is not executed and the output is in the form of a classpath.
+	 * Supported
 	 * formats are "path" and "properties".
 	 */
 	public static final String THIN_CLASSPATH = "thin.classpath";
 
 	/**
-	 * System property holding the path to the root directory, where Maven repository and
+	 * System property holding the path to the root directory, where Maven
+	 * repository and
 	 * settings live. Defaults to <code>${user.home}/.m2</code>.
 	 */
 	public static final String THIN_ROOT = "thin.root";
 
 	/**
-	 * System property used by wrapper to communicate the location of the main archive.
-	 * Can also be used in a dryrun or classpath launch to override the archive location
+	 * System property used by wrapper to communicate the location of the main
+	 * archive.
+	 * Can also be used in a dryrun or classpath launch to override the archive
+	 * location
 	 * with a file or "maven://..." style URL.
 	 */
 	public static final String THIN_ARCHIVE = "thin.archive";
 
 	/**
-	 * A parent archive (URL or "maven://..." locator) that controls the classpath and
+	 * A parent archive (URL or "maven://..." locator) that controls the classpath
+	 * and
 	 * dependency management defaults for the main archive.
 	 */
 	public static final String THIN_PARENT = "thin.parent";
 
 	/**
-	 * The path to thin properties files (as per thin.name), as a comma-separated list of
-	 * resources (these locations plus relative /META-INF will be searched). Defaults to
+	 * The path to thin properties files (as per thin.name), as a comma-separated
+	 * list of
+	 * resources (these locations plus relative /META-INF will be searched).
+	 * Defaults to
 	 * current directory and classpath:/.
 	 */
 	public static final String THIN_LOCATION = "thin.location";
 
 	/**
-	 * The name of the launchable (i.e. the properties file name). Defaults to "thin" (so
+	 * The name of the launchable (i.e. the properties file name). Defaults to
+	 * "thin" (so
 	 * "thin.properties" is the default file name with no profiles).
 	 */
 	public static final String THIN_NAME = "thin.name";
 
 	/**
-	 * The name of the profile to run, changing the location of the properties files to
+	 * The name of the profile to run, changing the location of the properties files
+	 * to
 	 * look up.
 	 */
 	public static final String THIN_PROFILE = "thin.profile";
 
 	/**
-	 * Flag to say that classloader should be parent first (default true). You may need it
-	 * to be false if the target archive contains classes in the root, and you want to
-	 * also use a Java agent (because the agent and the app classes have to be all on the
+	 * Flag to say that classloader should be parent first (default true). You may
+	 * need it
+	 * to be false if the target archive contains classes in the root, and you want
+	 * to
+	 * also use a Java agent (because the agent and the app classes have to be all
+	 * on the
 	 * classpath). Some agents work with the default settings though.
 	 */
 	public static final String THIN_PARENT_FIRST = "thin.parent.first";
 
 	/**
-	 * Flag to say that classloader parent should be the boot loader, not the system class
-	 * loader. Default true;
+	 * Flag to say that classloader parent should be the boot loader, not the system
+	 * class
+	 * loader. Default true.
 	 */
 	public static final String THIN_PARENT_BOOT = "thin.parent.boot";
+
+	/**
+	 * Additional path elements to append to classpath, with OS-specific path
+	 * separator. Also
+	 * accepts wildcards on a directory path (like java classpath). Default empty.
+	 */
+	public static final String THIN_LIBS = "thin.libs";
 
 	private StandardEnvironment environment = new StandardEnvironment();
 
 	private boolean debug;
+
+	private List<Archive> libs = new ArrayList<>();
 
 	public static void main(String[] args) throws Exception {
 		LogUtils.setLogLevel(Level.OFF);
@@ -160,19 +187,18 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 		if (classpath || compute) {
 			this.debug = false;
 			LogUtils.setLogLevel(Level.OFF);
-		}
-		else {
+		} else {
 			this.debug = trace || !"false".equals(
 					environment.resolvePlaceholders("${thin.debug:${debug:false}}"));
 		}
 		if (debug || trace) {
 			if (trace) {
 				LogUtils.setLogLevel(Level.TRACE);
-			}
-			else {
+			} else {
 				LogUtils.setLogLevel(Level.INFO);
 			}
 		}
+		this.libs.addAll(ArchiveUtils.getArchives(environment.resolvePlaceholders("${thin.libs:}")));
 		if (classpath) {
 			List<Archive> archives = getClassPathArchives();
 			System.out.println(classpath(archives));
@@ -307,8 +333,7 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 				"commandArgs", args);
 		if (!properties.contains("commandArgs")) {
 			properties.addFirst(source);
-		}
-		else {
+		} else {
 			properties.replace("commandArgs", source);
 		}
 	}
@@ -329,8 +354,7 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 				environment.resolvePlaceholders("${" + THIN_PARENT_FIRST + ":true}"))) {
 			// Use a (traditional) parent first class loader
 			loader.setParentFirst(true);
-		}
-		else {
+		} else {
 			loader.setParentFirst(false);
 		}
 		// Restore default
@@ -370,8 +394,12 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 				profiles);
 		long t1 = System.currentTimeMillis();
 		if (log.isInfoEnabled()) {
+			if (!this.libs.isEmpty()) {
+				log.info("Adding libraries: " + this.libs);
+			}
 			log.info("Dependencies resolved in: " + (t1 - t0) + "ms");
 		}
+		archives.addAll(this.libs);
 		return archives;
 	}
 
@@ -389,6 +417,7 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 		String locations = environment
 				.resolvePlaceholders("${" + ThinJarLauncher.THIN_LOCATION + ":}");
 		String root = environment.resolvePlaceholders("${" + THIN_ROOT + ":}");
+		String libs = environment.resolvePlaceholders("${" + THIN_LIBS + ":}");
 		String offline = environment.resolvePlaceholders("${" + THIN_OFFLINE + ":false}");
 		String force = environment.resolvePlaceholders(
 				"${" + THIN_FORCE + ":${" + THIN_DRYRUN + ":false}}");
@@ -402,6 +431,9 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 					environment.resolvePlaceholders("${thin.local.snapshots:true}"))) {
 				resolver.setPreferLocalSnapshots(false);
 			}
+		}
+		if (StringUtils.hasText(libs)) {
+			resolver.setLibs(libs);
 		}
 		if (!"false".equals(offline)) {
 			resolver.setOffline(true);
@@ -424,8 +456,7 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 					properties.setProperty(name, system.getProperty(key.toString()));
 				}
 			}
-		}
-		catch (AccessControlException e) {
+		} catch (AccessControlException e) {
 			// ignore
 		}
 		if (environment.getPropertySources().contains("commandArgs")) {
@@ -456,8 +487,7 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 				if (arg.length() <= prefix.length() + 1) {
 					// ... even cancel it by setting it to empty
 					path = null;
-				}
-				else {
+				} else {
 					path = arg.substring(prefix.length() + 1);
 				}
 			}
@@ -495,8 +525,7 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 						if (!parentFirst) {
 							return findClass(name);
 						}
-					}
-					catch (ClassNotFoundException e) {
+					} catch (ClassNotFoundException e) {
 					}
 					return super.loadClass(name, resolve);
 				}

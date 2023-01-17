@@ -339,6 +339,15 @@ public class DependencyResolverTests {
 		assertThat(dependencies.size()).isGreaterThan(16);
 	}
 
+	@Test
+	public void unresolvedButLibsProvided() throws Exception {
+		Resource resource = new ClassPathResource("apps/missing/pom.xml");
+		Properties properties = new Properties();
+		properties.setProperty("thin.libs", "no/such/file");
+		List<Dependency> dependencies = resolver.dependencies(resource, properties);
+		assertThat(dependencies.size()).isGreaterThan(0);
+	}
+
 	static Condition<Dependency> version(final String version) {
 		return new Condition<Dependency>("artifact matches " + version) {
 			@Override

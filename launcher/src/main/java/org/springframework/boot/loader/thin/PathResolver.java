@@ -59,6 +59,8 @@ public class PathResolver {
 
 	private String root;
 
+	private String libs;
+
 	private Properties overrides = new Properties();
 
 	private boolean offline;
@@ -77,6 +79,10 @@ public class PathResolver {
 
 	public void setRoot(String root) {
 		this.root = root;
+	}
+
+	public void setLibs(String libs) {
+		this.libs = libs;
 	}
 
 	public void setOverrides(Properties overrides) {
@@ -273,6 +279,9 @@ public class PathResolver {
 		}
 		if (root != null) {
 			properties.setProperty("thin.root", root);
+		}
+		if (libs != null) {
+			properties.setProperty("thin.libs", libs);
 		}
 		if (offline) {
 			properties.setProperty("thin.offline", "true");
