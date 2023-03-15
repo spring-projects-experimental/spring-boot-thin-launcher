@@ -16,9 +16,12 @@
 
 package org.springframework.boot.loader.thin.converter;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FilterInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
@@ -28,22 +31,27 @@ import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 import java.util.jar.Attributes;
+import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 
+import org.springframework.boot.loader.tools.EntryWriter;
 import org.springframework.boot.loader.tools.JarWriter;
 import org.springframework.boot.loader.tools.Repackager;
 import org.springframework.util.StringUtils;
 
 /**
- * Utility for converting a thin jar to a standard Spring Boot executable fat jar. Command
- * line arguments: Run the main method with no arguments (or --help) to print a usage
+ * Utility for converting a thin jar to a standard Spring Boot executable fat
+ * jar. Command
+ * line arguments: Run the main method with no arguments (or --help) to print a
+ * usage
  * message.
  * 
  * @author Dave Syer
@@ -161,8 +169,7 @@ public class ThinConverterApplication {
 			return strings.contains("--help") || strings.contains("-h")
 					|| jarfile.toURI().toURL().equals(getClass().getProtectionDomain()
 							.getCodeSource().getLocation());
-		}
-		catch (MalformedURLException e) {
+		} catch (MalformedURLException e) {
 			return true;
 		}
 	}
@@ -172,8 +179,18 @@ public class ThinConverterApplication {
 		JarFile jarfile = new JarFile(source);
 		JarWriter writer = new JarWriter(target);
 		writer.writeManifest(buildManifest(jarfile));
-		writer.writeEntries(jarfile);
+		writeEntries(writer, jarfile);
 		writer.close();
+	}
+
+	final void writeEntries(JarWriter writer, JarFile jarFile) throws IOException {
+		Enumeration<JarEntry> entries = jarFile.entries();
+		while (entries.hasMoreElements()) {
+			JarEntry entry = entries.nextElement();
+			try (ZipHeaderPeekInputStream inputStream = new ZipHeaderPeekInputStream(jarFile.getInputStream(entry))) {
+				writer.writeEntry(entry.getName(), inputStream);
+			}
+		}
 	}
 
 	private Manifest buildManifest(JarFile archive) throws IOException {
@@ -216,6 +233,76 @@ public class ThinConverterApplication {
 	private File getTarget(File jarfile) {
 		return new File(jarfile.getParentFile(),
 				StringUtils.stripFilenameExtension(jarfile.getName()) + "-exec.jar");
+	}
+
+}
+
+class ZipHeaderPeekInputStream extends FilterInputStream {
+
+	private static final byte[] ZIP_HEADER = new byte[] { 0x50, 0x4b, 0x03, 0x04 };
+
+	private final byte[] header;
+
+	private final int headerLength;
+
+	private int position;
+
+	private ByteArrayInputStream headerStream;
+
+	protected ZipHeaderPeekInputStream(InputStream in) throws IOException {
+		super(in);
+		this.header = new byte[4];
+		this.headerLength = in.read(this.header);
+		this.headerStream = new ByteArrayInputStream(this.header, 0, this.headerLength);
+	}
+
+	@Override
+	public int read() throws IOException {
+		int read = (this.headerStream != null) ? this.headerStream.read() : -1;
+		if (read != -1) {
+			this.position++;
+			if (this.position >= this.headerLength) {
+				this.headerStream = null;
+			}
+			return read;
+		}
+		return super.read();
+	}
+
+	@Override
+	public int read(byte[] b) throws IOException {
+		return read(b, 0, b.length);
+	}
+
+	@Override
+	public int read(byte[] b, int off, int len) throws IOException {
+		int read = (this.headerStream != null) ? this.headerStream.read(b, off, len) : -1;
+		if (read <= 0) {
+			return readRemainder(b, off, len);
+		}
+		this.position += read;
+		if (read < len) {
+			int remainderRead = readRemainder(b, off + read, len - read);
+			if (remainderRead > 0) {
+				read += remainderRead;
+			}
+		}
+		if (this.position >= this.headerLength) {
+			this.headerStream = null;
+		}
+		return read;
+	}
+
+	boolean hasZipHeader() {
+		return Arrays.equals(this.header, ZIP_HEADER);
+	}
+
+	private int readRemainder(byte[] b, int off, int len) throws IOException {
+		int read = super.read(b, off, len);
+		if (read > 0) {
+			this.position += read;
+		}
+		return read;
 	}
 
 }
