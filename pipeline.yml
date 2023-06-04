@@ -1,5 +1,5 @@
-# fly --target spring login --concourse-url https://ci.spring.io --team-name "Spring Team"
-# fly --target spring set-pipeline --config pipeline.yml --pipeline spring-boot-thin-launcher --load-vars-from credentials.yml
+# fly --target spring-team login --concourse-url https://ci.spring.io
+# fly --target spring-team set-pipeline --config pipeline.yml --pipeline spring-boot-thin-launcher --load-vars-from credentials.yml
 ---
 resource_types:
 - name: slack-notification
@@ -34,6 +34,7 @@ jobs:
   - get: source
     trigger: true
   - task: maven
+    timeout: 2h30m
     config:
       platform: linux
       image_resource:
