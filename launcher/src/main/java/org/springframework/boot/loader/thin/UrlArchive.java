@@ -62,7 +62,7 @@ public class UrlArchive implements Archive {
 	}
 
 	@Override
-	public List<Archive> getNestedArchives(EntryFilter filter) throws IOException {
+	public Iterator<Archive> getNestedArchives(EntryFilter searchFilter, EntryFilter includeFilter) throws IOException {
 		throw new UnsupportedOperationException();
 	}
 

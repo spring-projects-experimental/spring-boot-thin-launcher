@@ -6,7 +6,7 @@
 	<parent>
 		<groupId>org.springframework.boot.experimental</groupId>
 		<artifactId>spring-boot-thin-tools</artifactId>
-		<version>1.0.30.BUILD-SNAPSHOT</version>
+		<version>1.1.0-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>spring-boot-thin-tools-converter</artifactId>
@@ -47,7 +47,7 @@
 						</goals>
 						<inherited>false</inherited>
 						<configuration>
-							<start-class>org.springframework.boot.loader.thin.converter.ThinConverterApplication</start-class>
+							<mainClass>org.springframework.boot.loader.thin.converter.ThinConverterApplication</mainClass>
 						</configuration>
 					</execution>
 				</executions>
@@ -56,6 +56,16 @@
 						<groupId>org.springframework.boot.experimental</groupId>
 						<artifactId>spring-boot-thin-layout</artifactId>
 						<version>${project.version}</version>
+					</dependency>
+					<dependency>
+						<groupId>org.apache.maven.shared</groupId>
+						<artifactId>maven-common-artifact-filters</artifactId>
+						<version>3.0.1</version>
+					</dependency>
+					<dependency>
+						<groupId>org.springframework.boot</groupId>
+						<artifactId>spring-boot-loader-tools</artifactId>
+						<version>3.2.0-SNAPSHOT</version>
 					</dependency>
 				</dependencies>
 			</plugin>
