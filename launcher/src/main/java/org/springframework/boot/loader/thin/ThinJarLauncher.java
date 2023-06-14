@@ -371,7 +371,6 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 		return ArchiveUtils.findMainClass(getArchive());
 	}
 
-	@Override
 	protected List<Archive> getClassPathArchives() throws Exception {
 		return getClassPathArchives(null);
 	}
