@@ -176,7 +176,7 @@ public class ThinJarWrapper {
 			}
 			if (!result) {
 				String repo = getProperty(THIN_REPO);
-				repo = repo != null ? repo : "https://repo.spring.io/snapshot";
+				repo = repo != null ? repo : file.contains("SNAPSHOT") ? "https://repo.spring.io/snapshot" : "https://repo1.maven.org/maven2";
 				if (repo.endsWith("/")) {
 					repo = repo.substring(0, repo.length() - 1);
 				}
