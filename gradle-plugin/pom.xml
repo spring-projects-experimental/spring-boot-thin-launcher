@@ -6,7 +6,7 @@
 	<parent>
 		<groupId>org.springframework.boot.experimental</groupId>
 		<artifactId>spring-boot-thin-launcher-parent</artifactId>
-		<version>1.0.30.RELEASE</version>
+		<version>1.0.31.BUILD-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>spring-boot-thin-gradle-plugin</artifactId>

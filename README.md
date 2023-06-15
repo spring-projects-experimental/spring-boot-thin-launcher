@@ -1,6 +1,6 @@
 # Spring Boot Thin Launcher [![ci.spring.io](https://ci.spring.io/api/v1/teams/spring-team/pipelines/spring-boot-thin-launcher/badge)](https://ci.spring.io/teams/spring-team/pipelines/spring-boot-thin-launcher)
 
-A "thin" jar launcher for java apps. Version 1.0.29.RELEASE is in Maven Central, snapshots are in https://repo.spring.io/libs-snapshot. See https://github.com/spring-projects/spring-boot/issues/1813 for more discussion and ideas.
+A "thin" jar launcher for java apps. Version 1.0.30.RELEASE is in Maven Central, snapshots are in https://repo.spring.io/libs-snapshot. See https://github.com/spring-projects/spring-boot/issues/1813 for more discussion and ideas.
 
 ## Getting Started
 
@@ -26,7 +26,7 @@ means adding it to the Spring Boot plugin declaration:
 		<dependency>
 			<groupId>org.springframework.boot.experimental</groupId>
 			<artifactId>spring-boot-thin-layout</artifactId>
-			<version>1.0.29.RELEASE</version>
+			<version>1.0.30.RELEASE</version>
 		</dependency>
 	</dependencies>
 </plugin>
@@ -40,7 +40,7 @@ plugins {
 	id 'io.spring.dependency-management' version '1.1.0'
 	id 'java'
 	id 'maven-publish'
-	id 'org.springframework.boot.experimental.thin-launcher' version '1.0.29.RELEASE'
+	id 'org.springframework.boot.experimental.thin-launcher' version '1.0.30.RELEASE'
 }
 
 group = 'com.example'
@@ -69,7 +69,7 @@ or you can use the older `apply` style declaration:
 buildscript {
 	ext {
 		springBootVersion = '2.7.6'
-		wrapperVersion = '1.0.29.RELEASE'
+		wrapperVersion = '1.0.30.RELEASE'
 	}
 	repositories {
 		mavenLocal()
@@ -325,7 +325,7 @@ You can set a variety of options on the command line or with system properties (
 | `thin.location`     | `file:.,classpath:/`                                                             | The path to directory containing thin properties files (as per `thin.name`), as a comma-separated list of resource locations (directories). These locations plus the same paths relative /META-INF will be searched.                                                 |
 | `thin.name`         | "thin"                                                                           | The name of the properties file to search for dependency specifications and overrides.                                                                                                                                                                               |
 | `thin.profile`      | <empty>                                                                          | Comma-separated list of profiles to use to locate thin properties. E.g. if `thin.profile=foo` the launcher searches for files called `thin.properties` and `thin-foo.properties`.                                                                                    |
-| `thin.library`      | `org.springframework.boot.experimental:spring-boot-thin-launcher:1.0.29.RELEASE` | A locator for the launcher library. Can be Maven coordinates (with optional `maven://` prefix), or a file (with optional `file://` prefix).                                                                                                                          |
+| `thin.library`      | `org.springframework.boot.experimental:spring-boot-thin-launcher:1.0.30.RELEASE` | A locator for the launcher library. Can be Maven coordinates (with optional `maven://` prefix), or a file (with optional `file://` prefix).                                                                                                                          |
 | `thin.repo`         | `https://repo.spring.io/snapshot` (also contains GA releases)               | Base URL for the `thin.library` if it is in Maven form (the default).                                                                                                                                                                                                |
 | `thin.launcher`     | `org.springframework.boot.thin.ThinJarLauncher`                                  | The main class in the `thin.library`. If not specified it is discovered from the manifest `Main-Class` attribute.                                                                                                                                                    |
 | `thin.parent.first` | true                                                                             | Flag to say that the class loader is "parent first" (i.e. the system class loader will be used as the default). This is the "standard" JDK class loader strategy. Setting it to false is similar to what is normally used in web containers and application servers. |
@@ -463,7 +463,7 @@ There is a converter tool that you can use as a library in place of the launcher
 
 ```
 $ java -jar myapp.jar --thin.dryrun --thin.root=target/thin/root
-$ java -jar myapp.jar --thin.library=org.springframework.boot.experimental:spring-boot-thin-tools-converter:1.0.29.RELEASE
+$ java -jar myapp.jar --thin.library=org.springframework.boot.experimental:spring-boot-thin-tools-converter:1.0.30.RELEASE
 $ java -jar myapp-exec.jar
 ```
 
