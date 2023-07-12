@@ -38,6 +38,7 @@
 						<manifest>
 							<mainClass>org.springframework.boot.loader.wrapper.ThinJarWrapper</mainClass>
 						</manifest>
+						<addMavenDescriptor>false</addMavenDescriptor>
 					</archive>
 				</configuration>
 			</plugin>
