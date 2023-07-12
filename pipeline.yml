@@ -1,4 +1,4 @@
-# fly --target spring-team login --concourse-url https://ci.spring.io
+# fly --target spring-team login --team-name spring-team --concourse-url https://ci.spring.io
 # fly --target spring-team set-pipeline --config pipeline.yml --pipeline spring-boot-thin-launcher --load-vars-from credentials.yml
 ---
 resource_types:
