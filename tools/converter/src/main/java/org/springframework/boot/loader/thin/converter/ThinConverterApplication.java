@@ -42,7 +42,6 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 
-import org.springframework.boot.loader.tools.EntryWriter;
 import org.springframework.boot.loader.tools.JarWriter;
 import org.springframework.boot.loader.tools.Repackager;
 import org.springframework.util.StringUtils;
