@@ -182,7 +182,7 @@ public class ThinLauncherPlugin implements Plugin<Project> {
 	}
 
 	private Task createPomTask(final Project project) {
-		return project.getTasks().create("thinPom", PomTask.class, new Action<PomTask>() {
+		Task result = project.getTasks().create("thinPom", PomTask.class, new Action<PomTask>() {
 			@Override
 			public void execute(final PomTask thin) {
 				project.getTasks().withType(Jar.class, new Action<Jar>() {
@@ -203,7 +203,14 @@ public class ThinLauncherPlugin implements Plugin<Project> {
 				thin.setOutput(new File(resourcesDir, "META-INF/maven/"
 						+ project.getGroup() + "/" + project.getName()));
 			}
-		}).mustRunAfter("resolveMainClassName", "test");
+		});
+		if (project.getTasks().findByName("resolveMainClassName") != null) {
+			result.mustRunAfter("resolveMainClassName", "test");
+		}
+		if (project.getTasks().findByName("bootJarMainClassName") != null) {
+			result.mustRunAfter("bootJarMainClassName", "test");
+		}
+		return result;
 	}
 
 	private Task createPropertiesTask(final Project project) {
@@ -291,7 +298,7 @@ public class ThinLauncherPlugin implements Plugin<Project> {
 				List<String> args = new ArrayList<>(Arrays.asList(
 						"-Dthin.root=.", "-Dthin.dryrun", "-jar",
 						"../spring-boot-thin-wrapper.jar"));
-				args.add(1, "-Dthin.archive=" + thinJar.getArchiveName());
+				args.add(1, "-Dthin.archive=" + thinJar.getArchivePath());
 				String thinRepo = getThinRepo(project);
 				if (thinRepo != null) {
 					args.add(1, "-Dthin.repo=" + thinRepo);
