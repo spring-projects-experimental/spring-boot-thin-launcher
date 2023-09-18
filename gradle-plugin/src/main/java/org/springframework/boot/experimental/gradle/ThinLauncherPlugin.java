@@ -16,6 +16,16 @@
 
 package org.springframework.boot.experimental.gradle;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.Callable;
+
 import org.gradle.api.Action;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
@@ -33,12 +43,6 @@ import org.gradle.internal.jvm.Jvm;
 import org.springframework.boot.loader.jar.JarFile;
 import org.springframework.boot.loader.tools.MainClassFinder;
 import org.springframework.util.StringUtils;
-
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.util.*;
-import java.util.concurrent.Callable;
 
 /**
  * Gradle {@link Plugin} for Spring Boot's thin launcher.
@@ -199,7 +203,7 @@ public class ThinLauncherPlugin implements Plugin<Project> {
 				thin.setOutput(new File(resourcesDir, "META-INF/maven/"
 						+ project.getGroup() + "/" + project.getName()));
 			}
-		});
+		}).mustRunAfter("resolveMainClassName", "test");
 	}
 
 	private Task createPropertiesTask(final Project project) {
