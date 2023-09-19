@@ -49,7 +49,7 @@ import io.spring.gradle.dependencymanagement.maven.PomDependencyManagementConfig
 public class PomTask extends DefaultTask {
 
 	@OutputDirectory
-	private File output = new File("./build/resources/main");
+	private File output = new File("./build/resources/thinPom");
 
 	@TaskAction
 	public void generate() {

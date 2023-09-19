@@ -63,7 +63,7 @@ public class AppGradleIT {
 	@Test
 	public void thinPom() throws FileNotFoundException, IOException {
 		File pom = new File(
-				"../app/build/resources/main/META-INF/maven/com.example/app/pom.xml");
+				"../app/build/resources/thinPom/META-INF/maven/com.example/app/pom.xml");
 		assertThat(pom).exists();
 		assertThat(StreamUtils.copyToString(new FileInputStream(pom),
 				Charset.forName("UTF-8"))).contains("<repositories>",

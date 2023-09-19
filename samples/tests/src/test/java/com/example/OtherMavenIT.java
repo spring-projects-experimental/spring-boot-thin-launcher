@@ -81,7 +81,7 @@ public class OtherMavenIT {
 	@Test
 	public void thinPom() throws FileNotFoundException, IOException {
 		File pom = new File(
-				"../other/build/resources/main/META-INF/maven/com.example/other/pom.xml");
+				"../other/build/resources/thinPom/META-INF/maven/com.example/other/pom.xml");
 		assertThat(pom).exists();
 		assertThat(StreamUtils.copyToString(new FileInputStream(pom),
 				Charset.forName("UTF-8"))).contains("<repositories>", "<id>maven</id>");
