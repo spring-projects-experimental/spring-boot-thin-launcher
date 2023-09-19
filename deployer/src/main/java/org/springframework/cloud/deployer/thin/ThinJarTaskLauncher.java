@@ -52,8 +52,8 @@ public class ThinJarTaskLauncher extends AbstractThinJarSupport implements TaskL
 	@Override
 	public RuntimeEnvironmentInfo environmentInfo() {
 		return new RuntimeEnvironmentInfo.Builder().spiClass(RuntimeEnvironmentInfo.class).implementationName("thin")
-				.implementationVersion("1.0.31.BUILD-SNAPSHOT").platformApiVersion("N/A").platformApiVersion("N/A")
-				.platformClientVersion("1.0.31.BUILD-SNAPSHOT").platformHostVersion("N/A").platformType("local")
+				.implementationVersion("1.0.31.RELEASE").platformApiVersion("N/A").platformApiVersion("N/A")
+				.platformClientVersion("1.0.31.RELEASE").platformHostVersion("N/A").platformType("local")
 				.build();
 	}
 

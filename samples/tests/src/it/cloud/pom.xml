@@ -16,7 +16,7 @@
 
 	<properties>
 		<java.version>1.8</java.version>
-		<wrapper.version>1.0.31.BUILD-SNAPSHOT</wrapper.version>
+		<wrapper.version>1.0.31.RELEASE</wrapper.version>
 	</properties>
 
 	<dependencies>
