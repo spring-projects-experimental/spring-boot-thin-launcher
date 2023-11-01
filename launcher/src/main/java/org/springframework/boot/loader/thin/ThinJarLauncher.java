@@ -26,14 +26,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import com.google.common.collect.Iterators;
 import org.eclipse.aether.artifact.Artifact;
 import org.eclipse.aether.graph.Dependency;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.boot.loader.ExecutableArchiveLauncher;
+import org.springframework.boot.loader.JarLauncher;
 import org.springframework.boot.loader.LaunchedURLClassLoader;
 import org.springframework.boot.loader.archive.Archive;
-import org.springframework.boot.loader.archive.Archive.Entry;
 import org.springframework.boot.loader.archive.ExplodedArchive;
 import org.springframework.core.env.MutablePropertySources;
 import org.springframework.core.env.SimpleCommandLinePropertySource;
@@ -43,7 +43,7 @@ import org.springframework.util.StringUtils;
 /**
  * @author Dave Syer
  */
-public class ThinJarLauncher extends ExecutableArchiveLauncher {
+public class ThinJarLauncher extends JarLauncher {
 
 	private static final Logger log = LoggerFactory.getLogger(ThinJarLauncher.class);
 
@@ -210,8 +210,7 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 		log.info("Version: " + getVersion());
 		if (!"false".equals(
 				environment.resolvePlaceholders("${" + THIN_DRYRUN + ":false}"))) {
-			getClassPathArchives(
-					environment.resolvePlaceholders("${" + THIN_ROOT + ":}"));
+			getResolvedClassPathArchives();
 			log.info("Downloaded dependencies"
 					+ (!StringUtils.hasText(root) ? "" : " to " + root));
 			return;
@@ -221,7 +220,7 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 
 	@Override
 	protected Iterator<Archive> getClassPathArchivesIterator() throws Exception {
-		return getClassPathArchives().iterator();
+		return Iterators.concat(super.getClassPathArchivesIterator(), getResolvedClassPathArchives().iterator());
 	}
 
 	private static String getVersion() {
@@ -369,12 +368,7 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 		return ArchiveUtils.findMainClass(getArchive());
 	}
 
-	@Override
-	protected List<Archive> getClassPathArchives() throws Exception {
-		return getClassPathArchives(null);
-	}
-
-	private List<Archive> getClassPathArchives(String root) throws Exception {
+	private List<Archive> getResolvedClassPathArchives() {
 		String parent = environment
 				.resolvePlaceholders("${" + ThinJarLauncher.THIN_PARENT + ":}");
 		String name = environment
@@ -469,11 +463,6 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 			}
 		}
 		return properties;
-	}
-
-	@Override
-	protected boolean isNestedArchive(Entry entry) {
-		return false;
 	}
 
 	private static Archive computeArchive(String[] args) throws Exception {
