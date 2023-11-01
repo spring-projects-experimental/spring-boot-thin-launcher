@@ -386,17 +386,20 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 		if (StringUtils.hasText(parent)) {
 			parentArchive = ArchiveUtils.getArchive(parent);
 		}
-		long t0 = System.currentTimeMillis();
-		List<Archive> archives = resolver.resolve(parentArchive, getArchive(), name,
-				profiles);
-		long t1 = System.currentTimeMillis();
-		if (log.isInfoEnabled()) {
+        if (log.isInfoEnabled()) {
 			if (!this.libs.isEmpty()) {
 				log.info("Adding libraries: " + this.libs);
 			}
+		}
+		// Prepend the explicitly supplied libs to the class path
+        final List<Archive> archives = new ArrayList<>(this.libs);
+		long t0 = System.currentTimeMillis();
+		archives.addAll(resolver.resolve(parentArchive, getArchive(), name,
+				profiles));
+		long t1 = System.currentTimeMillis();
+		if (log.isInfoEnabled()) {
 			log.info("Dependencies resolved in: " + (t1 - t0) + "ms");
 		}
-		archives.addAll(this.libs);
 		return archives;
 	}
 
