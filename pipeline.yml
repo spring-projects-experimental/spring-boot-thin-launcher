@@ -58,6 +58,12 @@ jobs:
           echo "((signing-key))" > private.asc
           gpg --import --batch --no-tty private.asc
           ./mvnw deploy -s .mvn/settings.xml
+          GRADLE_PUBLISH_VERSION=$( sed '\!<parent!,\!</parent!d' pom.xml | grep '<version' | head -1 | sed -e 's/.*<version>//' -e 's!</version>.*$!!' )
+          echo $GRADLE_PUBLISH_VERSION | grep -q SNAPSHOT
+          if [ "$?" == "1" ]; then
+            cd gradle-plugin/publish
+            ./gradlew publishExisting
+          fi
     params:
       TERM: -dumb
       passphrase: ((signing-passphrase))
@@ -65,4 +71,6 @@ jobs:
       sonatype_password: ((sonatype-password))
       spring_username: ((artifactory-username))
       spring_password: ((artifactory-password))
+      GRADLE_PUBLISH_KEY: ((gradle-publish-key))
+      GRADLE_PUBLISH_SECRET: ((gradle-publish-secret))
     on_failure: *slack-failure
