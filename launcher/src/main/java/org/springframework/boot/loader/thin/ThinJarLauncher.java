@@ -18,7 +18,6 @@ package org.springframework.boot.loader.thin;
 
 import java.io.File;
 import java.net.URL;
-import java.security.AccessControlException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -454,7 +453,7 @@ public class ThinJarLauncher extends ExecutableArchiveLauncher {
 					properties.setProperty(name, system.getProperty(key.toString()));
 				}
 			}
-		} catch (AccessControlException e) {
+		} catch (SecurityException e) {
 			// ignore
 		}
 		if (environment.getPropertySources().contains("commandArgs")) {
