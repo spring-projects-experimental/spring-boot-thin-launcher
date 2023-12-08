@@ -16,7 +16,7 @@
 	<description>Grade plugin for Spring Boot Thin Launcher</description>
 
 	<properties>
-		<gradle.version>2.9</gradle.version>
+		<gradle.version>6.1.1</gradle.version>
 	</properties>
 
 	<dependencies>
@@ -33,12 +33,34 @@
 			<artifactId>spring-boot-thin-layout</artifactId>
 			<version>${project.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>ch.qos.logback</groupId>
+			<artifactId>logback-classic</artifactId>
+		</dependency>
 		<!-- Provided -->
 		<dependency>
 			<groupId>org.codehaus.groovy</groupId>
 			<artifactId>groovy</artifactId>
 			<scope>provided</scope>
 			<version>2.4.21</version>
+		</dependency>
+		<dependency>
+			<groupId>org.gradle</groupId>
+			<artifactId>gradle-core-api</artifactId>
+			<scope>provided</scope>
+			<version>${gradle.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.gradle</groupId>
+			<artifactId>gradle-model-core</artifactId>
+			<scope>provided</scope>
+			<version>${gradle.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.gradle</groupId>
+			<artifactId>gradle-logging</artifactId>
+			<scope>provided</scope>
+			<version>${gradle.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.gradle</groupId>
@@ -68,7 +90,7 @@
 			<groupId>org.gradle</groupId>
 			<artifactId>gradle-maven</artifactId>
 			<scope>provided</scope>
-			<version>3.5</version>
+			<version>${gradle.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>io.spring.gradle</groupId>
