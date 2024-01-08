@@ -39,8 +39,8 @@ import org.sonatype.plexus.components.cipher.PlexusCipherException;
 import org.sonatype.plexus.components.sec.dispatcher.DefaultSecDispatcher;
 
 /**
- * {@code MavenSettingsReader} reads settings from a user's Maven settings.xml file,
- * decrypting them if necessary using settings-security.xml.
+ * {@code MavenSettingsReader} reads settings from a user's Maven settings.xml
+ * file, decrypting them if necessary using settings-security.xml.
  *
  * @author Andy Wilkinson
  * @since 1.3.0
@@ -57,7 +57,20 @@ public class MavenSettingsReader {
 
 	public MavenSettingsReader(String homeDir) {
 		if (homeDir == null) {
-			homeDir = System.getProperty("settings.home", System.getProperty("user.home"));
+			homeDir = System.getProperty("settings.home");
+			if (homeDir == null) {
+				homeDir = System.getProperty("maven.repo.local");
+				if (homeDir != null) {
+					homeDir = new File(homeDir).getParent();
+					if (homeDir != null) {
+						homeDir = new File(homeDir).getParent();
+					} else {
+						homeDir = System.getProperty("user.home");
+					}
+				} else {
+					homeDir = System.getProperty("user.home");
+				}
+			}
 		}
 		this.homeDir = homeDir;
 	}
@@ -77,8 +90,7 @@ public class MavenSettingsReader {
 			try {
 				session.setLocalRepositoryManager(new SimpleLocalRepositoryManagerFactory().newInstance(session,
 						new LocalRepository(settings.getLocalRepository())));
-			}
-			catch (NoLocalRepositoryManagerException e) {
+			} catch (NoLocalRepositoryManagerException e) {
 				throw new IllegalStateException("Cannot set local repository to " + settings.getLocalRepository(), e);
 			}
 		}
@@ -92,14 +104,27 @@ public class MavenSettingsReader {
 		File settingsFile = new File(this.homeDir, ".m2/settings.xml");
 		if (settingsFile.exists()) {
 			log.info("Reading settings from: " + settingsFile);
-		}
-		else {
+		} else {
 			log.info("No settings found at: " + settingsFile);
-			String home = System.getProperty("user.home");
-			if (!new File(home).getAbsolutePath().equals(new File(this.homeDir).getAbsolutePath())) {
-				settingsFile = new File(home, ".m2/settings.xml");
-				if (settingsFile.exists()) {
-					log.info("Reading settings from: " + settingsFile);
+			settingsFile = new File(this.homeDir, "../settings.xml");
+			if (settingsFile.exists()) {
+				log.info("Reading settings from: " + settingsFile);
+			} else {
+				String home = System.getProperty("maven.repo.local");
+				if (home != null
+						&& !new File(home).getAbsolutePath().equals(new File(this.homeDir).getAbsolutePath())) {
+					settingsFile = new File(home, "../settings.xml");
+					if (settingsFile.exists()) {
+						log.info("Reading settings from: " + settingsFile);
+					}
+				} else {
+					home = System.getProperty("user.home");
+					if (!new File(home).getAbsolutePath().equals(new File(this.homeDir).getAbsolutePath())) {
+						settingsFile = new File(home, ".m2/settings.xml");
+						if (settingsFile.exists()) {
+							log.info("Reading settings from: " + settingsFile);
+						}
+					}
 				}
 			}
 		}
@@ -112,8 +137,7 @@ public class MavenSettingsReader {
 		request.setSystemProperties(System.getProperties());
 		try {
 			return new DefaultSettingsBuilderFactory().newInstance().build(request).getEffectiveSettings();
-		}
-		catch (SettingsBuildingException ex) {
+		} catch (SettingsBuildingException ex) {
 			throw new IllegalStateException("Failed to build settings from " + settingsFile, ex);
 		}
 	}
@@ -136,8 +160,7 @@ public class MavenSettingsReader {
 			Field field = sourceClass.getDeclaredField(fieldName);
 			field.setAccessible(true);
 			field.set(target, value);
-		}
-		catch (Exception ex) {
+		} catch (Exception ex) {
 			throw new IllegalStateException("Failed to set field '" + fieldName + "' on '" + target + "'", ex);
 		}
 	}
@@ -151,8 +174,7 @@ public class MavenSettingsReader {
 			this._configurationFile = file.getAbsolutePath();
 			try {
 				this._cipher = new DefaultPlexusCipher();
-			}
-			catch (PlexusCipherException e) {
+			} catch (PlexusCipherException e) {
 				throw new IllegalStateException(e);
 			}
 		}

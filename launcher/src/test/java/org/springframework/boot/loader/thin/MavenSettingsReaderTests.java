@@ -41,6 +41,32 @@ public class MavenSettingsReaderTests {
 	}
 
 	@Test
+	public void canReadSettingsAtThinRoot() {
+		MavenSettingsReader reader = new MavenSettingsReader(
+				"src/test/resources/settings/proxy/.m2");
+		MavenSettings settings = reader.readSettings();
+		assertThat(settings).isNotNull();
+	}
+
+	@Test
+	public void canReadSettingsAtMavenRepoLocal() {
+		System.setProperty("maven.repo.local",
+				"src/test/resources/settings/proxy/.m2/repository");
+		try {
+
+			MavenSettingsReader reader = new MavenSettingsReader();
+			MavenSettings settings = reader.readSettings();
+			assertThat(settings).isNotNull();
+			RemoteRepository remote = new RemoteRepository.Builder("central", null, "https://central-mirror.example.com/maven2")
+					.setContentType("default").build();
+			RemoteRepository mirror = settings.getMirrorSelector().getMirror(remote);
+			assertThat(mirror).isNotNull();
+		} finally {
+			System.clearProperty("maven.repo.local");
+		}
+	}
+
+	@Test
 	public void proxyConfiguration() {
 		MavenSettingsReader reader = new MavenSettingsReader(
 				"src/test/resources/settings/proxy");
@@ -130,7 +156,8 @@ public class MavenSettingsReaderTests {
 		RemoteRepository remote = new RemoteRepository.Builder(repo.getId(), null, repo.getUrl()).build();
 		Authentication authentication = settings.getAuthenticationSelector().getAuthentication(remote);
 		assertThat(authentication).isNotNull();
-		remote = new RemoteRepository.Builder(repo.getId(), null, repo.getUrl()).setAuthentication(authentication).build();
+		remote = new RemoteRepository.Builder(repo.getId(), null, repo.getUrl()).setAuthentication(authentication)
+				.build();
 		AuthenticationContext context = AuthenticationContext.forRepository(session,
 				remote);
 		assertThat(context).isNotNull();
@@ -145,7 +172,8 @@ public class MavenSettingsReaderTests {
 		assertThat(settings.getActiveProfiles().get(0).getRepositories().get(0))
 				.isNotNull();
 		MavenSettingsReader.applySettings(settings, session);
-		RemoteRepository remote = new RemoteRepository.Builder("remote", null, "https://remote").setContentType("default").build();
+		RemoteRepository remote = new RemoteRepository.Builder("remote", null, "https://remote")
+				.setContentType("default").build();
 		RemoteRepository mirror = settings.getMirrorSelector().getMirror(remote);
 		assertThat(mirror).isNotNull();
 	}

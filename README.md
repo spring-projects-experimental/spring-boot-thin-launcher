@@ -577,7 +577,10 @@ also use a system property `maven.repo.local` (or `maven.home` which
 defaults to `${user.home}/.m2`) when you launch the thin jar, but not
 a command line flag. The Maven and Gradle plugins respond to the
 `settings.xml` and also (with Maven) to `-Dmaven.repo.local` as a
-command line flag.
+command line flag. When the launcher runs it also looks in `${thin.root}/..`
+for a `settings.xml` file and uses that in preference to any other location
+if it exists. (For historical reasons it also looks in `${thin.root}/.m2`
+but that directory is unlikely to exist.)
 
 ## How to Configure a Proxy
 
