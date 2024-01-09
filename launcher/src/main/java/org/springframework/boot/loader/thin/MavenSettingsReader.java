@@ -65,7 +65,7 @@ public class MavenSettingsReader {
 				homeDir = new File(homeDir).getParent();
 			}
 		}
-		if (homeDir==null || !new File(homeDir, "settings.xml").exists()) {
+		if (homeDir == null || !new File(homeDir, "settings.xml").exists()) {
 			if (homeDir == null) {
 				homeDir = System.getProperty("maven.repo.local");
 				if (homeDir != null) {
@@ -74,11 +74,14 @@ public class MavenSettingsReader {
 						homeDir = null;
 					}
 				}
-			 }
- 			if (homeDir == null) {
-				homeDir = System.getProperty("user.home");
-				if (homeDir != null) {
-					homeDir = new File(homeDir, ".m2").getAbsolutePath();
+			}
+			if (homeDir == null) {
+				homeDir = System.getProperty("maven.home");
+				if (homeDir == null || !new File(homeDir, "settings.xml").exists()) {
+					homeDir = System.getProperty("user.home");
+					if (homeDir != null) {
+						homeDir = new File(homeDir, ".m2").getAbsolutePath();
+					}
 				}
 			}
 		}
