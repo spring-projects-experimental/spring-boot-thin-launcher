@@ -49,30 +49,40 @@ public class MavenSettingsReader {
 
 	private static final Logger log = LoggerFactory.getLogger(MavenSettingsReader.class);
 
-	private final String homeDir;
+	private final String settingsDir;
 
 	public MavenSettingsReader() {
 		this(null);
 	}
 
-	public MavenSettingsReader(String homeDir) {
+	public MavenSettingsReader(String dir) {
+		String homeDir = dir;
 		if (homeDir == null) {
 			homeDir = System.getProperty("settings.home");
+		} else {
+			// If user set thin.root we look in the parent as well
+			if (!new File(homeDir, "settings.xml").exists()) {
+				homeDir = new File(homeDir).getParent();
+			}
+		}
+		if (homeDir==null || !new File(homeDir, "settings.xml").exists()) {
 			if (homeDir == null) {
 				homeDir = System.getProperty("maven.repo.local");
 				if (homeDir != null) {
 					homeDir = new File(homeDir).getParent();
-					if (homeDir != null) {
-						homeDir = new File(homeDir).getParent();
-					} else {
-						homeDir = System.getProperty("user.home");
+					if (homeDir == null || !new File(homeDir, "settings.xml").exists()) {
+						homeDir = null;
 					}
-				} else {
-					homeDir = System.getProperty("user.home");
+				}
+			 }
+ 			if (homeDir == null) {
+				homeDir = System.getProperty("user.home");
+				if (homeDir != null) {
+					homeDir = new File(homeDir, ".m2").getAbsolutePath();
 				}
 			}
 		}
-		this.homeDir = homeDir;
+		this.settingsDir = homeDir;
 	}
 
 	public MavenSettings readSettings() {
@@ -101,32 +111,9 @@ public class MavenSettingsReader {
 	}
 
 	private Settings loadSettings() {
-		File settingsFile = new File(this.homeDir, ".m2/settings.xml");
+		File settingsFile = new File(this.settingsDir, "settings.xml");
 		if (settingsFile.exists()) {
 			log.info("Reading settings from: " + settingsFile);
-		} else {
-			log.info("No settings found at: " + settingsFile);
-			settingsFile = new File(this.homeDir, "../settings.xml");
-			if (settingsFile.exists()) {
-				log.info("Reading settings from: " + settingsFile);
-			} else {
-				String home = System.getProperty("maven.repo.local");
-				if (home != null
-						&& !new File(home).getAbsolutePath().equals(new File(this.homeDir).getAbsolutePath())) {
-					settingsFile = new File(home, "../settings.xml");
-					if (settingsFile.exists()) {
-						log.info("Reading settings from: " + settingsFile);
-					}
-				} else {
-					home = System.getProperty("user.home");
-					if (!new File(home).getAbsolutePath().equals(new File(this.homeDir).getAbsolutePath())) {
-						settingsFile = new File(home, ".m2/settings.xml");
-						if (settingsFile.exists()) {
-							log.info("Reading settings from: " + settingsFile);
-						}
-					}
-				}
-			}
 		}
 		return loadSettings(settingsFile);
 	}
@@ -167,10 +154,10 @@ public class MavenSettingsReader {
 
 	private class SpringBootSecDispatcher extends DefaultSecDispatcher {
 
-		private static final String SECURITY_XML = ".m2/settings-security.xml";
+		private static final String SECURITY_XML = "settings-security.xml";
 
 		SpringBootSecDispatcher() {
-			File file = new File(MavenSettingsReader.this.homeDir, SECURITY_XML);
+			File file = new File(MavenSettingsReader.this.settingsDir, SECURITY_XML);
 			this._configurationFile = file.getAbsolutePath();
 			try {
 				this._cipher = new DefaultPlexusCipher();
