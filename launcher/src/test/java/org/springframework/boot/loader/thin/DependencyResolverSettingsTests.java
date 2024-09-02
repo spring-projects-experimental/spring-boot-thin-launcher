@@ -74,7 +74,7 @@ public class DependencyResolverSettingsTests {
 	@Test
 	public void testThinRoot() throws Exception {
 		Properties properties = new Properties();
-		properties.setProperty("thin.root", "src/test/resources/settings/proxy");
+		properties.setProperty("thin.root", "src/test/resources/settings/proxy/.m2");
 		DependencyResolver.close();
 		DependencyResolver resolver = DependencyResolver.instance();
 		ProjectBuildingRequest request = getProjectBuildingRequest(resolver, properties);

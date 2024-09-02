@@ -5,11 +5,11 @@ buildscript {
 		shadowVersion = '2.0.1'
 	}
 	repositories {
-		jcenter()
 		mavenLocal()
 		mavenCentral()
 		maven { url "https://repo.spring.io/snapshot" }
 		maven { url "https://repo.spring.io/milestone" }
+		maven { url "https://plugins.gradle.org/m2/" }
 	}
 	dependencies {
 		classpath "com.github.jengelman.gradle.plugins:shadow:${shadowVersion}"

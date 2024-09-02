@@ -312,7 +312,7 @@ public class ThinJarLauncherTests {
 		DependencyResolver.close();
 		String home = System.getProperty("settings.home");
 		System.setProperty("settings.home",
-				new File("src/test/resources/settings/local").getAbsolutePath());
+				new File("src/test/resources/settings/local/.m2").getAbsolutePath());
 		try {
 			deleteRecursively(new File(
 					"target/thin/test/repository/org/springframework/spring-core"));
