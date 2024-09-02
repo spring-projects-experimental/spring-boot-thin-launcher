@@ -1,9 +1,8 @@
-name: deploy
+name: Java CI with Maven Deploy
 
 on:
   push:
-    branches:
-      - master
+    branches: [ main ]
 
 jobs:
   build:
@@ -11,24 +10,24 @@ jobs:
     if: "!contains(github.event.head_commit.message, 'ci skip')"
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - name: Set up JDK 1.8
-        uses: actions/setup-java@v1
+        uses: actions/setup-java@v4
         with:
-          java-version: 1.8
-      - name: Cache Maven packages
-        uses: actions/cache@v2
-        with:
-          path: ~/.m2
-          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
-          restore-keys: ${{ runner.os }}-m2
+          java-version: 8
+          distribution: temurin
+          cache: maven
       - name: Build with Maven
+        run: ./mvnw -B install
+      - name: Deploy with Maven
         env:
-          spring_username: ${{ secrets.BUILD_USER }}
-          spring_password: ${{ secrets.BUILD_PASSWORD }}
-        run: ./mvnw -B install -s .mvn/settings.xml
-      - name: Deploy
-        env:
-          spring_username: ${{ secrets.BUILD_USER }}
-          spring_password: ${{ secrets.BUILD_PASSWORD }}
-        run: ./mvnw -B deploy -s .mvn/settings.xml -DskipTests
+          spring_username: ${{ secrets.ARTIFACTORY_USERNAME }}
+          spring_password: ${{ secrets.ARTIFACTORY_PASSWORD }}
+          sonatype_username: ${{ secrets.OSSRH_S01_TOKEN_USERNAME }}
+          sonatype_password: ${{ secrets.OSSRH_S01_TOKEN_PASSWORD }}
+          signing_key: ${{ secrets.GPG_PRIVATE_KEY }}
+          passphrase: ${{ secrets.GPG_PASSPHRASE }}
+        run: |
+            echo "${signing_key}" > private.asc
+            gpg --import --batch --no-tty private.asc
+            ./mvnw -B deploy -s .mvn/settings.xml -DskipTests
