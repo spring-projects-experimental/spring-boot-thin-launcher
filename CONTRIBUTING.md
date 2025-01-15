@@ -72,7 +72,7 @@ to start a discussion first or have already created an issue, once a pull reques
 created, we will close the issue as superseded by the pull request, and the discussion
 about the issue will continue under the pull request.
 
-1. Always check out the `master` branch and submit pull requests against it
+1. Always check out the `main` branch and submit pull requests against it
 (for target version see [settings.gradle](settings.gradle)).
 Backports to prior versions will be considered on a case-by-case basis and reflected as
 the fix version in the issue tracker.
@@ -86,6 +86,8 @@ for an overview of streamlining the commit history.
 for the description, followed by the issue fixed, e.g. `Closes gh-22276`. See the
 [Commit Guidelines section of Pro Git](https://git-scm.com/book/en/Distributed-Git-Contributing-to-a-Project#Commit-Guidelines)
 for best practices around commit messages, and use `git log` to see some examples.
+
+1. All commits must include a _Signed-off-by_ trailer at the end of each commit message to indicate that the contributor agrees to the [Developer Certificate of Origin](https://developercertificate.org). For additional details, please refer to the blog post Hello DCO, Goodbye CLA: Simplifying Contributions to Spring](https://spring.io/blog/2025/01/06/hello-dco-goodbye-cla-simplifying-contributions-to-spring).
 
 1. If there is a prior issue, reference the GitHub issue number in the description of the
 pull request.
