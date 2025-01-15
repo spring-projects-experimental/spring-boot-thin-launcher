@@ -16,7 +16,7 @@
 	<description>Grade plugin for Spring Boot Thin Launcher</description>
 
 	<properties>
-		<gradle.version>6.1.1</gradle.version>
+		<gradle.version>6.0.1</gradle.version>
 	</properties>
 
 	<dependencies>
@@ -82,6 +82,12 @@
 		</dependency>
 		<dependency>
 			<groupId>org.gradle</groupId>
+			<artifactId>gradle-process-services</artifactId>
+			<scope>provided</scope>
+			<version>${gradle.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.gradle</groupId>
 			<artifactId>gradle-plugins</artifactId>
 			<scope>provided</scope>
 			<version>${gradle.version}</version>
@@ -96,7 +102,7 @@
 			<groupId>io.spring.gradle</groupId>
 			<artifactId>dependency-management-plugin</artifactId>
 			<scope>provided</scope>
-			<version>1.0.4.RELEASE</version>
+			<version>1.0.15.RELEASE</version>
 		</dependency>
 	</dependencies>
 
